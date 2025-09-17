@@ -1,0 +1,256 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v9.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v9.0": {
+      "AvaloniaEdit.TextMate/1.0.0": {
+        "dependencies": {
+          "Avalonia": "11.3.3",
+          "AvaloniaEdit": "1.0.0",
+          "TextMateSharp": "1.0.70",
+          "TextMateSharp.Grammars": "1.0.70"
+        },
+        "runtime": {
+          "AvaloniaEdit.TextMate.dll": {}
+        }
+      },
+      "Avalonia/11.3.3": {
+        "dependencies": {
+          "Avalonia.BuildServices": "0.0.31",
+          "Avalonia.Remote.Protocol": "11.3.3",
+          "MicroCom.Runtime": "0.11.0"
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Base.dll": {
+            "assemblyVersion": "11.3.3.0",
+            "fileVersion": "11.3.3.0"
+          },
+          "lib/net8.0/Avalonia.Controls.dll": {
+            "assemblyVersion": "11.3.3.0",
+            "fileVersion": "11.3.3.0"
+          },
+          "lib/net8.0/Avalonia.DesignerSupport.dll": {
+            "assemblyVersion": "0.7.0.0",
+            "fileVersion": "0.7.0.0"
+          },
+          "lib/net8.0/Avalonia.Dialogs.dll": {
+            "assemblyVersion": "11.3.3.0",
+            "fileVersion": "11.3.3.0"
+          },
+          "lib/net8.0/Avalonia.Markup.Xaml.dll": {
+            "assemblyVersion": "11.3.3.0",
+            "fileVersion": "11.3.3.0"
+          },
+          "lib/net8.0/Avalonia.Markup.dll": {
+            "assemblyVersion": "11.3.3.0",
+            "fileVersion": "11.3.3.0"
+          },
+          "lib/net8.0/Avalonia.Metal.dll": {
+            "assemblyVersion": "11.3.3.0",
+            "fileVersion": "11.3.3.0"
+          },
+          "lib/net8.0/Avalonia.MicroCom.dll": {
+            "assemblyVersion": "11.3.3.0",
+            "fileVersion": "11.3.3.0"
+          },
+          "lib/net8.0/Avalonia.OpenGL.dll": {
+            "assemblyVersion": "11.3.3.0",
+            "fileVersion": "11.3.3.0"
+          },
+          "lib/net8.0/Avalonia.Vulkan.dll": {
+            "assemblyVersion": "11.3.3.0",
+            "fileVersion": "11.3.3.0"
+          },
+          "lib/net8.0/Avalonia.dll": {
+            "assemblyVersion": "11.3.3.0",
+            "fileVersion": "11.3.3.0"
+          }
+        }
+      },
+      "Avalonia.BuildServices/0.0.31": {},
+      "Avalonia.Remote.Protocol/11.3.3": {
+        "runtime": {
+          "lib/net8.0/Avalonia.Remote.Protocol.dll": {
+            "assemblyVersion": "11.3.3.0",
+            "fileVersion": "11.3.3.0"
+          }
+        }
+      },
+      "MicroCom.Runtime/0.11.0": {
+        "runtime": {
+          "lib/net5.0/MicroCom.Runtime.dll": {
+            "assemblyVersion": "0.11.0.0",
+            "fileVersion": "0.11.0.0"
+          }
+        }
+      },
+      "Onigwrap/1.0.8": {
+        "runtime": {
+          "lib/netstandard2.0/Onigwrap.dll": {
+            "assemblyVersion": "1.0.8.0",
+            "fileVersion": "1.0.8.0"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/linux-arm64/native/libonigwrap.so": {
+            "rid": "linux-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-bionic-arm64/native/libonigwrap.so": {
+            "rid": "linux-bionic-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-bionic-x64/native/libonigwrap.so": {
+            "rid": "linux-bionic-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-musl-arm64/native/libonigwrap.so": {
+            "rid": "linux-musl-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-musl-x64/native/libonigwrap.so": {
+            "rid": "linux-musl-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-x64/native/libonigwrap.so": {
+            "rid": "linux-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/osx/native/libonigwrap.dylib": {
+            "rid": "osx",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-arm64/native/libonigwrap.dll": {
+            "rid": "win-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x64/native/libonigwrap.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x86/native/libonigwrap.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "System.Text.Json/8.0.5": {},
+      "TextMateSharp/1.0.70": {
+        "dependencies": {
+          "Onigwrap": "1.0.8",
+          "System.Text.Json": "8.0.5"
+        },
+        "runtime": {
+          "lib/netstandard2.0/TextMateSharp.dll": {
+            "assemblyVersion": "1.0.70.0",
+            "fileVersion": "1.0.70.0"
+          }
+        }
+      },
+      "TextMateSharp.Grammars/1.0.70": {
+        "dependencies": {
+          "System.Text.Json": "8.0.5",
+          "TextMateSharp": "1.0.70"
+        },
+        "runtime": {
+          "lib/netstandard2.0/TextMateSharp.Grammars.dll": {
+            "assemblyVersion": "1.0.70.0",
+            "fileVersion": "1.0.70.0"
+          }
+        }
+      },
+      "AvaloniaEdit/1.0.0": {
+        "dependencies": {
+          "Avalonia": "11.3.3"
+        },
+        "runtime": {
+          "AvaloniaEdit.dll": {
+            "assemblyVersion": "0.0.0.0",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "AvaloniaEdit.TextMate/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Avalonia/11.3.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-JEYVWn6wMtgfcF4EdwlENvmp9V2axpR3uJ/t4c9h4Xz0M/hvLQx5djp36peq8IA2LICjHrP7QMtVozmlC0aDWg==",
+      "path": "avalonia/11.3.3",
+      "hashPath": "avalonia.11.3.3.nupkg.sha512"
+    },
+    "Avalonia.BuildServices/0.0.31": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-KmCN6Hc+45q4OnF10ge450yVUvWuxU6bdQiyKqiSvrHKpahNrEdk0kG6Ip6GHk2SKOCttGQuA206JVdkldEENg==",
+      "path": "avalonia.buildservices/0.0.31",
+      "hashPath": "avalonia.buildservices.0.0.31.nupkg.sha512"
+    },
+    "Avalonia.Remote.Protocol/11.3.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ehPZeXSI/07n9o+j+7+Pj9TK3EOoMGmB671jo+6H+a4gko8/IMhlzwo+wCMmAeZyiq+Qmpq2PagT9c2hZbwnDA==",
+      "path": "avalonia.remote.protocol/11.3.3",
+      "hashPath": "avalonia.remote.protocol.11.3.3.nupkg.sha512"
+    },
+    "MicroCom.Runtime/0.11.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-MEnrZ3UIiH40hjzMDsxrTyi8dtqB5ziv3iBeeU4bXsL/7NLSal9F1lZKpK+tfBRnUoDSdtcW3KufE4yhATOMCA==",
+      "path": "microcom.runtime/0.11.0",
+      "hashPath": "microcom.runtime.0.11.0.nupkg.sha512"
+    },
+    "Onigwrap/1.0.8": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-PElH31TECN5e25yLS0NTvA0nkbgyuw2OKWY8DOWmbNnEU5O94UrcU33lQQUr0SVp8I0plpH93TY0yGduQsDizQ==",
+      "path": "onigwrap/1.0.8",
+      "hashPath": "onigwrap.1.0.8.nupkg.sha512"
+    },
+    "System.Text.Json/8.0.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-0f1B50Ss7rqxXiaBJyzUu9bWFOO2/zSlifZ/UNMdiIpDYe4cY4LQQicP4nirK1OS31I43rn062UIJ1Q9bpmHpg==",
+      "path": "system.text.json/8.0.5",
+      "hashPath": "system.text.json.8.0.5.nupkg.sha512"
+    },
+    "TextMateSharp/1.0.70": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Bxvwx5lgu7TApl9MIEqb742ijRKqk7kD15YbzyVunC8+uZ1mAtswAaFGjNbq/apc1z2/3lpU3cxMovcMbhVJgg==",
+      "path": "textmatesharp/1.0.70",
+      "hashPath": "textmatesharp.1.0.70.nupkg.sha512"
+    },
+    "TextMateSharp.Grammars/1.0.70": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-BnvHDxUvxqo0D1/N9wiPtrYR9syJTB1TUR9NP5kmZBpvs4W1I2EI7rfjPIOIPwYtlN8fmqCGw4FmTMuQG4kAzQ==",
+      "path": "textmatesharp.grammars/1.0.70",
+      "hashPath": "textmatesharp.grammars.1.0.70.nupkg.sha512"
+    },
+    "AvaloniaEdit/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
