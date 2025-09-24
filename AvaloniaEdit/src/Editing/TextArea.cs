@@ -39,6 +39,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using lib.debug;
 
 namespace AvaloniaEdit.Editing
 {
@@ -850,7 +851,14 @@ namespace AvaloniaEdit.Editing
                     // We have to ignore those (not handle them) to keep the shortcut working.
                     return;
                 }
+                string listValidKey = "qwertyuiopåasdfghjklæø'zxcvbnm,.1234567890+!\"#¤%&/()=?*;:_><";
                 HideMouseCursor();
+                if (!listValidKey.Contains(e.Text))
+                {
+                    DebugWriter.WriteLine("AvaloniaEdit", $"Text input: {e.Text} no");
+                    e.Handled = false;
+                    return;
+                }
                 PerformTextInput(e);
                 e.Handled = true;
             }
@@ -891,7 +899,7 @@ namespace AvaloniaEdit.Editing
                 {
                     if (OverstrikeMode && Selection.IsEmpty && Document.GetLineByNumber(Caret.Line).EndOffset > Caret.Offset)
                         EditingCommands.SelectRightByCharacter.Execute(null, this);
-
+                    DebugWriter.WriteLine("AvaloniaEdit", $"Text input: {e.Text}");
                     ReplaceSelectionWithText(e.Text);
                 }
                 OnTextEntered(e);
