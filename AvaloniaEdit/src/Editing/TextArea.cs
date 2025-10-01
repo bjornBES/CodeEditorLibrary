@@ -641,6 +641,8 @@ namespace AvaloniaEdit.Editing
         /// </summary>
         public Caret Caret { get; }
 
+        public event EventHandler<EventArgs> OnCaretPositionChanged;
+
         /// <summary>
         /// Scrolls the text view so that the requested line is in the middle.
         /// If the textview can be scrolled.
@@ -704,6 +706,8 @@ namespace AvaloniaEdit.Editing
             {
                 (this as ILogicalScrollable).RaiseScrollInvalidated(EventArgs.Empty);
             });
+
+            OnCaretPositionChanged?.Invoke(sender, e);
         }
 
         public static readonly DirectProperty<TextArea, ObservableCollection<Control>> LeftMarginsProperty
@@ -851,14 +855,7 @@ namespace AvaloniaEdit.Editing
                     // We have to ignore those (not handle them) to keep the shortcut working.
                     return;
                 }
-                string listValidKey = "qwertyuiopåasdfghjklæø'zxcvbnm,.1234567890+!\"#¤%&/()=?*;:_><";
                 HideMouseCursor();
-                if (!listValidKey.Contains(e.Text))
-                {
-                    DebugWriter.WriteLine("AvaloniaEdit", $"Text input: {e.Text} no");
-                    e.Handled = false;
-                    return;
-                }
                 PerformTextInput(e);
                 e.Handled = true;
             }

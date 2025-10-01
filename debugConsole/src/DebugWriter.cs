@@ -1,6 +1,7 @@
 
 using System.Text;
 namespace lib.debug;
+
 public static class DebugWriter
 {
     private static TextWriter originalWriter;
@@ -10,6 +11,7 @@ public static class DebugWriter
 
     public static void Initialize(TextWriter writer)
     {
+        Directory.CreateDirectory("logs");
         originalWriter = writer;
         Console.SetOut(new InterceptWriter(writer));
     }
@@ -39,7 +41,7 @@ public static class DebugWriter
     {
         string FileName = AltLogFileName[parentModule];
         string logModuleDirectory = AltLogModule[parentModule];
-        
+
         foreach (var module in modules)
         {
             AltLogFileName.Add(module, FileName);
@@ -49,10 +51,13 @@ public static class DebugWriter
 
     public static void Clean()
     {
-        Directory.GetFiles("logs", "debug_log*console.log", SearchOption.AllDirectories).ToList().ForEach(File.Delete);
-        File.Delete("logs/debug.log");
+        if (Directory.Exists("logs"))
+        {
+            Directory.GetFiles("logs", "debug_log*console.log", SearchOption.AllDirectories).ToList().ForEach(File.Delete);
+            File.Delete("logs/debug.log");
 
-        Directory.EnumerateDirectories("logs", "*", SearchOption.AllDirectories).ToList().ForEach(Directory.Delete);
+            Directory.EnumerateDirectories("logs", "*", SearchOption.AllDirectories).ToList().ForEach(Directory.Delete);
+        }
     }
 #nullable enable
     public static void WriteLine(string module, string? value)
