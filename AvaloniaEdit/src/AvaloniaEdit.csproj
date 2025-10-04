@@ -18,10 +18,8 @@
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.3" />
     <PackageReference Include="System.Collections.Immutable" Version="1.6.0" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
-  <ProjectReference Include="../../../lib/debugConsole/src/debug.csproj" />
-      <Reference Include="lib.debug">
-      <HintPath>../../../lib/debugConsole/src/bin/Debug/net9.0/debug.dll</HintPath>
-    </Reference>
+  
+      <ProjectReference Include="../../debugConsole/src/debug.csproj" />
   </ItemGroup>
 
   <ItemGroup>

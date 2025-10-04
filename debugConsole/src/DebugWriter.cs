@@ -11,9 +11,11 @@ public static class DebugWriter
 
     public static void Initialize(TextWriter writer)
     {
+#if DEBUG
         Directory.CreateDirectory("logs");
         originalWriter = writer;
         Console.SetOut(new InterceptWriter(writer));
+#endif
     }
 
     public static void AddModule(string module, string FileName, string logModuleDirectory)
@@ -62,20 +64,29 @@ public static class DebugWriter
 #nullable enable
     public static void WriteLine(string module, string? value)
     {
+#if DEBUG
         originalWriter.WriteLine($@"[{module}] {DateTime.Now:HH:mm:ss} {value}");
         AddToLogFile(module, nameof(WriteLine), value + Environment.NewLine);
         // Additionally log to a debug log file or system if needed
+#else
+        Console.WriteLine($@"[{module}] {DateTime.Now:HH:mm:ss} {value}");
+#endif
     }
 
     public static void Write(string module, string? value)
     {
+#if DEBUG
         originalWriter.Write($@"[{module}] {DateTime.Now:HH:mm:ss} {value}");
         AddToLogFile(module, nameof(Write), value + Environment.NewLine);
         // Additionally log to a debug log file or system if needed
+#else
+        Console.Write($@"[{module}] {DateTime.Now:HH:mm:ss} {value}");
+#endif
     }
 
     static void AddToLogFile(string module, string func, string? value)
     {
+#if DEBUG
         string LogFileName = AltLogFileName[module];
         string LogModule = AltLogModule[module];
         if (!string.IsNullOrEmpty(LogFileName))
@@ -87,5 +98,6 @@ public static class DebugWriter
             File.AppendAllText($"logs/{LogModule}/debug_{LogFileName}.log", $"{module} STDOUT {func} {DateTime.Now:HH:mm:ss} {value}", Encoding.UTF8);
             File.AppendAllText($"logs/debug_log_all_console.log", $"{module} STDOUT {func} {DateTime.Now:HH:mm:ss} {value}", Encoding.UTF8);
         }
+#endif
     }
 }
