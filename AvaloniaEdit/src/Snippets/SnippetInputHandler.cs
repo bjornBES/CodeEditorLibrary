@@ -61,7 +61,7 @@ namespace AvaloniaEdit.Snippets
             }
             else if (e.Key == Key.Tab)
             {
-                var backwards = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+                bool backwards = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
                 SelectElement(FindNextEditableElement(TextArea.Caret.Offset, backwards));
                 e.Handled = true;
             }
@@ -79,11 +79,11 @@ namespace AvaloniaEdit.Snippets
         [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
         private IActiveElement FindNextEditableElement(int offset, bool backwards)
         {
-            var elements = _context.ActiveElements.Where(e => e.IsEditable && e.Segment != null);
+            IEnumerable<IActiveElement> elements = _context.ActiveElements.Where(e => e.IsEditable && e.Segment != null);
             if (backwards)
             {
                 elements = elements.Reverse();
-                foreach (var element in elements)
+                foreach (IActiveElement element in elements)
                 {
                     if (offset > element.Segment.EndOffset)
                         return element;
@@ -91,7 +91,7 @@ namespace AvaloniaEdit.Snippets
             }
             else
             {
-                foreach (var element in elements)
+                foreach (IActiveElement element in elements)
                 {
                     if (offset < element.Segment.Offset)
                         return element;

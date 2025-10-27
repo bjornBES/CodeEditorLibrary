@@ -99,7 +99,7 @@ namespace AvaloniaEdit.Rendering
 		[SuppressMessage("ReSharper", "ImpureMethodCallOnReadonlyValueField")]
 		public int CompareTo(LayerPosition other)
 		{
-			var r = KnownLayer.CompareTo(other.KnownLayer);
+            int r = KnownLayer.CompareTo(other.KnownLayer);
 			return r != 0 ? r : Position.CompareTo(other.Position);
 		}
 	}

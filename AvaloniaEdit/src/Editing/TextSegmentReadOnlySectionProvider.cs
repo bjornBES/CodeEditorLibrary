@@ -73,11 +73,11 @@ namespace AvaloniaEdit.Editing
                 yield break;
             }
 
-            var readonlyUntil = segment.Offset;
-            foreach (var ts in Segments.FindOverlappingSegments(segment))
+            int readonlyUntil = segment.Offset;
+            foreach (T ts in Segments.FindOverlappingSegments(segment))
             {
-                var start = ts.StartOffset;
-                var end = start + ts.Length;
+                int start = ts.StartOffset;
+                int end = start + ts.Length;
                 if (start > readonlyUntil)
                 {
                     yield return new SimpleSegment(readonlyUntil, start - readonlyUntil);
@@ -87,7 +87,7 @@ namespace AvaloniaEdit.Editing
                     readonlyUntil = end;
                 }
             }
-            var endOffset = segment.EndOffset;
+            int endOffset = segment.EndOffset;
             if (readonlyUntil < endOffset)
             {
                 yield return new SimpleSegment(readonlyUntil, endOffset - readonlyUntil);

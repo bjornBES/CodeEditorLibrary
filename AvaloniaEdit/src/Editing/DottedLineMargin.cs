@@ -37,7 +37,7 @@ namespace AvaloniaEdit.Editing
         /// </summary>
         public static Control Create()
         {
-            var line = new Line
+            Line line = new Line
             {
                 StartPoint = new Point(0, 0),
                 EndPoint = new Point(0, 1),
@@ -57,7 +57,7 @@ namespace AvaloniaEdit.Editing
         /// </summary>
         public static bool IsDottedLineMargin(Control element)
         {
-            var l = element as Line;
+            Line l = element as Line;
             return l != null && l.Tag == Tag;
         }
     }

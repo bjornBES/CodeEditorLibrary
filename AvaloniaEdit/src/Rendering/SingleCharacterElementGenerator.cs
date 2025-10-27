@@ -75,11 +75,11 @@ namespace AvaloniaEdit.Rendering
 
 		public override int GetFirstInterestedOffset(int startOffset)
 		{
-			var endLine = CurrentContext.VisualLine.LastDocumentLine;
-			var relevantText = CurrentContext.GetText(startOffset, endLine.EndOffset - startOffset);
+            DocumentLine endLine = CurrentContext.VisualLine.LastDocumentLine;
+            StringSegment relevantText = CurrentContext.GetText(startOffset, endLine.EndOffset - startOffset);
 
-			for (var i = 0; i < relevantText.Count; i++) {
-				var c = relevantText.Text[relevantText.Offset + i];
+			for (int i = 0; i < relevantText.Count; i++) {
+                char c = relevantText.Text[relevantText.Offset + i];
 				switch (c) {
 					case ' ':
 						if (ShowSpaces)
@@ -101,32 +101,32 @@ namespace AvaloniaEdit.Rendering
 
         public override VisualLineElement ConstructElement(int offset)
         {
-            var c = CurrentContext.Document.GetCharAt(offset);
+            char c = CurrentContext.Document.GetCharAt(offset);
 
 			if (ShowSpaces && (c == ' '))
 			{
-				var properties = new VisualLineElementTextRunProperties(CurrentContext.GlobalTextRunProperties);
+                VisualLineElementTextRunProperties properties = new VisualLineElementTextRunProperties(CurrentContext.GlobalTextRunProperties);
 				properties.SetForegroundBrush(CurrentContext.TextView.NonPrintableCharacterBrush);
-				var textSource = new SimpleTextSource(CurrentContext.TextView.Options.ShowSpacesGlyph, properties);
-				var textLine = TextFormatter.Current.FormatLine(textSource, 0, double.MaxValue, new GenericTextParagraphProperties(properties));
+                SimpleTextSource textSource = new SimpleTextSource(CurrentContext.TextView.Options.ShowSpacesGlyph, properties);
+                TextLine textLine = TextFormatter.Current.FormatLine(textSource, 0, double.MaxValue, new GenericTextParagraphProperties(properties));
 				return new SpaceTextElement(textLine);
 			}
 			
 			if (ShowTabs && (c == '\t'))
 			{
-				var properties = new VisualLineElementTextRunProperties(CurrentContext.GlobalTextRunProperties);
+                VisualLineElementTextRunProperties properties = new VisualLineElementTextRunProperties(CurrentContext.GlobalTextRunProperties);
 				properties.SetForegroundBrush(CurrentContext.TextView.NonPrintableCharacterBrush);
-				var textSource = new SimpleTextSource(CurrentContext.TextView.Options.ShowTabsGlyph, properties);
-				var textLine = TextFormatter.Current.FormatLine(textSource, 0, double.MaxValue, new GenericTextParagraphProperties(properties));
+                SimpleTextSource textSource = new SimpleTextSource(CurrentContext.TextView.Options.ShowTabsGlyph, properties);
+                TextLine textLine = TextFormatter.Current.FormatLine(textSource, 0, double.MaxValue, new GenericTextParagraphProperties(properties));
 				return new TabTextElement(textLine);
 			}
 
 			if (ShowBoxForControlCharacters && char.IsControl(c))
 			{
-				var properties = new VisualLineElementTextRunProperties(CurrentContext.GlobalTextRunProperties);
+                VisualLineElementTextRunProperties properties = new VisualLineElementTextRunProperties(CurrentContext.GlobalTextRunProperties);
 				properties.SetForegroundBrush(Brushes.White);
-				var textSource = new SimpleTextSource(TextUtilities.GetControlCharacterName(c), properties);
-				var textLine = TextFormatter.Current.FormatLine(textSource, 0, double.MaxValue, new GenericTextParagraphProperties(properties));
+                SimpleTextSource textSource = new SimpleTextSource(TextUtilities.GetControlCharacterName(c), properties);
+                TextLine textLine = TextFormatter.Current.FormatLine(textSource, 0, double.MaxValue, new GenericTextParagraphProperties(properties));
 				return new SpecialCharacterBoxElement(textLine);
 			}
 
@@ -244,7 +244,7 @@ namespace AvaloniaEdit.Rendering
             {
                 get
                 {
-                    var s = base.Size;
+                    Size s = base.Size;
                     
                     return s.WithWidth(s.Width + BoxMargin);
                 }
@@ -252,13 +252,13 @@ namespace AvaloniaEdit.Rendering
 
             public override void Draw(DrawingContext drawingContext, Point origin)
             {
-	            var (x, y) = origin;
+	            (double x, double y) = origin;
+
+                Point newOrigin = new Point(x + (BoxMargin / 2), y);
 	            
-	            var newOrigin = new Point(x + (BoxMargin / 2), y);
-	            
-                var (width, height) = Size;
-                
-                var r = new Rect(x, y, width, height);
+                (double width, double height) = Size;
+
+                Rect r = new Rect(x, y, width, height);
                 
                 drawingContext.FillRectangle(DarkGrayBrush, r, 2.5f);
                 

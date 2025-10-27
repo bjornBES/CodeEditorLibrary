@@ -24,6 +24,7 @@ using AvaloniaEdit.Rendering;
 
 namespace AvaloniaEdit.Search
 {
+    using System.Collections.ObjectModel;
     using Avalonia.Media.Immutable;
 
     internal class SearchResultBackgroundRenderer : IBackgroundRenderer
@@ -58,22 +59,22 @@ namespace AvaloniaEdit.Search
             if (CurrentResults == null || !textView.VisualLinesValid)
                 return;
 
-            var visualLines = textView.VisualLines;
+            ReadOnlyCollection<VisualLine> visualLines = textView.VisualLines;
             if (visualLines.Count == 0)
                 return;
 
-            var viewStart = visualLines.First().FirstDocumentLine.Offset;
-            var viewEnd = visualLines.Last().LastDocumentLine.EndOffset;
+            int viewStart = visualLines.First().FirstDocumentLine.Offset;
+            int viewEnd = visualLines.Last().LastDocumentLine.EndOffset;
 
-            foreach (var result in CurrentResults.FindOverlappingSegments(viewStart, viewEnd - viewStart))
+            foreach (SearchResult result in CurrentResults.FindOverlappingSegments(viewStart, viewEnd - viewStart))
             {
-                var geoBuilder = new BackgroundGeometryBuilder
+                BackgroundGeometryBuilder geoBuilder = new BackgroundGeometryBuilder
                 {
                     AlignToWholePixels = true,
                     CornerRadius = 0
                 };
                 geoBuilder.AddSegment(textView, result);
-                var geometry = geoBuilder.CreateGeometry();
+                Geometry geometry = geoBuilder.CreateGeometry();
                 if (geometry != null)
                 {
                     drawingContext.DrawGeometry(_markerBrush, null, geometry);

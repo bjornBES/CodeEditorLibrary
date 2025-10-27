@@ -44,7 +44,7 @@ namespace AvaloniaEdit.Document
         {
             _document = document;
 
-            var emptyLine = new DocumentLine(document);
+            DocumentLine emptyLine = new DocumentLine(document);
             _root = emptyLine.InitLineNode();
         }
         #endregion
@@ -52,8 +52,8 @@ namespace AvaloniaEdit.Document
         #region Rotation callbacks
         internal static void UpdateAfterChildrenChange(DocumentLine node)
         {
-            var totalCount = 1;
-            var totalLength = node.TotalLength;
+            int totalCount = 1;
+            int totalLength = node.TotalLength;
             if (node.Left != null)
             {
                 totalCount += node.Left.NodeTotalCount;
@@ -98,16 +98,16 @@ namespace AvaloniaEdit.Document
         /// </summary>
         public void RebuildTree(List<DocumentLine> documentLines)
         {
-            var nodes = new DocumentLine[documentLines.Count];
-            for (var i = 0; i < documentLines.Count; i++)
+            DocumentLine[] nodes = new DocumentLine[documentLines.Count];
+            for (int i = 0; i < documentLines.Count; i++)
             {
-                var ls = documentLines[i];
-                var node = ls.InitLineNode();
+                DocumentLine ls = documentLines[i];
+                DocumentLine node = ls.InitLineNode();
                 nodes[i] = node;
             }
             Debug.Assert(nodes.Length > 0);
             // now build the corresponding balanced tree
-            var height = GetTreeHeight(nodes.Length);
+            int height = GetTreeHeight(nodes.Length);
             DebugWriter.WriteLine("AvaloniaEdit", "DocumentLineTree will have height: " + height);
             _root = BuildTree(nodes, 0, nodes.Length, height);
             _root.Color = Black;
@@ -134,8 +134,8 @@ namespace AvaloniaEdit.Document
             {
                 return null;
             }
-            var middle = (start + end) / 2;
-            var node = nodes[middle];
+            int middle = (start + end) / 2;
+            DocumentLine node = nodes[middle];
             node.Left = BuildTree(nodes, start, middle, subtreeHeight - 1);
             node.Right = BuildTree(nodes, middle + 1, end, subtreeHeight - 1);
             if (node.Left != null) node.Left.Parent = node;
@@ -153,7 +153,7 @@ namespace AvaloniaEdit.Document
         {
             Debug.Assert(index >= 0);
             Debug.Assert(index < _root.NodeTotalCount);
-            var node = _root;
+            DocumentLine node = _root;
             while (true)
             {
                 if (node.Left != null && index < node.Left.NodeTotalCount)
@@ -176,7 +176,7 @@ namespace AvaloniaEdit.Document
 
         internal static int GetIndexFromNode(DocumentLine node)
         {
-            var index = node.Left?.NodeTotalCount ?? 0;
+            int index = node.Left?.NodeTotalCount ?? 0;
             while (node.Parent != null)
             {
                 if (node == node.Parent.Right)
@@ -198,7 +198,7 @@ namespace AvaloniaEdit.Document
             {
                 return _root.RightMost;
             }
-            var node = _root;
+            DocumentLine node = _root;
             while (true)
             {
                 if (node.Left != null && offset < node.Left.NodeTotalLength)
@@ -221,7 +221,7 @@ namespace AvaloniaEdit.Document
 
         internal static int GetOffsetFromNode(DocumentLine node)
         {
-            var offset = node.Left?.NodeTotalLength ?? 0;
+            int offset = node.Left?.NodeTotalLength ?? 0;
             while (node.Parent != null)
             {
                 if (node == node.Parent.Right)
@@ -262,14 +262,14 @@ namespace AvaloniaEdit.Document
             CheckProperties(_root);
 
             // check red-black property:
-            var blackCount = -1;
+            int blackCount = -1;
             CheckNodeProperties(_root, null, Red, 0, ref blackCount);
         }
 
         private void CheckProperties(DocumentLine node)
         {
-            var totalCount = 1;
-            var totalLength = node.TotalLength;
+            int totalCount = 1;
+            int totalLength = node.TotalLength;
             if (node.Left != null)
             {
                 CheckProperties(node.Left);
@@ -323,7 +323,7 @@ namespace AvaloniaEdit.Document
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string GetTreeAsString()
         {
-            var b = new StringBuilder();
+            StringBuilder b = new StringBuilder();
             AppendTreeToString(_root, b, 0);
             return b.ToString();
         }
@@ -358,7 +358,7 @@ namespace AvaloniaEdit.Document
 
         public DocumentLine InsertLineAfter(DocumentLine line, int totalLength)
         {
-            var newLine = new DocumentLine(_document) {TotalLength = totalLength};
+            DocumentLine newLine = new DocumentLine(_document) {TotalLength = totalLength};
 
             InsertAfter(line, newLine);
             return newLine;
@@ -366,7 +366,7 @@ namespace AvaloniaEdit.Document
 
         private void InsertAfter(DocumentLine node, DocumentLine newLine)
         {
-            var newNode = newLine.InitLineNode();
+            DocumentLine newNode = newLine.InitLineNode();
             if (node.Right == null)
             {
                 InsertAsRight(node, newNode);
@@ -409,7 +409,7 @@ namespace AvaloniaEdit.Document
             Debug.Assert(node.Left == null || node.Left.Color == Black);
             Debug.Assert(node.Right == null || node.Right.Color == Black);
 
-            var parentNode = node.Parent;
+            DocumentLine parentNode = node.Parent;
             if (parentNode == null)
             {
                 // we inserted in the root -> the node must be black
@@ -428,8 +428,8 @@ namespace AvaloniaEdit.Document
             // parentNode is red, so there is a conflict here!
 
             // because the root is black, parentNode is not the root -> there is a grandparent node
-            var grandparentNode = parentNode.Parent;
-            var uncleNode = Sibling(parentNode);
+            DocumentLine grandparentNode = parentNode.Parent;
+            DocumentLine uncleNode = Sibling(parentNode);
             if (uncleNode != null && uncleNode.Color == Red)
             {
                 parentNode.Color = Black;
@@ -477,7 +477,7 @@ namespace AvaloniaEdit.Document
             {
                 // replace removedNode with it's in-order successor
 
-                var leftMost = removedNode.Right.LeftMost;
+                DocumentLine leftMost = removedNode.Right.LeftMost;
                 RemoveNode(leftMost); // remove leftMost from its current location
 
                 // and overwrite the removedNode with it
@@ -495,8 +495,8 @@ namespace AvaloniaEdit.Document
 
             // now either removedNode.left or removedNode.right is null
             // get the remaining child
-            var parentNode = removedNode.Parent;
-            var childNode = removedNode.Left ?? removedNode.Right;
+            DocumentLine parentNode = removedNode.Parent;
+            DocumentLine childNode = removedNode.Left ?? removedNode.Right;
             ReplaceNode(removedNode, childNode);
             if (parentNode != null) UpdateAfterChildrenChange(parentNode);
             if (removedNode.Color == Black)
@@ -519,7 +519,7 @@ namespace AvaloniaEdit.Document
                 return;
 
             // warning: node may be null
-            var sibling = Sibling(node, parentNode);
+            DocumentLine sibling = Sibling(node, parentNode);
             if (sibling.Color == Red)
             {
                 parentNode.Color = Red;
@@ -622,7 +622,7 @@ namespace AvaloniaEdit.Document
         private void RotateLeft(DocumentLine p)
         {
             // let q be p's right child
-            var q = p.Right;
+            DocumentLine q = p.Right;
             Debug.Assert(q != null);
             Debug.Assert(q.Parent == p);
             // set q to be the new root
@@ -640,7 +640,7 @@ namespace AvaloniaEdit.Document
         private void RotateRight(DocumentLine p)
         {
             // let q be p's left child
-            var q = p.Left;
+            DocumentLine q = p.Left;
             Debug.Assert(q != null);
             Debug.Assert(q.Parent == p);
             // set q to be the new root
@@ -705,7 +705,7 @@ namespace AvaloniaEdit.Document
             Dispatcher.UIThread.VerifyAccess();
             if (item == null || item.IsDeleted)
                 return -1;
-            var index = item.LineNumber - 1;
+            int index = item.LineNumber - 1;
             if (index < LineCount && GetNodeByIndex(index) == item)
                 return index;
             else
@@ -746,7 +746,7 @@ namespace AvaloniaEdit.Document
                 throw new ArgumentException("The array is too small", nameof(array));
             if (arrayIndex < 0 || arrayIndex + LineCount > array.Length)
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex), arrayIndex, "Value must be between 0 and " + (array.Length - LineCount));
-            foreach (var ls in this)
+            foreach (DocumentLine ls in this)
             {
                 array[arrayIndex++] = ls;
             }
@@ -766,7 +766,7 @@ namespace AvaloniaEdit.Document
         private IEnumerator<DocumentLine> Enumerate()
         {
             Dispatcher.UIThread.VerifyAccess();
-            var line = _root.LeftMost;
+            DocumentLine line = _root.LeftMost;
             while (line != null)
             {
                 yield return line;

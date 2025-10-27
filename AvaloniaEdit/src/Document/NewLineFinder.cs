@@ -33,7 +33,7 @@ namespace AvaloniaEdit.Document
         /// </summary>
         internal static SimpleSegment NextNewLine(string text, int offset)
         {
-            var pos = text.IndexOfAny(Newline, offset);
+            int pos = text.IndexOfAny(Newline, offset);
             if (pos >= 0)
             {
                 if (text[pos] == '\r')
@@ -52,8 +52,8 @@ namespace AvaloniaEdit.Document
         /// </summary>
         internal static SimpleSegment NextNewLine(ITextSource text, int offset)
         {
-            var textLength = text.TextLength;
-            var pos = text.IndexOfAny(Newline, offset, textLength - offset);
+            int textLength = text.TextLength;
+            int pos = text.IndexOfAny(Newline, offset, textLength - offset);
             if (pos >= 0)
             {
                 if (text.GetCharAt(pos) == '\r')
@@ -83,7 +83,7 @@ namespace AvaloniaEdit.Document
                 throw new ArgumentNullException(nameof(text));
             if (offset < 0 || offset > text.TextLength)
                 throw new ArgumentOutOfRangeException(nameof(offset), offset, "offset is outside of text source");
-            var s = NewLineFinder.NextNewLine(text, offset);
+            SimpleSegment s = NewLineFinder.NextNewLine(text, offset);
             if (s == SimpleSegment.Invalid)
             {
                 newLineType = null;
@@ -121,11 +121,11 @@ namespace AvaloniaEdit.Document
                 return null;
             if (!IsNewLine(newLine))
                 throw new ArgumentException("newLine must be one of the known newline sequences");
-            var ds = NewLineFinder.NextNewLine(input, 0);
+            SimpleSegment ds = NewLineFinder.NextNewLine(input, 0);
             if (ds == SimpleSegment.Invalid) // text does not contain any new lines
                 return input;
-            var b = new StringBuilder(input.Length);
-            var lastEndOffset = 0;
+            StringBuilder b = new StringBuilder(input.Length);
+            int lastEndOffset = 0;
             do
             {
                 b.Append(input, lastEndOffset, ds.Offset - lastEndOffset);
@@ -143,7 +143,7 @@ namespace AvaloniaEdit.Document
         /// </summary>
         public static string GetNewLineFromDocument(IDocument document, int lineNumber)
         {
-            var line = document.GetLineByNumber(lineNumber);
+            IDocumentLine line = document.GetLineByNumber(lineNumber);
             if (line.DelimiterLength == 0)
             {
                 // at the end of the document, there's no line delimiter, so use the delimiter

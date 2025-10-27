@@ -60,7 +60,7 @@ namespace AvaloniaEdit.Search
 		
 		public bool Equals(ISearchStrategy other)
 		{
-			var strategy = other as RegexSearchStrategy;
+            RegexSearchStrategy strategy = other as RegexSearchStrategy;
 			return strategy != null &&
 				strategy._searchPattern.ToString() == _searchPattern.ToString() &&
 				strategy._searchPattern.Options == _searchPattern.Options &&

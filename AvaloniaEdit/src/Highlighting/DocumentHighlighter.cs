@@ -78,7 +78,7 @@ namespace AvaloniaEdit.Highlighting
         void ILineTracker.BeforeRemoveLine(DocumentLine line)
         {
             CheckIsHighlighting();
-            var number = line.LineNumber;
+            int number = line.LineNumber;
             _storedSpanStacks.RemoveAt(number);
             _isValid.RemoveAt(number);
             if (number < _isValid.Count)
@@ -92,7 +92,7 @@ namespace AvaloniaEdit.Highlighting
         void ILineTracker.SetLineLength(DocumentLine line, int newTotalLength)
         {
             CheckIsHighlighting();
-            var number = line.LineNumber;
+            int number = line.LineNumber;
             _isValid[number] = false;
             if (number < _firstInvalidLine)
                 _firstInvalidLine = number;
@@ -102,7 +102,7 @@ namespace AvaloniaEdit.Highlighting
         {
             CheckIsHighlighting();
             Debug.Assert(insertionPos.LineNumber + 1 == newLine.LineNumber);
-            var lineNumber = newLine.LineNumber;
+            int lineNumber = newLine.LineNumber;
             _storedSpanStacks.Insert(lineNumber, null);
             _isValid.Insert(lineNumber, false);
             if (lineNumber < _firstInvalidLine)
@@ -170,8 +170,8 @@ namespace AvaloniaEdit.Highlighting
             try
             {
                 HighlightUpTo(lineNumber - 1);
-                var line = Document.GetLineByNumber(lineNumber);
-                var result = _engine.HighlightLine(Document, line);
+                IDocumentLine line = Document.GetLineByNumber(lineNumber);
+                HighlightedLine result = _engine.HighlightLine(Document, line);
                 UpdateTreeList(lineNumber);
                 return result;
             }
@@ -238,7 +238,7 @@ namespace AvaloniaEdit.Highlighting
         /// </summary>
         private void HighlightUpTo(int targetLineNumber)
         {
-            for (var currentLine = 0; currentLine <= targetLineNumber; currentLine++)
+            for (int currentLine = 0; currentLine <= targetLineNumber; currentLine++)
             {
                 if (_firstInvalidLine > currentLine)
                 {

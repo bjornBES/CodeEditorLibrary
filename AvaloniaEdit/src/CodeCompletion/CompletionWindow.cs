@@ -94,8 +94,8 @@ namespace AvaloniaEdit.CodeCompletion
         {
             if (_toolTipContent == null) return;
 
-            var item = CompletionList.SelectedItem;
-            var description = item?.Description;
+            ICompletionData item = CompletionList.SelectedItem;
+            object description = item?.Description;
             
     
             if (description != null && Host is Control placementTarget && CompletionList.CurrentList != null)
@@ -103,14 +103,14 @@ namespace AvaloniaEdit.CodeCompletion
                 _toolTipContent.Content = description;
 
                 double yOffset = 0;
-                var selectedIndex = CompletionList.ListBox.SelectedIndex;
-                    
-                var itemContainer = CompletionList.ListBox.ContainerFromIndex(selectedIndex);
+                int selectedIndex = CompletionList.ListBox.SelectedIndex;
+
+                Control itemContainer = CompletionList.ListBox.ContainerFromIndex(selectedIndex);
                     
                 if (itemContainer != null)
                 {
                     _toolTip.Placement = PlacementMode.RightEdgeAlignedTop;
-                    var position = itemContainer.TranslatePoint(new Point(0, 0), placementTarget);
+                    Point? position = itemContainer.TranslatePoint(new Point(0, 0), placementTarget);
                     if (position.HasValue) yOffset = position.Value.Y;
                 }
                 else 
@@ -144,7 +144,7 @@ namespace AvaloniaEdit.CodeCompletion
             Hide();
             // The window must close before Complete() is called.
             // If the Complete callback pushes stacked input handlers, we don't want to pop those when the CC window closes.
-            var item = CompletionList.SelectedItem;
+            ICompletionData item = CompletionList.SelectedItem;
             item?.Complete(TextArea, new AnchorSegment(TextArea.Document, StartOffset, EndOffset - StartOffset), e);
         }
 
@@ -223,7 +223,7 @@ namespace AvaloniaEdit.CodeCompletion
 
         private void CaretPositionChanged(object sender, EventArgs e)
         {
-            var offset = TextArea.Caret.Offset;
+            int offset = TextArea.Caret.Offset;
             if (offset == StartOffset)
             {
                 if (CloseAutomatically && CloseWhenCaretAtBeginning)
@@ -248,7 +248,7 @@ namespace AvaloniaEdit.CodeCompletion
             }
             else
             {
-                var document = TextArea.Document;
+                TextDocument document = TextArea.Document;
                 if (document != null)
                 {
                     CompletionList.SelectItem(document.GetText(StartOffset, offset - StartOffset));

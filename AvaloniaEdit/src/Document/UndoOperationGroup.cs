@@ -40,14 +40,14 @@ namespace AvaloniaEdit.Document
 			Debug.Assert(numops <= stack.Count);
 			
 			_undolist = new IUndoableOperation[numops];
-			for (var i = 0; i < numops; ++i) {
+			for (int i = 0; i < numops; ++i) {
 				_undolist[i] = stack.PopBack();
 			}
 		}
 		
 		public void Undo()
 		{
-		    foreach (var t in _undolist)
+		    foreach (IUndoableOperation t in _undolist)
 		    {
 		        t.Undo();
 		    }
@@ -55,7 +55,7 @@ namespace AvaloniaEdit.Document
 		
 		public void Undo(UndoStack stack)
 		{
-		    foreach (var t in _undolist)
+		    foreach (IUndoableOperation t in _undolist)
 		    {
 		        stack.RunUndo(t);
 		    }
@@ -63,14 +63,14 @@ namespace AvaloniaEdit.Document
 		
 		public void Redo()
 		{
-			for (var i = _undolist.Length - 1; i >= 0; --i) {
+			for (int i = _undolist.Length - 1; i >= 0; --i) {
 				_undolist[i].Redo();
 			}
 		}
 		
 		public void Redo(UndoStack stack)
 		{
-			for (var i = _undolist.Length - 1; i >= 0; --i) {
+			for (int i = _undolist.Length - 1; i >= 0; --i) {
 				stack.RunRedo(_undolist[i]);
 			}
 		}

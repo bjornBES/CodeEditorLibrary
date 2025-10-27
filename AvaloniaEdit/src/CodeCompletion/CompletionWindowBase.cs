@@ -148,7 +148,7 @@ namespace AvaloniaEdit.CodeCompletion
             }
 
             // close previous completion windows of same type
-            foreach (var x in TextArea.StackedInputHandlers.OfType<InputHandler>())
+            foreach (InputHandler x in TextArea.StackedInputHandlers.OfType<InputHandler>())
             {
                 if (x.Window.GetType() == GetType())
                     TextArea.PopStackedInputHandler(x);
@@ -228,7 +228,7 @@ namespace AvaloniaEdit.CodeCompletion
         private void TextViewScrollOffsetChanged(object sender, EventArgs e)
         {
             ILogicalScrollable textView = TextArea;
-            var visibleRect = new Rect(textView.Offset.X, textView.Offset.Y, textView.Viewport.Width, textView.Viewport.Height);
+            Rect visibleRect = new Rect(textView.Offset.X, textView.Offset.Y, textView.Viewport.Width, textView.Viewport.Height);
             //close completion window when the user scrolls so far that the anchor position is leaving the visible area
             if (visibleRect.Contains(_visualLocation) || visibleRect.Contains(_visualLocationTop))
             {
@@ -351,7 +351,7 @@ namespace AvaloniaEdit.CodeCompletion
         /// </summary>
         protected void SetPosition(TextViewPosition position)
         {
-            var textView = TextArea.TextView;
+            TextView textView = TextArea.TextView;
 
             _visualLocation = textView.GetVisualPosition(position, VisualYPosition.LineBottom);
             _visualLocationTop = textView.GetVisualPosition(position, VisualYPosition.LineTop);
@@ -365,9 +365,9 @@ namespace AvaloniaEdit.CodeCompletion
         /// </summary>
         protected void UpdatePosition()
         {
-            var textView = TextArea.TextView;
+            TextView textView = TextArea.TextView;
 
-            var position = _visualLocation - textView.ScrollOffset;
+            Point position = _visualLocation - textView.ScrollOffset;
 
             this.HorizontalOffset = position.X;
             this.VerticalOffset = position.Y;

@@ -44,18 +44,18 @@ namespace AvaloniaEdit.Snippets
         {
             if (TargetElement != null)
             {
-                var start = context.Document.CreateAnchor(context.InsertionPosition);
+                TextAnchor start = context.Document.CreateAnchor(context.InsertionPosition);
                 start.MovementType = AnchorMovementType.BeforeInsertion;
                 start.SurviveDeletion = true;
-                var inputText = TargetElement.Text;
+                string inputText = TargetElement.Text;
                 if (inputText != null)
                 {
                     context.InsertText(ConvertText(inputText));
                 }
-                var end = context.Document.CreateAnchor(context.InsertionPosition);
+                TextAnchor end = context.Document.CreateAnchor(context.InsertionPosition);
                 end.MovementType = AnchorMovementType.BeforeInsertion;
                 end.SurviveDeletion = true;
-                var segment = new AnchorSegment(start, end);
+                AnchorSegment segment = new AnchorSegment(start, end);
                 context.RegisterActiveElement(this, new BoundActiveElement(context, TargetElement, this, segment));
             }
         }
@@ -104,9 +104,9 @@ namespace AvaloniaEdit.Snippets
             // This can happen if the user deletes the text between the replaceable element and the bound element.
             if (SimpleSegment.GetOverlap(_segment, TargetElement.Segment) == SimpleSegment.Invalid)
             {
-                var offset = _segment.Offset;
-                var length = _segment.Length;
-                var text = _boundElement.ConvertText(TargetElement.Text);
+                int offset = _segment.Offset;
+                int length = _segment.Length;
+                string text = _boundElement.ConvertText(TargetElement.Text);
                 if (length != text.Length || text != _context.Document.GetText(offset, length))
                 {
                     // Call replace only if we're actually changing something.

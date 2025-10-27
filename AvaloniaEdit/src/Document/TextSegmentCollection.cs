@@ -122,10 +122,10 @@ namespace AvaloniaEdit.Document
 
         private void OnDocumentChanged(object sender, DocumentChangeEventArgs e)
         {
-            var map = e.OffsetChangeMapOrNull;
+            OffsetChangeMap map = e.OffsetChangeMapOrNull;
             if (map != null)
             {
-                foreach (var entry in map)
+                foreach (OffsetChangeMapEntry entry in map)
                 {
                     UpdateOffsetsInternal(entry);
                 }
@@ -171,7 +171,7 @@ namespace AvaloniaEdit.Document
                 return;
 
             // enlarge segments that contain offset (excluding those that have offset as endpoint)
-            foreach (var segment in FindSegmentsContaining(offset))
+            foreach (T segment in FindSegmentsContaining(offset))
             {
                 if (segment.StartOffset < offset && offset < segment.EndOffset)
                 {
@@ -191,8 +191,8 @@ namespace AvaloniaEdit.Document
         private void ReplaceText(OffsetChangeMapEntry change)
         {
             Debug.Assert(change.RemovalLength > 0);
-            var offset = change.Offset;
-            foreach (var segment in FindOverlappingSegments(offset, change.RemovalLength))
+            int offset = change.Offset;
+            foreach (T segment in FindOverlappingSegments(offset, change.RemovalLength))
             {
                 if (segment.StartOffset <= offset)
                 {
@@ -212,7 +212,7 @@ namespace AvaloniaEdit.Document
                 {
                     // Replacement starting in front of text segment and running into segment.
                     // Keep segment.EndOffset constant and move segment.StartOffset to the end of the replacement
-                    var remainingLength = segment.EndOffset - (offset + change.RemovalLength);
+                    int remainingLength = segment.EndOffset - (offset + change.RemovalLength);
                     RemoveSegment(segment);
                     segment.StartOffset = offset + change.RemovalLength;
                     segment.Length = Math.Max(0, remainingLength);
@@ -251,7 +251,7 @@ namespace AvaloniaEdit.Document
 
         private void AddSegment(TextSegment node)
         {
-            var insertionOffset = node.StartOffset;
+            int insertionOffset = node.StartOffset;
             node.DistanceToMaxEnd = node.SegmentLength;
             if (_root == null)
             {
@@ -267,7 +267,7 @@ namespace AvaloniaEdit.Document
             else
             {
                 // insert in middle of tree
-                var n = FindNode(ref insertionOffset);
+                TextSegment n = FindNode(ref insertionOffset);
                 Debug.Assert(insertionOffset < n.NodeLength);
                 // split node segment 'n' at offset
                 node.TotalNodeLength = node.NodeLength = insertionOffset;
@@ -342,11 +342,11 @@ namespace AvaloniaEdit.Document
                 return null;
             if (startOffset <= 0)
                 return (T)_root.LeftMost;
-            var s = FindNode(ref startOffset);
+            TextSegment s = FindNode(ref startOffset);
             // startOffset means that the previous segment is starting at the offset we were looking for
             while (startOffset == 0)
             {
-                var p = (s == null) ? _root.RightMost : s.Predecessor;
+                TextSegment p = (s == null) ? _root.RightMost : s.Predecessor;
                 // There must always be a predecessor: if we were looking for the first node, we would have already
                 // returned it as root.LeftMost above.
                 Debug.Assert(p != null);
@@ -362,7 +362,7 @@ namespace AvaloniaEdit.Document
         /// </summary>
         private TextSegment FindNode(ref int offset)
         {
-            var n = _root;
+            TextSegment n = _root;
             while (true)
             {
                 if (n.Left != null)
@@ -432,7 +432,7 @@ namespace AvaloniaEdit.Document
         public ReadOnlyCollection<T> FindOverlappingSegments(int offset, int length)
         {
             ThrowUtil.CheckNotNegative(length, "length");
-            var results = new List<T>();
+            List<T> results = new List<T>();
             if (_root != null)
             {
                 FindOverlappingSegments(results, _root, offset, offset + length);
@@ -450,8 +450,8 @@ namespace AvaloniaEdit.Document
             }
 
             // find values relative to node.Offset
-            var nodeLow = low - node.NodeLength;
-            var nodeHigh = high - node.NodeLength;
+            int nodeLow = low - node.NodeLength;
+            int nodeHigh = high - node.NodeLength;
             if (node.Left != null)
             {
                 nodeLow -= node.Left.TotalNodeLength;
@@ -487,13 +487,13 @@ namespace AvaloniaEdit.Document
 
         private void UpdateAugmentedData(TextSegment node)
         {
-            var totalLength = node.NodeLength;
-            var distanceToMaxEnd = node.SegmentLength;
+            int totalLength = node.NodeLength;
+            int distanceToMaxEnd = node.SegmentLength;
             if (node.Left != null)
             {
                 totalLength += node.Left.TotalNodeLength;
 
-                var leftDtme = node.Left.DistanceToMaxEnd;
+                int leftDtme = node.Left.DistanceToMaxEnd;
                 // dtme is relative, so convert it to the coordinates of node:
                 if (node.Left.Right != null)
                     leftDtme -= node.Left.Right.TotalNodeLength;
@@ -505,7 +505,7 @@ namespace AvaloniaEdit.Document
             {
                 totalLength += node.Right.TotalNodeLength;
 
-                var rightDtme = node.Right.DistanceToMaxEnd;
+                int rightDtme = node.Right.DistanceToMaxEnd;
                 // dtme is relative, so convert it to the coordinates of node:
                 rightDtme += node.Right.NodeLength;
                 if (node.Right.Left != null)
@@ -549,8 +549,8 @@ namespace AvaloniaEdit.Document
 
         private void RemoveSegment(TextSegment s)
         {
-            var oldOffset = s.StartOffset;
-            var successor = s.Successor;
+            int oldOffset = s.StartOffset;
+            TextSegment successor = s.Successor;
             if (successor != null)
                 successor.NodeLength += s.NodeLength;
             RemoveNode(s);
@@ -573,10 +573,10 @@ namespace AvaloniaEdit.Document
         /// </summary>
         public void Clear()
         {
-            var segments = this.ToArray();
+            T[] segments = this.ToArray();
             _root = null;
-            var offset = 0;
-            foreach (var s in segments)
+            int offset = 0;
+            foreach (T s in segments)
             {
                 offset += s.NodeLength;
                 Disconnect(s, offset);
@@ -595,14 +595,14 @@ namespace AvaloniaEdit.Document
                 CheckProperties(_root);
 
                 // check red-black property:
-                var blackCount = -1;
+                int blackCount = -1;
                 CheckNodeProperties(_root, null, Red, 0, ref blackCount);
             }
 
-            var expectedCount = 0;
+            int expectedCount = 0;
             // we cannot trust LINQ not to call ICollection.Count, so we need this loop
             // to count the elements in the tree
-            using (var en = GetEnumerator())
+            using (IEnumerator<T> en = GetEnumerator())
             {
                 while (en.MoveNext()) expectedCount++;
             }
@@ -614,8 +614,8 @@ namespace AvaloniaEdit.Document
 
         private void CheckProperties(TextSegment node)
         {
-            var totalLength = node.NodeLength;
-            var distanceToMaxEnd = node.SegmentLength;
+            int totalLength = node.NodeLength;
+            int distanceToMaxEnd = node.SegmentLength;
             if (node.Left != null)
             {
                 CheckProperties(node.Left);
@@ -691,7 +691,7 @@ namespace AvaloniaEdit.Document
         internal string GetTreeAsString()
         {
 #if DEBUG
-            var b = new StringBuilder();
+            StringBuilder b = new StringBuilder();
             if (_root != null)
                 AppendTreeToString(_root, b, 0);
             return b.ToString();
@@ -732,7 +732,7 @@ namespace AvaloniaEdit.Document
             Debug.Assert(node.Left == null || node.Left.Color == Black);
             Debug.Assert(node.Right == null || node.Right.Color == Black);
 
-            var parentNode = node.Parent;
+            TextSegment parentNode = node.Parent;
             if (parentNode == null)
             {
                 // we inserted in the root -> the node must be black
@@ -751,8 +751,8 @@ namespace AvaloniaEdit.Document
             // parentNode is red, so there is a conflict here!
 
             // because the root is black, parentNode is not the root -> there is a grandparent node
-            var grandparentNode = parentNode.Parent;
-            var uncleNode = Sibling(parentNode);
+            TextSegment grandparentNode = parentNode.Parent;
+            TextSegment uncleNode = Sibling(parentNode);
             if (uncleNode != null && uncleNode.Color == Red)
             {
                 parentNode.Color = Black;
@@ -800,7 +800,7 @@ namespace AvaloniaEdit.Document
             {
                 // replace removedNode with it's in-order successor
 
-                var leftMost = removedNode.Right.LeftMost;
+                TextSegment leftMost = removedNode.Right.LeftMost;
                 RemoveNode(leftMost); // remove leftMost from its current location
 
                 // and overwrite the removedNode with it
@@ -818,8 +818,8 @@ namespace AvaloniaEdit.Document
 
             // now either removedNode.left or removedNode.right is null
             // get the remaining child
-            var parentNode = removedNode.Parent;
-            var childNode = removedNode.Left ?? removedNode.Right;
+            TextSegment parentNode = removedNode.Parent;
+            TextSegment childNode = removedNode.Left ?? removedNode.Right;
             ReplaceNode(removedNode, childNode);
             if (parentNode != null) UpdateAugmentedData(parentNode);
             if (removedNode.Color == Black)
@@ -842,7 +842,7 @@ namespace AvaloniaEdit.Document
                 return;
 
             // warning: node may be null
-            var sibling = Sibling(node, parentNode);
+            TextSegment sibling = Sibling(node, parentNode);
             if (sibling.Color == Red)
             {
                 parentNode.Color = Red;
@@ -945,7 +945,7 @@ namespace AvaloniaEdit.Document
         private void RotateLeft(TextSegment p)
         {
             // let q be p's right child
-            var q = p.Right;
+            TextSegment q = p.Right;
             Debug.Assert(q != null);
             Debug.Assert(q.Parent == p);
             // set q to be the new root
@@ -964,7 +964,7 @@ namespace AvaloniaEdit.Document
         private void RotateRight(TextSegment p)
         {
             // let q be p's left child
-            var q = p.Left;
+            TextSegment q = p.Left;
             Debug.Assert(q != null);
             Debug.Assert(q.Parent == p);
             // set q to be the new root
@@ -1027,7 +1027,7 @@ namespace AvaloniaEdit.Document
                 throw new ArgumentException("The array is too small", nameof(array));
             if (arrayIndex < 0 || arrayIndex + Count > array.Length)
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex), arrayIndex, "Value must be between 0 and " + (array.Length - Count));
-            foreach (var s in this)
+            foreach (T s in this)
             {
                 array[arrayIndex++] = s;
             }
@@ -1040,7 +1040,7 @@ namespace AvaloniaEdit.Document
         {
             if (_root != null)
             {
-                var current = _root.LeftMost;
+                TextSegment current = _root.LeftMost;
                 while (current != null)
                 {
                     yield return (T)current;

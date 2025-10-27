@@ -48,7 +48,7 @@ namespace AvaloniaEdit.Editing
 
         public override Selection StartSelectionOrSetEndpoint(TextViewPosition startPosition, TextViewPosition endPosition)
         {
-            var document = TextArea.Document;
+            TextDocument document = TextArea.Document;
             if (document == null)
                 throw ThrowUtil.NoDocumentAssigned();
             return Create(TextArea, startPosition, endPosition);

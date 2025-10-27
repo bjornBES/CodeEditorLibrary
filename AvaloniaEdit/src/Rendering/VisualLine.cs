@@ -109,7 +109,7 @@ namespace AvaloniaEdit.Rendering
         {
             get
             {
-                var length = VisualLength;
+                int length = VisualLength;
                 if (_textView.Options.ShowEndOfLine && LastDocumentLine.NextLine != null) length++;
                 return length;
             }
@@ -137,19 +137,19 @@ namespace AvaloniaEdit.Rendering
         internal void ConstructVisualElements(ITextRunConstructionContext context, IReadOnlyList<VisualLineElementGenerator> generators)
         {
             Debug.Assert(_phase == LifetimePhase.Generating);
-            foreach (var g in generators)
+            foreach (VisualLineElementGenerator g in generators)
             {
                 g.StartGeneration(context);
             }
             _elements = new List<VisualLineElement>();
             PerformVisualElementConstruction(generators);
-            foreach (var g in generators)
+            foreach (VisualLineElementGenerator g in generators)
             {
                 g.FinishGeneration();
             }
 
-            var globalTextRunProperties = context.GlobalTextRunProperties;
-            foreach (var element in _elements)
+            TextRunProperties globalTextRunProperties = context.GlobalTextRunProperties;
+            foreach (VisualLineElement element in _elements)
             {
                 element.SetTextRunProperties(new VisualLineElementTextRunProperties(globalTextRunProperties));
             }
@@ -160,11 +160,11 @@ namespace AvaloniaEdit.Rendering
 
         void PerformVisualElementConstruction(IReadOnlyList<VisualLineElementGenerator> generators)
         {
-            var lineLength = FirstDocumentLine.Length;
-            var offset = FirstDocumentLine.Offset;
-            var currentLineEnd = offset + lineLength;
+            int lineLength = FirstDocumentLine.Length;
+            int offset = FirstDocumentLine.Offset;
+            int currentLineEnd = offset + lineLength;
             LastDocumentLine = FirstDocumentLine;
-            var askInterestOffset = 0; // 0 or 1
+            int askInterestOffset = 0; // 0 or 1
 
             // for long lines, do not run the element generators for performance reasons
             if (lineLength > LENGTH_LIMIT)
@@ -175,8 +175,8 @@ namespace AvaloniaEdit.Rendering
 
             while (offset + askInterestOffset <= currentLineEnd)
             {
-                var textPieceEndOffset = currentLineEnd;
-                foreach (var g in generators)
+                int textPieceEndOffset = currentLineEnd;
+                foreach (VisualLineElementGenerator g in generators)
                 {
                     g.CachedInterest = g.GetFirstInterestedOffset(offset + askInterestOffset);
                     if (g.CachedInterest != -1)
@@ -192,7 +192,7 @@ namespace AvaloniaEdit.Rendering
                 Debug.Assert(textPieceEndOffset >= offset);
                 if (textPieceEndOffset > offset)
                 {
-                    var textPieceLength = textPieceEndOffset - offset;
+                    int textPieceLength = textPieceEndOffset - offset;
 
                     _elements.Add(new VisualLineText(this, textPieceLength));
 
@@ -201,11 +201,11 @@ namespace AvaloniaEdit.Rendering
                 // If no elements constructed / only zero-length elements constructed:
                 // do not asking the generators again for the same location (would cause endless loop)
                 askInterestOffset = 1;
-                foreach (var g in generators)
+                foreach (VisualLineElementGenerator g in generators)
                 {
                     if (g.CachedInterest == offset)
                     {
-                        var element = g.ConstructElement(offset);
+                        VisualLineElement element = g.ConstructElement(offset);
                         if (element != null)
                         {
                             _elements.Add(element);
@@ -216,7 +216,7 @@ namespace AvaloniaEdit.Rendering
                                 offset += element.DocumentLength;
                                 if (offset > currentLineEnd)
                                 {
-                                    var newEndLine = Document.GetLineByOffset(offset);
+                                    DocumentLine newEndLine = Document.GetLineByOffset(offset);
                                     currentLineEnd = newEndLine.Offset + newEndLine.Length;
                                     this.LastDocumentLine = newEndLine;
                                     if (currentLineEnd < offset)
@@ -236,9 +236,9 @@ namespace AvaloniaEdit.Rendering
 
         private void CalculateOffsets()
         {
-            var visualOffset = 0;
-            var textOffset = 0;
-            foreach (var element in _elements)
+            int visualOffset = 0;
+            int textOffset = 0;
+            foreach (VisualLineElement element in _elements)
             {
                 element.VisualColumn = visualOffset;
                 element.RelativeTextOffset = textOffset;
@@ -252,7 +252,7 @@ namespace AvaloniaEdit.Rendering
         internal void RunTransformers(ITextRunConstructionContext context, IReadOnlyList<IVisualLineTransformer> transformers)
         {
             Debug.Assert(_phase == LifetimePhase.Transforming);
-            foreach (var transformer in transformers)
+            foreach (IVisualLineTransformer transformer in transformers)
             {
                 transformer.Transform(context, _elements);
             }
@@ -282,13 +282,13 @@ namespace AvaloniaEdit.Rendering
         {
             if (_phase != LifetimePhase.Transforming)
                 throw new InvalidOperationException("This method may only be called by line transformers.");
-            var oldDocumentLength = 0;
-            for (var i = elementIndex; i < elementIndex + count; i++)
+            int oldDocumentLength = 0;
+            for (int i = elementIndex; i < elementIndex + count; i++)
             {
                 oldDocumentLength += _elements[i].DocumentLength;
             }
-            var newDocumentLength = 0;
-            foreach (var newElement in newElements)
+            int newDocumentLength = 0;
+            foreach (VisualLineElement newElement in newElements)
             {
                 newDocumentLength += newElement.DocumentLength;
             }
@@ -303,7 +303,7 @@ namespace AvaloniaEdit.Rendering
         {
             _textLines = new ReadOnlyCollection<TextLine>(textLines);
             Height = 0;
-            foreach (var line in textLines)
+            foreach (TextLine line in textLines)
                 Height += line.Height;
         }
 
@@ -313,7 +313,7 @@ namespace AvaloniaEdit.Rendering
         public int GetVisualColumn(int relativeTextOffset)
         {
             ThrowUtil.CheckNotNegative(relativeTextOffset, "relativeTextOffset");
-            foreach (var element in _elements)
+            foreach (VisualLineElement element in _elements)
             {
                 if (element.RelativeTextOffset <= relativeTextOffset
                     && element.RelativeTextOffset + element.DocumentLength >= relativeTextOffset)
@@ -330,8 +330,8 @@ namespace AvaloniaEdit.Rendering
         public int GetRelativeOffset(int visualColumn)
         {
             ThrowUtil.CheckNotNegative(visualColumn, "visualColumn");
-            var documentLength = 0;
-            foreach (var element in _elements)
+            int documentLength = 0;
+            foreach (VisualLineElement element in _elements)
             {
                 if (element.VisualColumn <= visualColumn
                     && element.VisualColumn + element.VisualLength > visualColumn)
@@ -360,7 +360,7 @@ namespace AvaloniaEdit.Rendering
                 throw new ArgumentOutOfRangeException(nameof(visualColumn));
             if (visualColumn >= VisualLengthWithEndOfLineMarker)
                 return TextLines[TextLines.Count - 1];
-            foreach (var line in TextLines)
+            foreach (TextLine line in TextLines)
             {
                 if (isAtEndOfLine ? visualColumn <= line.Length : visualColumn < line.Length)
                     return line;
@@ -378,8 +378,8 @@ namespace AvaloniaEdit.Rendering
         {
             if (textLine == null)
                 throw new ArgumentNullException(nameof(textLine));
-            var pos = VisualTop;
-            foreach (var tl in TextLines)
+            double pos = VisualTop;
+            foreach (TextLine tl in TextLines)
             {
                 if (tl == textLine)
                 {
@@ -425,8 +425,8 @@ namespace AvaloniaEdit.Rendering
         public TextLine GetTextLineByVisualYPosition(double visualTop)
         {
             const double epsilon = 0.0001;
-            var pos = VisualTop;
-            foreach (var tl in TextLines)
+            double pos = VisualTop;
+            foreach (TextLine tl in TextLines)
             {
                 pos += tl.Height;
                 if (visualTop + epsilon < pos)
@@ -443,17 +443,17 @@ namespace AvaloniaEdit.Rendering
         /// relative to the top left of the document.</returns>
         public Point GetVisualPosition(int visualColumn, VisualYPosition yPositionMode)
         {
-            var textLine = GetTextLine(visualColumn);
-            var xPos = GetTextLineVisualXPosition(textLine, visualColumn);
-            var yPos = GetTextLineVisualYPosition(textLine, yPositionMode);
+            TextLine textLine = GetTextLine(visualColumn);
+            double xPos = GetTextLineVisualXPosition(textLine, visualColumn);
+            double yPos = GetTextLineVisualYPosition(textLine, yPositionMode);
             return new Point(xPos, yPos);
         }
 
         internal Point GetVisualPosition(int visualColumn, bool isAtEndOfLine, VisualYPosition yPositionMode)
         {
-            var textLine = GetTextLine(visualColumn, isAtEndOfLine);
-            var xPos = GetTextLineVisualXPosition(textLine, visualColumn);
-            var yPos = GetTextLineVisualYPosition(textLine, yPositionMode);
+            TextLine textLine = GetTextLine(visualColumn, isAtEndOfLine);
+            double xPos = GetTextLineVisualXPosition(textLine, visualColumn);
+            double yPos = GetTextLineVisualYPosition(textLine, yPositionMode);
             return new Point(xPos, yPos);
         }
 
@@ -466,7 +466,7 @@ namespace AvaloniaEdit.Rendering
             if (textLine == null)
                 throw new ArgumentNullException(nameof(textLine));
 
-            var xPos = textLine.GetDistanceFromCharacterHit(new CharacterHit(Math.Min(visualColumn,
+            double xPos = textLine.GetDistanceFromCharacterHit(new CharacterHit(Math.Min(visualColumn,
                 VisualLengthWithEndOfLineMarker)));
 
             if (visualColumn > VisualLengthWithEndOfLineMarker)
@@ -497,8 +497,8 @@ namespace AvaloniaEdit.Rendering
 
         internal int GetVisualColumn(Point point, bool allowVirtualSpace, out bool isAtEndOfLine)
         {
-            var textLine = GetTextLineByVisualYPosition(point.Y);
-            var vc = GetVisualColumn(textLine, point.X, allowVirtualSpace);
+            TextLine textLine = GetTextLineByVisualYPosition(point.Y);
+            int vc = GetVisualColumn(textLine, point.X, allowVirtualSpace);
             isAtEndOfLine = (vc >= GetTextLineVisualStartColumn(textLine) + textLine.Length);
             return vc;
         }
@@ -513,12 +513,12 @@ namespace AvaloniaEdit.Rendering
             {
                 if (allowVirtualSpace && textLine == TextLines[TextLines.Count - 1])
                 {
-                    var virtualX = (int)Math.Round((xPos - textLine.WidthIncludingTrailingWhitespace) / _textView.WideSpaceWidth, MidpointRounding.AwayFromZero);
+                    int virtualX = (int)Math.Round((xPos - textLine.WidthIncludingTrailingWhitespace) / _textView.WideSpaceWidth, MidpointRounding.AwayFromZero);
                     return VisualLengthWithEndOfLineMarker + virtualX;
                 }
             }
 
-            var ch = textLine.GetCharacterHitFromDistance(xPos);
+            CharacterHit ch = textLine.GetCharacterHitFromDistance(xPos);
 
             return ch.FirstCharacterIndex + ch.TrailingLength;
         }
@@ -536,12 +536,12 @@ namespace AvaloniaEdit.Rendering
         /// </summary>
         public int ValidateVisualColumn(int offset, int visualColumn, bool allowVirtualSpace)
         {
-            var firstDocumentLineOffset = FirstDocumentLine.Offset;
+            int firstDocumentLineOffset = FirstDocumentLine.Offset;
             if (visualColumn < 0)
             {
                 return GetVisualColumn(offset - firstDocumentLineOffset);
             }
-            var offsetFromVisualColumn = GetRelativeOffset(visualColumn);
+            int offsetFromVisualColumn = GetRelativeOffset(visualColumn);
             offsetFromVisualColumn += firstDocumentLineOffset;
             if (offsetFromVisualColumn != offset)
             {
@@ -574,14 +574,14 @@ namespace AvaloniaEdit.Rendering
 
         internal int GetVisualColumnFloor(Point point, bool allowVirtualSpace, out bool isAtEndOfLine)
         {
-            var textLine = GetTextLineByVisualYPosition(point.Y);
+            TextLine textLine = GetTextLineByVisualYPosition(point.Y);
             if (point.X > textLine.WidthIncludingTrailingWhitespace)
             {
                 isAtEndOfLine = true;
                 if (allowVirtualSpace && textLine == TextLines[TextLines.Count - 1])
                 {
                     // clicking virtual space in the last line
-                    var virtualX = (int)((point.X - textLine.WidthIncludingTrailingWhitespace) / _textView.WideSpaceWidth);
+                    int virtualX = (int)((point.X - textLine.WidthIncludingTrailingWhitespace) / _textView.WideSpaceWidth);
                     return VisualLengthWithEndOfLineMarker + virtualX;
                 }
 
@@ -593,7 +593,7 @@ namespace AvaloniaEdit.Rendering
 
             isAtEndOfLine = false;
 
-            var ch = textLine.GetCharacterHitFromDistance(point.X);
+            CharacterHit ch = textLine.GetCharacterHitFromDistance(point.X);
 
             return ch.FirstCharacterIndex;
         }
@@ -603,7 +603,7 @@ namespace AvaloniaEdit.Rendering
         /// </summary>
         public TextViewPosition GetTextViewPosition(int visualColumn)
         {
-            var documentOffset = GetRelativeOffset(visualColumn) + FirstDocumentLine.Offset;
+            int documentOffset = GetRelativeOffset(visualColumn) + FirstDocumentLine.Offset;
             return new TextViewPosition(Document.GetLocation(documentOffset), visualColumn);
         }
 
@@ -616,9 +616,9 @@ namespace AvaloniaEdit.Rendering
         /// <param name="allowVirtualSpace">Controls whether positions in virtual space may be returned.</param>
         public TextViewPosition GetTextViewPosition(Point visualPosition, bool allowVirtualSpace)
         {
-            var visualColumn = GetVisualColumn(visualPosition, allowVirtualSpace, out var isAtEndOfLine);
-            var documentOffset = GetRelativeOffset(visualColumn) + FirstDocumentLine.Offset;
-            var pos = new TextViewPosition(Document.GetLocation(documentOffset), visualColumn)
+            int visualColumn = GetVisualColumn(visualPosition, allowVirtualSpace, out bool isAtEndOfLine);
+            int documentOffset = GetRelativeOffset(visualColumn) + FirstDocumentLine.Offset;
+            TextViewPosition pos = new TextViewPosition(Document.GetLocation(documentOffset), visualColumn)
             {
                 IsAtEndOfLine = isAtEndOfLine
             };
@@ -634,9 +634,9 @@ namespace AvaloniaEdit.Rendering
         /// <param name="allowVirtualSpace">Controls whether positions in virtual space may be returned.</param>
         public TextViewPosition GetTextViewPositionFloor(Point visualPosition, bool allowVirtualSpace)
         {
-            var visualColumn = GetVisualColumnFloor(visualPosition, allowVirtualSpace, out var isAtEndOfLine);
-            var documentOffset = GetRelativeOffset(visualColumn) + FirstDocumentLine.Offset;
-            var pos = new TextViewPosition(Document.GetLocation(documentOffset), visualColumn)
+            int visualColumn = GetVisualColumnFloor(visualPosition, allowVirtualSpace, out bool isAtEndOfLine);
+            int documentOffset = GetRelativeOffset(visualColumn) + FirstDocumentLine.Offset;
+            TextViewPosition pos = new TextViewPosition(Document.GetLocation(documentOffset), visualColumn)
             {
                 IsAtEndOfLine = isAtEndOfLine
             };
@@ -714,7 +714,7 @@ namespace AvaloniaEdit.Rendering
                 // search last element that has a caret stop
                 for (; i >= 0; i--)
                 {
-                    var pos = _elements[i].GetNextCaretPosition(
+                    int pos = _elements[i].GetNextCaretPosition(
                         Math.Min(visualColumn, _elements[i].VisualColumn + _elements[i].VisualLength + 1),
                         direction, mode);
                     if (pos >= 0)
@@ -740,7 +740,7 @@ namespace AvaloniaEdit.Rendering
                 // search first element that has a caret stop
                 for (; i < _elements.Count; i++)
                 {
-                    var pos = _elements[i].GetNextCaretPosition(
+                    int pos = _elements[i].GetNextCaretPosition(
                         Math.Max(visualColumn, _elements[i].VisualColumn - 1),
                         direction, mode);
                     if (pos >= 0)
@@ -805,7 +805,7 @@ namespace AvaloniaEdit.Rendering
         public override void Render(DrawingContext context)
         {
             double pos = 0;
-            foreach (var textLine in VisualLine.TextLines)
+            foreach (TextLine textLine in VisualLine.TextLines)
             {
                 textLine.Draw(context, new Point(0, pos));
                 pos += textLine.Height;

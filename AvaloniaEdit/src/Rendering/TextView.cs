@@ -291,7 +291,7 @@ namespace AvaloniaEdit.Rendering
 
         private void UpdateBuiltinElementGeneratorsFromOptions()
         {
-            var options = Options;
+            TextEditorOptions options = Options;
 
             //			AddRemoveDefaultElementGeneratorOnDemand(ref newLineElementGenerator, options.ShowEndOfLine);
             AddRemoveDefaultElementGeneratorOnDemand(ref _singleCharacterElementGenerator, options.ShowBoxForControlCharacters || options.ShowSpaces || options.ShowTabs);
@@ -302,7 +302,7 @@ namespace AvaloniaEdit.Rendering
         private void AddRemoveDefaultElementGeneratorOnDemand<T>(ref T generator, bool demand)
             where T : VisualLineElementGenerator, IBuiltinElementGenerator, new()
         {
-            var hasGenerator = generator != null;
+            bool hasGenerator = generator != null;
             if (hasGenerator != demand)
             {
                 if (demand)
@@ -339,7 +339,7 @@ namespace AvaloniaEdit.Rendering
 
             protected override void ClearItems()
             {
-                foreach (var control in Items)
+                foreach (Control control in Items)
                 {
                     _textView.VisualChildren.Remove(control);
                 }
@@ -392,11 +392,11 @@ namespace AvaloniaEdit.Rendering
             if (referencedLayer == KnownLayer.Background && position != LayerInsertionPosition.Above)
                 throw new InvalidOperationException("Cannot replace or insert below the background layer.");
 
-            var newPosition = new LayerPosition(referencedLayer, position);
+            LayerPosition newPosition = new LayerPosition(referencedLayer, position);
             LayerPosition.SetLayerPosition(layer, newPosition);
-            for (var i = 0; i < Layers.Count; i++)
+            for (int i = 0; i < Layers.Count; i++)
             {
-                var p = LayerPosition.GetLayerPosition(Layers[i]);
+                LayerPosition p = LayerPosition.GetLayerPosition(Layers[i]);
                 if (p != null)
                 {
                     if (p.KnownLayer == referencedLayer && p.Position == LayerInsertionPosition.Replace)
@@ -442,8 +442,8 @@ namespace AvaloniaEdit.Rendering
             Debug.Assert(inlineObject.VisualLine != null);
 
             // Remove inline object if its already added, can happen e.g. when recreating textrun for word-wrapping
-            var alreadyAdded = false;
-            for (var i = 0; i < _inlineObjects.Count; i++)
+            bool alreadyAdded = false;
+            for (int i = 0; i < _inlineObjects.Count; i++)
             {
                 if (_inlineObjects[i].Element == inlineObject.Element)
                 {
@@ -467,7 +467,7 @@ namespace AvaloniaEdit.Rendering
         private void MeasureInlineObjects()
         {
             // As part of MeasureOverride(), re-measure the inline objects
-            foreach (var inlineObject in _inlineObjects)
+            foreach (InlineObjectRun inlineObject in _inlineObjects)
             {
                 if (inlineObject.VisualLine.IsDisposed)
                 {
@@ -641,12 +641,12 @@ namespace AvaloniaEdit.Rendering
         public void Redraw(int offset, int length)
         {
             VerifyAccess();
-            var changedSomethingBeforeOrInLine = false;
-            for (var i = 0; i < _allVisualLines.Count; i++)
+            bool changedSomethingBeforeOrInLine = false;
+            for (int i = 0; i < _allVisualLines.Count; i++)
             {
-                var visualLine = _allVisualLines[i];
-                var lineStart = visualLine.FirstDocumentLine.Offset;
-                var lineEnd = visualLine.LastDocumentLine.Offset + visualLine.LastDocumentLine.TotalLength;
+                VisualLine visualLine = _allVisualLines[i];
+                int lineStart = visualLine.FirstDocumentLine.Offset;
+                int lineEnd = visualLine.LastDocumentLine.Offset + visualLine.LastDocumentLine.TotalLength;
                 if (offset <= lineEnd)
                 {
                     changedSomethingBeforeOrInLine = true;
@@ -702,7 +702,7 @@ namespace AvaloniaEdit.Rendering
             _visibleVisualLines = null;
             if (_allVisualLines.Count != 0)
             {
-                foreach (var visualLine in _allVisualLines)
+                foreach (VisualLine visualLine in _allVisualLines)
                 {
                     DisposeVisualLine(visualLine);
                 }
@@ -731,11 +731,11 @@ namespace AvaloniaEdit.Rendering
         public VisualLine GetVisualLine(int documentLineNumber)
         {
             // TODO: EnsureVisualLines() ?
-            foreach (var visualLine in _allVisualLines)
+            foreach (VisualLine visualLine in _allVisualLines)
             {
                 Debug.Assert(visualLine.IsDisposed == false);
-                var start = visualLine.FirstDocumentLine.LineNumber;
-                var end = visualLine.LastDocumentLine.LineNumber;
+                int start = visualLine.FirstDocumentLine.LineNumber;
+                int end = visualLine.LastDocumentLine.LineNumber;
                 if (documentLineNumber >= start && documentLineNumber <= end)
                     return visualLine;
             }
@@ -771,7 +771,7 @@ namespace AvaloniaEdit.Rendering
                                     _lastAvailableSize);
                 _allVisualLines.Add(l);
                 // update all visual top values (building the line might have changed visual top of other lines due to word wrapping)
-                foreach (var line in _allVisualLines)
+                foreach (VisualLine line in _allVisualLines)
                 {
                     line.VisualTop = _heightTree.GetVisualPosition(line.FirstDocumentLine);
                 }
@@ -881,7 +881,7 @@ namespace AvaloniaEdit.Rendering
 
             _lastAvailableSize = availableSize;
 
-            foreach (var layer in Layers)
+            foreach (Control layer in Layers)
             {
                 layer.Measure(availableSize);
             }
@@ -915,8 +915,8 @@ namespace AvaloniaEdit.Rendering
             RemoveInlineObjectsNow();
 
             maxWidth += AdditionalHorizontalScrollAmount;
-            var heightTreeHeight = DocumentHeight;
-            var options = Options;
+            double heightTreeHeight = DocumentHeight;
+            TextEditorOptions options = Options;
             double desiredHeight = Math.Min(availableSize.Height, heightTreeHeight);
             double extraHeightToAllowScrollBelowDocument = 0;
             if (options.AllowScrollBelowDocument)
@@ -925,7 +925,7 @@ namespace AvaloniaEdit.Rendering
                 {
                     // HACK: we need to keep at least Caret.MinimumDistanceToViewBorder visible so that we don't scroll back up when the user types after
                     // scrolling to the very bottom.
-                    var minVisibleDocumentHeight = DefaultLineHeight;
+                    double minVisibleDocumentHeight = DefaultLineHeight;
                     // increase the extend height to allow scrolling below the document
                     extraHeightToAllowScrollBelowDocument = desiredHeight - minVisibleDocumentHeight;
                 }
@@ -952,7 +952,7 @@ namespace AvaloniaEdit.Rendering
             VisualLineTextParagraphProperties paragraphProperties = CreateParagraphProperties(globalTextRunProperties);
 
             //Debug.WriteLine("Measure availableSize=" + availableSize + ", scrollOffset=" + _scrollOffset);
-            var firstLineInView = _heightTree.GetLineByVisualPosition(_scrollOffset.Y);
+            DocumentLine firstLineInView = _heightTree.GetLineByVisualPosition(_scrollOffset.Y);
 
             // number of pixels clipped from the first visual line(s)
             _clippedPixelsOnTop = _scrollOffset.Y - _heightTree.GetVisualPosition(firstLineInView);
@@ -963,14 +963,14 @@ namespace AvaloniaEdit.Rendering
 
             VisualLineConstructionStarting?.Invoke(this, new VisualLineConstructionStartEventArgs(firstLineInView));
 
-            var elementGeneratorsArray = _elementGenerators.ToArray();
-            var lineTransformersArray = _lineTransformers.ToArray();
-            var nextLine = firstLineInView;
+            VisualLineElementGenerator[] elementGeneratorsArray = _elementGenerators.ToArray();
+            IVisualLineTransformer[] lineTransformersArray = _lineTransformers.ToArray();
+            DocumentLine nextLine = firstLineInView;
             double maxWidth = 0;
-            var yPos = -_clippedPixelsOnTop;
+            double yPos = -_clippedPixelsOnTop;
             while (yPos < availableSize.Height && nextLine != null)
             {
-                var visualLine = GetVisualLine(nextLine.LineNumber) ??
+                VisualLine visualLine = GetVisualLine(nextLine.LineNumber) ??
                                         BuildVisualLine(nextLine,
                                             globalTextRunProperties, paragraphProperties,
                                             elementGeneratorsArray, lineTransformersArray,
@@ -982,7 +982,7 @@ namespace AvaloniaEdit.Rendering
 
                 yPos += visualLine.Height;
 
-                foreach (var textLine in visualLine.TextLines)
+                foreach (TextLine textLine in visualLine.TextLines)
                 {
                     if (textLine.WidthIncludingTrailingWhitespace > maxWidth)
                         maxWidth = textLine.WidthIncludingTrailingWhitespace;
@@ -991,7 +991,7 @@ namespace AvaloniaEdit.Rendering
                 _newVisualLines.Add(visualLine);
             }
 
-            foreach (var line in _allVisualLines)
+            foreach (VisualLine line in _allVisualLines)
             {
                 Debug.Assert(line.IsDisposed == false);
                 if (!_newVisualLines.Contains(line))
@@ -1020,7 +1020,7 @@ namespace AvaloniaEdit.Rendering
 
         private TextRunProperties CreateGlobalTextRunProperties()
         {
-            var p = new GlobalTextRunProperties();
+            GlobalTextRunProperties p = new GlobalTextRunProperties();
             p.typeface = this.CreateTypeface();
             p.fontRenderingEmSize = FontSize;
             p.foregroundBrush = GetValue(TextElement.ForegroundProperty);
@@ -1081,12 +1081,12 @@ namespace AvaloniaEdit.Rendering
 
             // now construct textLines:
             TextLineBreak lastLineBreak = null;
-            var textOffset = 0;
-            var textLines = new List<TextLine>();
+            int textOffset = 0;
+            List<TextLine> textLines = new List<TextLine>();
 
             while (textOffset <= visualLine.VisualLengthWithEndOfLineMarker)
             {
-                var textLine = _formatter.FormatLine(
+                TextLine textLine = _formatter.FormatLine(
                     textSource,
                     textOffset,
                     availableSize.Width,
@@ -1133,9 +1133,9 @@ namespace AvaloniaEdit.Rendering
         {
             if (visualLine.Elements.Count == 0)
                 return 0;
-            var column = 0;
-            var elementIndex = 0;
-            var element = visualLine.Elements[elementIndex];
+            int column = 0;
+            int elementIndex = 0;
+            VisualLineElement element = visualLine.Elements[elementIndex];
             while (element.IsWhitespace(column))
             {
                 column++;
@@ -1159,7 +1159,7 @@ namespace AvaloniaEdit.Rendering
         {
             EnsureVisualLines();
 
-            foreach (var layer in Layers)
+            foreach (Control layer in Layers)
             {
                 layer.Arrange(new Rect(new Point(0, 0), finalSize));
             }
@@ -1168,8 +1168,8 @@ namespace AvaloniaEdit.Rendering
                 return finalSize;
 
             // validate scroll position
-            var newScrollOffsetX = _scrollOffset.X;
-            var newScrollOffsetY = _scrollOffset.Y;
+            double newScrollOffsetX = _scrollOffset.X;
+            double newScrollOffsetY = _scrollOffset.Y;
             if (_scrollOffset.X + finalSize.Width > _scrollExtent.Width)
             {
                 newScrollOffsetX = Math.Max(0, _scrollExtent.Width - finalSize.Width);
@@ -1185,21 +1185,21 @@ namespace AvaloniaEdit.Rendering
 
             if (_visibleVisualLines != null)
             {
-                var pos = new Point(-_scrollOffset.X, -_clippedPixelsOnTop);
-                foreach (var visualLine in _visibleVisualLines)
+                Point pos = new Point(-_scrollOffset.X, -_clippedPixelsOnTop);
+                foreach (VisualLine visualLine in _visibleVisualLines)
                 {
-                    var offset = 0;
-                    foreach (var textLine in visualLine.TextLines)
+                    int offset = 0;
+                    foreach (TextLine textLine in visualLine.TextLines)
                     {
-                        foreach (var span in textLine.TextRuns)
+                        foreach (TextRun span in textLine.TextRuns)
                         {
-                            var inline = span as InlineObjectRun;
+                            InlineObjectRun inline = span as InlineObjectRun;
 
                             if (inline?.VisualLine != null)
                             {
                                 Debug.Assert(_inlineObjects.Contains(inline));
 
-                                var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(offset));
+                                double distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(offset));
 
                                 inline.Element.Arrange(new Rect(new Point(pos.X + distance, pos.Y), inline.Element.DesiredSize));
 
@@ -1249,26 +1249,26 @@ namespace AvaloniaEdit.Rendering
             }
 
             RenderBackground(drawingContext, KnownLayer.Background);
-            foreach (var line in _visibleVisualLines)
+            foreach (VisualLine line in _visibleVisualLines)
             {
                 IBrush currentBrush = null;
-                var startVc = 0;
-                var length = 0;
-                foreach (var element in line.Elements)
+                int startVc = 0;
+                int length = 0;
+                foreach (VisualLineElement element in line.Elements)
                 {
                     if (currentBrush == null || !currentBrush.Equals(element.BackgroundBrush))
                     {
                         if (currentBrush != null)
                         {
-                            var builder =
+                            BackgroundGeometryBuilder builder =
                                 new BackgroundGeometryBuilder
                                 {
                                     AlignToWholePixels = true,
                                     CornerRadius = 3
                                 };
-                            foreach (var rect in BackgroundGeometryBuilder.GetRectsFromVisualSegment(this, line, startVc, startVc + length))
+                            foreach (Rect rect in BackgroundGeometryBuilder.GetRectsFromVisualSegment(this, line, startVc, startVc + length))
                                 builder.AddRectangle(this, rect);
-                            var geometry = builder.CreateGeometry();
+                            Geometry geometry = builder.CreateGeometry();
                             if (geometry != null)
                             {
                                 drawingContext.DrawGeometry(currentBrush, null, geometry);
@@ -1285,14 +1285,14 @@ namespace AvaloniaEdit.Rendering
                 }
                 if (currentBrush != null)
                 {
-                    var builder = new BackgroundGeometryBuilder
+                    BackgroundGeometryBuilder builder = new BackgroundGeometryBuilder
                     {
                         AlignToWholePixels = true,
                         CornerRadius = 3
                     };
-                    foreach (var rect in BackgroundGeometryBuilder.GetRectsFromVisualSegment(this, line, startVc, startVc + length))
+                    foreach (Rect rect in BackgroundGeometryBuilder.GetRectsFromVisualSegment(this, line, startVc, startVc + length))
                         builder.AddRectangle(this, rect);
-                    var geometry = builder.CreateGeometry();
+                    Geometry geometry = builder.CreateGeometry();
                     if (geometry != null)
                     {
                         drawingContext.DrawGeometry(currentBrush, null, geometry);
@@ -1305,7 +1305,7 @@ namespace AvaloniaEdit.Rendering
         {
             // this is necessary so hit-testing works properly and events get tunneled to the TextView.
             drawingContext.FillRectangle(Brushes.Transparent, Bounds);
-            foreach (var bg in _backgroundRenderers)
+            foreach (IBackgroundRenderer bg in _backgroundRenderers)
             {
                 if (bg.Layer == layer)
                 {
@@ -1316,10 +1316,10 @@ namespace AvaloniaEdit.Rendering
 
         internal void ArrangeTextLayer(IList<VisualLineDrawingVisual> visuals)
         {
-            var pos = new Point(-_scrollOffset.X, -_clippedPixelsOnTop);
-            foreach (var visual in visuals)
+            Point pos = new Point(-_scrollOffset.X, -_clippedPixelsOnTop);
+            foreach (VisualLineDrawingVisual visual in visuals)
             {
-                var t = visual.RenderTransform as TranslateTransform;
+                TranslateTransform t = visual.RenderTransform as TranslateTransform;
                 if (t == null || t.X != pos.X || t.Y != pos.Y)
                 {
                     visual.RenderTransform = new TranslateTransform(pos.X, pos.Y);
@@ -1481,8 +1481,8 @@ namespace AvaloniaEdit.Rendering
             _defaultTextMetricsValid = true;
             if (_formatter != null)
             {
-                var textRunProperties = CreateGlobalTextRunProperties();
-                var line = _formatter.FormatLine(
+                TextRunProperties textRunProperties = CreateGlobalTextRunProperties();
+                TextLine line = _formatter.FormatLine(
                     new SimpleTextSource("x", textRunProperties),
                     0, 32000,
                     new VisualLineTextParagraphProperties { defaultTextRunProperties = textRunProperties },
@@ -1518,10 +1518,10 @@ namespace AvaloniaEdit.Rendering
         /// </summary>
         public virtual void MakeVisible(Rect rectangle)
         {
-            var visibleRectangle = new Rect(_scrollOffset.X, _scrollOffset.Y,
+            Rect visibleRectangle = new Rect(_scrollOffset.X, _scrollOffset.Y,
                                              _scrollViewport.Width, _scrollViewport.Height);
-            var newScrollOffsetX = _scrollOffset.X;
-            var newScrollOffsetY = _scrollOffset.Y;
+            double newScrollOffsetX = _scrollOffset.X;
+            double newScrollOffsetY = _scrollOffset.Y;
             if (rectangle.X < visibleRectangle.X)
             {
                 if (rectangle.Right > visibleRectangle.Right)
@@ -1554,7 +1554,7 @@ namespace AvaloniaEdit.Rendering
             }
             newScrollOffsetX = ValidateVisualOffset(newScrollOffsetX);
             newScrollOffsetY = ValidateVisualOffset(newScrollOffsetY);
-            var newScrollOffset = new Vector(newScrollOffsetX, newScrollOffsetY);
+            Vector newScrollOffset = new Vector(newScrollOffsetX, newScrollOffsetY);
             if (!_scrollOffset.IsClose(newScrollOffset))
             {
                 SetScrollOffset(newScrollOffset);
@@ -1603,7 +1603,7 @@ namespace AvaloniaEdit.Rendering
         {
             base.OnPointerMoved(e);
 
-            var element = GetVisualLineElementFromPosition(e.GetPosition(this) + _scrollOffset);
+            VisualLineElement element = GetVisualLineElementFromPosition(e.GetPosition(this) + _scrollOffset);
 
             // Change back to default if hover on a different element
             if (_currentHoveredElement != element)
@@ -1622,7 +1622,7 @@ namespace AvaloniaEdit.Rendering
             if (!e.Handled)
             {
                 EnsureVisualLines();
-                var element = GetVisualLineElementFromPosition(e.GetPosition(this) + _scrollOffset);
+                VisualLineElement element = GetVisualLineElementFromPosition(e.GetPosition(this) + _scrollOffset);
                 element?.OnPointerPressed(e);
             }
         }
@@ -1634,7 +1634,7 @@ namespace AvaloniaEdit.Rendering
             if (!e.Handled)
             {
                 EnsureVisualLines();
-                var element = GetVisualLineElementFromPosition(e.GetPosition(this) + _scrollOffset);
+                VisualLineElement element = GetVisualLineElementFromPosition(e.GetPosition(this) + _scrollOffset);
                 element?.OnPointerReleased(e);
             }
         }
@@ -1651,7 +1651,7 @@ namespace AvaloniaEdit.Rendering
             // TODO: change this method to also work outside the visible range -
             // required to make GetPosition work as expected!
             EnsureVisualLines();
-            foreach (var vl in VisualLines)
+            foreach (VisualLine vl in VisualLines)
             {
                 if (visualTop < vl.VisualTop)
                     continue;
@@ -1674,12 +1674,12 @@ namespace AvaloniaEdit.Rendering
 
         private VisualLineElement GetVisualLineElementFromPosition(Point visualPosition)
         {
-            var vl = GetVisualLineFromVisualTop(visualPosition.Y);
+            VisualLine vl = GetVisualLineFromVisualTop(visualPosition.Y);
             if (vl != null)
             {
-                var column = vl.GetVisualColumnFloor(visualPosition);
+                int column = vl.GetVisualColumnFloor(visualPosition);
 
-                foreach (var element in vl.Elements)
+                foreach (VisualLineElement element in vl.Elements)
                 {
                     if (element.VisualColumn + element.VisualLength <= column)
                         continue;
@@ -1703,12 +1703,12 @@ namespace AvaloniaEdit.Rendering
             VerifyAccess();
             if (Document == null)
                 throw ThrowUtil.NoDocumentAssigned();
-            var documentLine = Document.GetLineByNumber(position.Line);
-            var visualLine = GetOrConstructVisualLine(documentLine);
-            var visualColumn = position.VisualColumn;
+            DocumentLine documentLine = Document.GetLineByNumber(position.Line);
+            VisualLine visualLine = GetOrConstructVisualLine(documentLine);
+            int visualColumn = position.VisualColumn;
             if (visualColumn < 0)
             {
-                var offset = documentLine.Offset + position.Column - 1;
+                int offset = documentLine.Offset + position.Column - 1;
                 visualColumn = visualLine.GetVisualColumn(offset - visualLine.FirstDocumentLine.Offset);
             }
             return visualLine.GetVisualPosition(visualColumn, position.IsAtEndOfLine, yPositionMode);
@@ -1726,7 +1726,7 @@ namespace AvaloniaEdit.Rendering
             VerifyAccess();
             if (Document == null)
                 throw ThrowUtil.NoDocumentAssigned();
-            var line = GetVisualLineFromVisualTop(visualPosition.Y);
+            VisualLine line = GetVisualLineFromVisualTop(visualPosition.Y);
             return line?.GetTextViewPosition(visualPosition, Options.EnableVirtualSpace);
         }
 
@@ -1742,7 +1742,7 @@ namespace AvaloniaEdit.Rendering
             VerifyAccess();
             if (Document == null)
                 throw ThrowUtil.NoDocumentAssigned();
-            var line = GetVisualLineFromVisualTop(visualPosition.Y);
+            VisualLine line = GetVisualLineFromVisualTop(visualPosition.Y);
             return line?.GetTextViewPositionFloor(visualPosition, Options.EnableVirtualSpace);
         }
         #endregion
@@ -1761,7 +1761,7 @@ namespace AvaloniaEdit.Rendering
         /// </summary>
         public virtual object GetService(Type serviceType)
         {
-            var instance = Services.GetService(serviceType);
+            object instance = Services.GetService(serviceType);
             if (instance == null && _document != null)
             {
                 instance = _document.ServiceProvider.GetService(serviceType);
@@ -1771,13 +1771,13 @@ namespace AvaloniaEdit.Rendering
 
         private void ConnectToTextView(object obj)
         {
-            var c = obj as ITextViewConnect;
+            ITextViewConnect c = obj as ITextViewConnect;
             c?.AddToTextView(this);
         }
 
         private void DisconnectFromTextView(object obj)
         {
-            var c = obj as ITextViewConnect;
+            ITextViewConnect c = obj as ITextViewConnect;
             c?.RemoveFromTextView(this);
         }
         #endregion
@@ -1947,7 +1947,7 @@ namespace AvaloniaEdit.Rendering
 
         private static ImmutablePen CreateFrozenPen(IBrush brush)
         {
-            var pen = new ImmutablePen(brush?.ToImmutable());
+            ImmutablePen pen = new ImmutablePen(brush?.ToImmutable());
             return pen;
         }
 
@@ -2080,8 +2080,8 @@ namespace AvaloniaEdit.Rendering
             set
             {
                 value = new Vector(ValidateVisualOffset(value.X), ValidateVisualOffset(value.Y));
-                var isX = !_scrollOffset.X.bes_IsClose(value.X);
-                var isY = !_scrollOffset.Y.bes_IsClose(value.Y);
+                bool isX = !_scrollOffset.X.bes_IsClose(value.X);
+                bool isY = !_scrollOffset.Y.bes_IsClose(value.Y);
                 if (isX || isY)
                 {
                     SetScrollOffset(value);

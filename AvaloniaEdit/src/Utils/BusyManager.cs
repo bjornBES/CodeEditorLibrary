@@ -39,7 +39,7 @@ namespace AvaloniaEdit.Utils
 		
         public static BusyLock Enter(object obj)
         {
-            var activeObjects = _activeObjects ?? (_activeObjects = new List<object>());
+            List<object> activeObjects = _activeObjects ?? (_activeObjects = new List<object>());
             if (activeObjects.Any(t => t == obj))
             {
                 return BusyLock.Failed;

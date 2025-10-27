@@ -92,12 +92,12 @@ namespace AvaloniaEdit.Document
 		public int Offset {
 			get {
 				Document.DebugVerifyAccess();
-				
-				var n = Node;
+
+                TextAnchorNode n = Node;
 				if (n == null)
 					throw new InvalidOperationException();
-				
-				var offset = n.Length;
+
+                int offset = n.Length;
 				if (n.Left != null)
 					offset += n.Left.TotalLength;
 				while (n.Parent != null) {
@@ -124,7 +124,7 @@ namespace AvaloniaEdit.Document
 		/// <exception cref="InvalidOperationException">Thrown when trying to get the Offset from a deleted anchor.</exception>
 		public int Column {
 			get {
-				var offset = Offset;
+                int offset = Offset;
 				return offset - Document.GetLineByOffset(offset).Offset + 1;
 			}
 		}

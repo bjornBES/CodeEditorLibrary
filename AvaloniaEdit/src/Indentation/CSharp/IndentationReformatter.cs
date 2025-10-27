@@ -167,11 +167,11 @@ namespace AvaloniaEdit.Indentation.CSharp
 
         public void Step(IDocumentAccessor doc, IndentationSettings set)
         {
-            var line = doc.Text;
+            string line = doc.Text;
             if (set.LeaveEmptyLines && line.Length == 0) return; // leave empty lines empty
             line = line.TrimStart();
 
-            var indent = new StringBuilder();
+            StringBuilder indent = new StringBuilder();
             if (line.Length == 0)
             {
                 // Special treatment for empty lines:
@@ -188,9 +188,9 @@ namespace AvaloniaEdit.Indentation.CSharp
             if (TrimEnd(doc))
                 line = doc.Text.TrimStart();
 
-            var oldBlock = _block;
-            var startInComment = _blockComment;
-            var startInString = (_inString && _verbatim);
+            Block oldBlock = _block;
+            bool startInComment = _blockComment;
+            bool startInString = (_inString && _verbatim);
 
             #region Parse char by char
             _lineComment = false;
@@ -200,13 +200,13 @@ namespace AvaloniaEdit.Indentation.CSharp
 
             _lastRealChar = '\n';
 
-            var c = ' ';
-            var nextchar = line[0];
-            for (var i = 0; i < line.Length; i++)
+            char c = ' ';
+            char nextchar = line[0];
+            for (int i = 0; i < line.Length; i++)
             {
                 if (_lineComment) break; // cancel parsing current line
 
-                var lastchar = c;
+                char lastchar = c;
                 c = nextchar;
                 nextchar = i + 1 < line.Length ? line[i + 1] : '\n';
 
@@ -449,7 +449,7 @@ namespace AvaloniaEdit.Indentation.CSharp
                     // use indent StringBuilder to get the indentation of the current line
                     indent.Length = 0;
                     line = doc.Text; // get untrimmed line
-                    foreach (var t in line)
+                    foreach (char t in line)
                     {
                         if (!char.IsWhiteSpace(t))
                             break;
@@ -492,8 +492,8 @@ namespace AvaloniaEdit.Indentation.CSharp
                 return string.Empty;
             if (count == 1)
                 return text;
-            var b = new StringBuilder(text.Length * count);
-            for (var i = 0; i < count; i++)
+            StringBuilder b = new StringBuilder(text.Length * count);
+            for (int i = 0; i < count; i++)
                 b.Append(text);
             return b.ToString();
         }
@@ -517,7 +517,7 @@ namespace AvaloniaEdit.Indentation.CSharp
 
         private static bool TrimEnd(IDocumentAccessor doc)
         {
-            var line = doc.Text;
+            string line = doc.Text;
             if (!char.IsWhiteSpace(line[line.Length - 1])) return false;
 
             // one space after an empty comment is allowed

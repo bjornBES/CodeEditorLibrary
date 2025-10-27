@@ -222,7 +222,7 @@ namespace AvaloniaEdit.Document
             get
             {
                 VerifyAccess();
-                var completeText = _cachedText?.Target as string;
+                string completeText = _cachedText?.Target as string;
                 if (completeText == null)
                 {
                     completeText = _rope.ToString();
@@ -527,14 +527,14 @@ namespace AvaloniaEdit.Document
                 TextChanged?.Invoke(this, EventArgs.Empty);
                 OnPropertyChanged("Text");
 
-                var textLength = _rope.Length;
+                int textLength = _rope.Length;
                 if (textLength != _oldTextLength)
                 {
                     _oldTextLength = textLength;
                     TextLengthChanged?.Invoke(this, EventArgs.Empty);
                     OnPropertyChanged("TextLength");
                 }
-                var lineCount = _lineTree.LineCount;
+                int lineCount = _lineTree.LineCount;
                 if (lineCount != _oldLineCount)
                 {
                     _oldLineCount = lineCount;
@@ -727,7 +727,7 @@ namespace AvaloniaEdit.Document
                     }
                     else
                     {
-                        var map = new OffsetChangeMap(2)
+                        OffsetChangeMap map = new OffsetChangeMap(2)
                         {
                             new OffsetChangeMapEntry(offset, length, 0),
                             new OffsetChangeMapEntry(offset, 0, text.TextLength)
@@ -747,12 +747,12 @@ namespace AvaloniaEdit.Document
                     {
                         // look at OffsetChangeMappingType.CharacterReplace XML comments on why we need to replace
                         // the last character
-                        var entry = new OffsetChangeMapEntry(offset + length - 1, 1, 1 + text.TextLength - length);
+                        OffsetChangeMapEntry entry = new OffsetChangeMapEntry(offset + length - 1, 1, 1 + text.TextLength - length);
                         Replace(offset, length, text, OffsetChangeMap.FromSingleElement(entry));
                     }
                     else if (text.TextLength < length)
                     {
-                        var entry = new OffsetChangeMapEntry(offset + text.TextLength, length - text.TextLength, 0, true, false);
+                        OffsetChangeMapEntry entry = new OffsetChangeMapEntry(offset + text.TextLength, length - text.TextLength, 0, true, false);
                         Replace(offset, length, text, OffsetChangeMap.FromSingleElement(entry));
                     }
                     else
@@ -856,7 +856,7 @@ namespace AvaloniaEdit.Document
                 // use a rope if the removed string is long
                 removedText = new RopeTextSource(_rope.GetRange(offset, length));
             }
-            var args = new DocumentChangeEventArgs(offset, removedText, newText, offsetChangeMap);
+            DocumentChangeEventArgs args = new DocumentChangeEventArgs(offset, removedText, newText, offsetChangeMap);
 
             // fire DocumentChanging event
             Changing?.Invoke(this, args);
@@ -866,7 +866,7 @@ namespace AvaloniaEdit.Document
 
             _cachedText = null; // reset cache of complete document text
             _fireTextChanged = true;
-            var delayedEvents = new DelayedEvents();
+            DelayedEvents delayedEvents = new DelayedEvents();
 
             lock (_lockObject)
             {
@@ -909,7 +909,7 @@ namespace AvaloniaEdit.Document
             }
             else
             {
-                foreach (var entry in offsetChangeMap)
+                foreach (OffsetChangeMapEntry entry in offsetChangeMap)
                 {
                     _anchorTree.HandleTextChange(entry, delayedEvents);
                 }
@@ -986,7 +986,7 @@ namespace AvaloniaEdit.Document
         /// <seealso cref="GetLocation"/>
         public int GetOffset(int line, int column)
         {
-            var docLine = GetLineByNumber(line);
+            DocumentLine docLine = GetLineByNumber(line);
             if (column <= 0)
                 return docLine.Offset;
             if (column > docLine.Length)
@@ -1000,7 +1000,7 @@ namespace AvaloniaEdit.Document
         /// <seealso cref="GetOffset(TextLocation)"/>
         public TextLocation GetLocation(int offset)
         {
-            var line = GetLineByOffset(offset);
+            DocumentLine line = GetLineByOffset(offset);
             return new TextLocation(line.LineNumber, offset - line.Offset + 1);
         }
         #endregion
@@ -1137,7 +1137,7 @@ namespace AvaloniaEdit.Document
                 VerifyAccess();
                 if (_serviceProvider == null)
                 {
-                    var container = new ServiceContainer();
+                    ServiceContainer container = new ServiceContainer();
                     container.AddService(this);
                     container.AddService<IDocument>(this);
                     _serviceProvider = container;

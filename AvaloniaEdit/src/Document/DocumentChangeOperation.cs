@@ -54,7 +54,7 @@ namespace AvaloniaEdit.Document
 		
 		public void Undo()
 		{
-			var map = _change.OffsetChangeMapOrNull;
+            OffsetChangeMap map = _change.OffsetChangeMapOrNull;
 			_document.Replace(_change.Offset, _change.InsertionLength, _change.RemovedText, map?.Invert());
 		}
 		

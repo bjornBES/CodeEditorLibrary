@@ -188,7 +188,7 @@ namespace AvaloniaEdit.Search
 
             TextArea textArea = editor.TextArea;
 
-            var panel = new SearchPanel();
+            SearchPanel panel = new SearchPanel();
             panel.AttachInternal(editor);
             panel._handler = new SearchInputHandler(textArea, panel);
             textArea.DefaultInputHandler.NestedInputHandlers.Add(panel._handler);
@@ -378,7 +378,7 @@ namespace AvaloniaEdit.Search
         /// </summary>
         public void FindNext(int startOffset = -1)
         {
-            var result = _renderer.CurrentResults.FindFirstSegmentWithStartAfter(startOffset == -1 ? _textArea.Caret.Offset : startOffset) ??
+            SearchResult result = _renderer.CurrentResults.FindFirstSegmentWithStartAfter(startOffset == -1 ? _textArea.Caret.Offset : startOffset) ??
                          _renderer.CurrentResults.FirstSegment;
             if (result != null)
             {
@@ -391,7 +391,7 @@ namespace AvaloniaEdit.Search
         /// </summary>
         public void FindPrevious()
         {
-            var result = _renderer.CurrentResults.FindFirstSegmentWithStartAfter(
+            SearchResult result = _renderer.CurrentResults.FindFirstSegmentWithStartAfter(
                 Math.Max(_textArea.Caret.Offset - _textArea.Selection.Length, 0));
             if (result != null)
                 result = _renderer.CurrentResults.GetPreviousSegment(result);
@@ -420,12 +420,12 @@ namespace AvaloniaEdit.Search
         {
             if (!IsReplaceMode) return;
 
-            var replacement = ReplacePattern ?? string.Empty;
-            var document = _textArea.Document;
+            string replacement = ReplacePattern ?? string.Empty;
+            TextDocument document = _textArea.Document;
             using (document.RunUpdate())
             {
-                var segments = _renderer.CurrentResults.OrderByDescending(x => x.EndOffset).ToArray();
-                foreach (var textSegment in segments)
+                SearchResult[] segments = _renderer.CurrentResults.OrderByDescending(x => x.EndOffset).ToArray();
+                foreach (SearchResult textSegment in segments)
                 {
                     document.Replace(textSegment.StartOffset, textSegment.Length,
                         new StringTextSource(replacement));
@@ -450,7 +450,7 @@ namespace AvaloniaEdit.Search
 
             CleanSearchResults();
 
-            var offset = Math.Max(_textArea.Caret.Offset - _textArea.Selection.Length, 0);
+            int offset = Math.Max(_textArea.Caret.Offset - _textArea.Selection.Length, 0);
 
             if (changeSelection)
             {
@@ -460,7 +460,7 @@ namespace AvaloniaEdit.Search
             if (!string.IsNullOrEmpty(SearchPattern))
             {
                 // We cast from ISearchResult to SearchResult; this is safe because we always use the built-in strategy
-                foreach (var result in _strategy.FindAll(_textArea.Document, 0, _textArea.Document.TextLength).Cast<SearchResult>())
+                foreach (SearchResult result in _strategy.FindAll(_textArea.Document, 0, _textArea.Document.TextLength).Cast<SearchResult>())
                 {
                     _renderer.CurrentResults.Add(result);
                 }
@@ -469,7 +469,7 @@ namespace AvaloniaEdit.Search
                 {
                     // select the first result after the caret position
                     // or the first result in document order if there is no result after the caret
-                    var result = _renderer.CurrentResults.FindFirstSegmentWithStartAfter(offset) ??
+                    SearchResult result = _renderer.CurrentResults.FindFirstSegmentWithStartAfter(offset) ??
                                  _renderer.CurrentResults.FirstSegment;
 
                     if (result != null)

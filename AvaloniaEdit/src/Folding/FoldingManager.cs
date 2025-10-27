@@ -56,11 +56,11 @@ namespace AvaloniaEdit.Folding
         private void OnDocumentChanged(object sender, DocumentChangeEventArgs e)
         {
             _foldings.UpdateOffsets(e);
-            var newEndOffset = e.Offset + e.InsertionLength;
+            int newEndOffset = e.Offset + e.InsertionLength;
             // extend end offset to the end of the line (including delimiter)
-            var endLine = Document.GetLineByOffset(newEndOffset);
+            DocumentLine endLine = Document.GetLineByOffset(newEndOffset);
             newEndOffset = endLine.Offset + endLine.TotalLength;
-            foreach (var affectedFolding in _foldings.FindOverlappingSegments(e.Offset, newEndOffset - e.Offset))
+            foreach (FoldingSection affectedFolding in _foldings.FindOverlappingSegments(e.Offset, newEndOffset - e.Offset))
             {
                 if (affectedFolding.Length == 0)
                 {
@@ -81,7 +81,7 @@ namespace AvaloniaEdit.Folding
             if (textView == null || TextViews.Contains(textView))
                 throw new ArgumentException();
             TextViews.Add(textView);
-            foreach (var fs in _foldings)
+            foreach (FoldingSection fs in _foldings)
             {
                 if (fs.CollapsedSections != null)
                 {
@@ -93,15 +93,15 @@ namespace AvaloniaEdit.Folding
 
         internal void RemoveFromTextView(TextView textView)
         {
-            var pos = TextViews.IndexOf(textView);
+            int pos = TextViews.IndexOf(textView);
             if (pos < 0)
                 throw new ArgumentException();
             TextViews.RemoveAt(pos);
-            foreach (var fs in _foldings)
+            foreach (FoldingSection fs in _foldings)
             {
                 if (fs.CollapsedSections != null)
                 {
-                    var c = new CollapsedLineSection[TextViews.Count];
+                    CollapsedLineSection[] c = new CollapsedLineSection[TextViews.Count];
                     Array.Copy(fs.CollapsedSections, 0, c, 0, pos);
                     fs.CollapsedSections[pos].Uncollapse();
                     Array.Copy(fs.CollapsedSections, pos + 1, c, pos, c.Length - pos);
@@ -112,13 +112,13 @@ namespace AvaloniaEdit.Folding
 
         internal void Redraw()
         {
-            foreach (var textView in TextViews)
+            foreach (TextView textView in TextViews)
                 textView.Redraw();
         }
 
         internal void Redraw(FoldingSection fs)
         {
-            foreach (var textView in TextViews)
+            foreach (TextView textView in TextViews)
                 textView.Redraw(fs);
         }
         #endregion
@@ -133,7 +133,7 @@ namespace AvaloniaEdit.Folding
                 throw new ArgumentException("startOffset must be less than endOffset");
             if (startOffset < 0 || endOffset > Document.TextLength)
                 throw new ArgumentException("Folding must be within document boundary");
-            var fs = new FoldingSection(this, startOffset, endOffset);
+            FoldingSection fs = new FoldingSection(this, startOffset, endOffset);
             _foldings.Add(fs);
             Redraw(fs);
             return fs;
@@ -157,7 +157,7 @@ namespace AvaloniaEdit.Folding
         public void Clear()
         {
             Dispatcher.UIThread.VerifyAccess();
-            foreach (var s in _foldings)
+            foreach (FoldingSection s in _foldings)
                 s.IsFolded = false;
             _foldings.Clear();
             Redraw();
@@ -178,7 +178,7 @@ namespace AvaloniaEdit.Folding
         /// </summary>
         public int GetNextFoldedFoldingStart(int startOffset)
         {
-            var fs = _foldings.FindFirstSegmentWithStartAfter(startOffset);
+            FoldingSection fs = _foldings.FindFirstSegmentWithStartAfter(startOffset);
             while (fs != null && !fs.IsFolded)
                 fs = _foldings.GetNextSegment(fs);
             return fs?.StartOffset ?? -1;
@@ -200,8 +200,8 @@ namespace AvaloniaEdit.Folding
         /// </summary>
         public ReadOnlyCollection<FoldingSection> GetFoldingsAt(int startOffset)
         {
-            var result = new List<FoldingSection>();
-            var fs = _foldings.FindFirstSegmentWithStartAfter(startOffset);
+            List<FoldingSection> result = new List<FoldingSection>();
+            FoldingSection fs = _foldings.FindFirstSegmentWithStartAfter(startOffset);
             while (fs != null && fs.StartOffset == startOffset)
             {
                 result.Add(fs);
@@ -237,12 +237,12 @@ namespace AvaloniaEdit.Folding
             if (firstErrorOffset < 0)
                 firstErrorOffset = int.MaxValue;
 
-            var oldFoldings = AllFoldings.ToArray();
-            var oldFoldingIndex = 0;
-            var previousStartOffset = 0;
+            FoldingSection[] oldFoldings = AllFoldings.ToArray();
+            int oldFoldingIndex = 0;
+            int previousStartOffset = 0;
             // merge new foldings into old foldings so that sections keep being collapsed
             // both oldFoldings and newFoldings are sorted by start offset
-            foreach (var newFolding in newFoldings)
+            foreach (NewFolding newFolding in newFoldings)
             {
                 // ensure newFoldings are sorted correctly
                 if (newFolding.StartOffset < previousStartOffset)
@@ -281,7 +281,7 @@ namespace AvaloniaEdit.Folding
             // remove all outstanding old foldings:
             while (oldFoldingIndex < oldFoldings.Length)
             {
-                var oldSection = oldFoldings[oldFoldingIndex++];
+                FoldingSection oldSection = oldFoldings[oldFoldingIndex++];
                 if (oldSection.StartOffset >= firstErrorOffset)
                     break;
                 RemoveFolding(oldSection);
@@ -381,8 +381,8 @@ namespace AvaloniaEdit.Folding
             private void TextArea_Caret_PositionChanged(object sender, EventArgs e)
             {
                 // Expand Foldings when Caret is moved into them.
-                var caretOffset = _textArea.Caret.Offset;
-                foreach (var s in GetFoldingsContaining(caretOffset))
+                int caretOffset = _textArea.Caret.Offset;
+                foreach (FoldingSection s in GetFoldingsContaining(caretOffset))
                 {
                     if (s.IsFolded && s.StartOffset < caretOffset && caretOffset < s.EndOffset)
                     {

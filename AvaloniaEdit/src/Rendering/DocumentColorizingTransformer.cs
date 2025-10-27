@@ -46,15 +46,15 @@ namespace AvaloniaEdit.Rendering
 			_currentDocumentLine = context.VisualLine.FirstDocumentLine;
 			_firstLineStart = _currentDocumentLineStartOffset = _currentDocumentLine.Offset;
 			_currentDocumentLineEndOffset = _currentDocumentLineStartOffset + _currentDocumentLine.Length;
-			var currentDocumentLineTotalEndOffset = _currentDocumentLineStartOffset + _currentDocumentLine.TotalLength;
+            int currentDocumentLineTotalEndOffset = _currentDocumentLineStartOffset + _currentDocumentLine.TotalLength;
 
 			if (context.VisualLine.FirstDocumentLine == context.VisualLine.LastDocumentLine) {
 				ColorizeLine(_currentDocumentLine);
 			} else {
 				ColorizeLine(_currentDocumentLine);
 				// ColorizeLine modifies the visual line elements, loop through a copy of the line elements
-				foreach (var e in context.VisualLine.Elements.ToArray()) {
-					var elementOffset = _firstLineStart + e.RelativeTextOffset;
+				foreach (VisualLineElement e in context.VisualLine.Elements.ToArray()) {
+                    int elementOffset = _firstLineStart + e.RelativeTextOffset;
 					if (elementOffset >= currentDocumentLineTotalEndOffset) {
 						_currentDocumentLine = context.Document.GetLineByOffset(elementOffset);
 						_currentDocumentLineStartOffset = _currentDocumentLine.Offset;
@@ -85,9 +85,9 @@ namespace AvaloniaEdit.Rendering
 				throw new ArgumentOutOfRangeException(nameof(startOffset), startOffset, "Value must be between " + _currentDocumentLineStartOffset + " and " + _currentDocumentLineEndOffset);
 			if (endOffset < startOffset || endOffset > _currentDocumentLineEndOffset)
 				throw new ArgumentOutOfRangeException(nameof(endOffset), endOffset, "Value must be between " + startOffset + " and " + _currentDocumentLineEndOffset);
-			var vl = CurrentContext.VisualLine;
-			var visualStart = vl.GetVisualColumn(startOffset - _firstLineStart);
-			var visualEnd = vl.GetVisualColumn(endOffset - _firstLineStart);
+            VisualLine vl = CurrentContext.VisualLine;
+            int visualStart = vl.GetVisualColumn(startOffset - _firstLineStart);
+            int visualEnd = vl.GetVisualColumn(endOffset - _firstLineStart);
 			if (visualStart < visualEnd) {
 				ChangeVisualElements(visualStart, visualEnd, action);
 			}

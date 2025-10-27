@@ -36,6 +36,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Data;
 using AvaloniaEdit.Search;
+using System.Collections.ObjectModel;
 
 namespace AvaloniaEdit
 {
@@ -258,12 +259,12 @@ namespace AvaloniaEdit
         {
             get
             {
-                var document = Document;
+                TextDocument document = Document;
                 return document != null ? document.Text : string.Empty;
             }
             set
             {
-                var document = GetDocument();
+                TextDocument document = GetDocument();
                 document.Text = value ?? string.Empty;
                 // after replacing the full text, the caret is positioned at the end of the document
                 // - reset it to the beginning.
@@ -274,7 +275,7 @@ namespace AvaloniaEdit
 
         private TextDocument GetDocument()
         {
-            var document = Document;
+            TextDocument document = Document;
             if (document == null)
                 throw ThrowUtil.NoDocumentAssigned();
             return document;
@@ -477,11 +478,11 @@ namespace AvaloniaEdit
 
         private static void OnIsModifiedChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var editor = e.Sender as TextEditor;
-            var document = editor?.Document;
+            TextEditor editor = e.Sender as TextEditor;
+            TextDocument document = editor?.Document;
             if (document != null)
             {
-                var undoStack = document.UndoStack;
+                UndoStack undoStack = document.UndoStack;
                 if ((bool)e.NewValue)
                 {
                     if (undoStack.IsOriginalFile)
@@ -498,7 +499,7 @@ namespace AvaloniaEdit
         {
             if (e.PropertyName == "IsOriginalFile")
             {
-                var document = Document;
+                TextDocument document = Document;
                 if (document != null)
                 {
                     SetValue(IsModifiedProperty, (object)!document.UndoStack.IsOriginalFile);
@@ -540,25 +541,25 @@ namespace AvaloniaEdit
 
         private static void OnShowLineNumbersChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var editor = e.Sender as TextEditor;
+            TextEditor editor = e.Sender as TextEditor;
             if (editor == null) return;
 
-            var leftMargins = editor.TextArea.LeftMargins;
+            ObservableCollection<Control> leftMargins = editor.TextArea.LeftMargins;
             if ((bool)e.NewValue)
             {
-                var lineNumbers = new LineNumberMargin();
-                var line = (Line)DottedLineMargin.Create();
+                LineNumberMargin lineNumbers = new LineNumberMargin();
+                Line line = (Line)DottedLineMargin.Create();
                 leftMargins.Insert(0, lineNumbers);
                 leftMargins.Insert(1, line);
-                var lineNumbersForeground = editor.GetBindingObservable(LineNumbersForegroundProperty);
-                var lineNumbersMargin = editor.GetBindingObservable(LineNumbersMarginProperty);
+                IObservable<BindingValue<IBrush>> lineNumbersForeground = editor.GetBindingObservable(LineNumbersForegroundProperty);
+                IObservable<BindingValue<Thickness>> lineNumbersMargin = editor.GetBindingObservable(LineNumbersMarginProperty);
                 line.Bind(Shape.StrokeProperty, lineNumbersForeground);
                 line.Bind(MarginProperty, lineNumbersMargin);
                 lineNumbers.Bind(ForegroundProperty, lineNumbersForeground);
             }
             else
             {
-                for (var i = 0; i < leftMargins.Count; i++)
+                for (int i = 0; i < leftMargins.Count; i++)
                 {
                     if (leftMargins[i] is LineNumberMargin)
                     {
@@ -592,29 +593,29 @@ namespace AvaloniaEdit
 
         private static void OnLineNumbersForegroundChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var editor = e.Sender as TextEditor;
-            var lineNumberMargin = editor?.TextArea.LeftMargins.FirstOrDefault(margin => margin is LineNumberMargin) as LineNumberMargin;
+            TextEditor editor = e.Sender as TextEditor;
+            LineNumberMargin lineNumberMargin = editor?.TextArea.LeftMargins.FirstOrDefault(margin => margin is LineNumberMargin) as LineNumberMargin;
 
             lineNumberMargin?.SetValue(ForegroundProperty, e.NewValue);
         }
 
         private static void OnFontFamilyPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var editor = e.Sender as TextEditor;
+            TextEditor editor = e.Sender as TextEditor;
 
             editor?.TextArea.TextView.SetValue(FontFamilyProperty, e.NewValue);
         }
 
         private static void OnFontSizePropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var editor = e.Sender as TextEditor;
+            TextEditor editor = e.Sender as TextEditor;
 
             editor?.TextArea.TextView.SetValue(FontSizeProperty, e.NewValue);
         }
 
         private static void SearchResultsBrushChangedCallback(AvaloniaPropertyChangedEventArgs e)
         {
-            var editor = e.Sender as TextEditor;
+            TextEditor editor = e.Sender as TextEditor;
 
             editor?.SearchPanel?.SetSearchResultsBrush(e.GetNewValue<IBrush>());
         }
@@ -644,7 +645,7 @@ namespace AvaloniaEdit
         /// </summary>
         public void AppendText(string textData)
         {
-            var document = GetDocument();
+            TextDocument document = GetDocument();
             document.Insert(document.TextLength, textData);
         }
 
@@ -980,11 +981,11 @@ namespace AvaloniaEdit
             {
                 if (value == null)
                     throw new ArgumentNullException(nameof(value));
-                var textArea = TextArea;
+                TextArea textArea = TextArea;
                 if (textArea.Document != null)
                 {
-                    var offset = SelectionStart;
-                    var length = SelectionLength;
+                    int offset = SelectionStart;
+                    int length = SelectionLength;
                     textArea.Document.Replace(offset, length, value);
                     // keep inserted text selected
                     textArea.Selection = Selection.Create(textArea, offset, offset + value.Length);
@@ -1042,7 +1043,7 @@ namespace AvaloniaEdit
         /// </summary>
         public void Select(int start, int length)
         {
-            var documentLength = Document?.TextLength ?? 0;
+            int documentLength = Document?.TextLength ?? 0;
             if (start < 0 || start > documentLength)
                 throw new ArgumentOutOfRangeException(nameof(start), start, "Value must be between 0 and " + documentLength);
             if (length < 0 || start + length > documentLength)
@@ -1058,7 +1059,7 @@ namespace AvaloniaEdit
         {
             get
             {
-                var document = Document;
+                TextDocument document = Document;
                 if (document != null)
                     return document.LineCount;
                 return 1;
@@ -1083,7 +1084,7 @@ namespace AvaloniaEdit
         /// </remarks>
         public void Load(Stream stream)
         {
-            using (var reader = FileReader.OpenStream(stream, Encoding ?? Encoding.UTF8))
+            using (StreamReader reader = FileReader.OpenStream(stream, Encoding ?? Encoding.UTF8))
             {
                 Text = reader.ReadToEnd();
                 SetValue(EncodingProperty, (object)reader.CurrentEncoding);
@@ -1135,9 +1136,9 @@ namespace AvaloniaEdit
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
-            var encoding = Encoding;
-            var document = Document;
-            var writer = encoding != null ? new StreamWriter(stream, encoding) : new StreamWriter(stream);
+            Encoding encoding = Encoding;
+            TextDocument document = Document;
+            StreamWriter writer = encoding != null ? new StreamWriter(stream, encoding) : new StreamWriter(stream);
             document?.WriteTextTo(writer);
             writer.Flush();
             // do not close the stream
@@ -1271,7 +1272,7 @@ namespace AvaloniaEdit
         {
             if (Document == null)
                 return null;
-            var textView = TextArea.TextView;
+            TextView textView = TextArea.TextView;
             Point tpoint = (Point)this.TranslatePoint(point + new Point(textView.ScrollOffset.X, Math.Floor(textView.ScrollOffset.Y)), textView);
             return textView.GetPosition(tpoint);
         }

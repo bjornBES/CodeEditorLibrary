@@ -44,7 +44,7 @@ namespace AvaloniaEdit
         public TextEditorOptions(TextEditorOptions options)
         {
             // get all the fields in the class
-            var fields = typeof(TextEditorOptions).GetRuntimeFields();
+            IEnumerable<FieldInfo> fields = typeof(TextEditorOptions).GetRuntimeFields();
 
             // copy each value over to 'this'
             foreach (FieldInfo fi in fields)
@@ -65,7 +65,7 @@ namespace AvaloniaEdit
         /// <param name="propertyName">The name of the changed property.</param>
         protected void OnPropertyChanged(string propertyName)
         {
-            var args = new PropertyChangedEventArgs(propertyName);
+            PropertyChangedEventArgs args = new PropertyChangedEventArgs(propertyName);
             OnPropertyChanged(args);
         }
 

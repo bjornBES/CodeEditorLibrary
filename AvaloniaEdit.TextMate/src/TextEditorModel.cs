@@ -97,8 +97,8 @@ namespace AvaloniaEdit.TextMate
             {
                 if (e.RemovalLength > 0)
                 {
-                    var startLine = _document.GetLineByOffset(e.Offset).LineNumber - 1;
-                    var endLine = _document.GetLineByOffset(e.Offset + e.RemovalLength).LineNumber - 1;
+                    int startLine = _document.GetLineByOffset(e.Offset).LineNumber - 1;
+                    int endLine = _document.GetLineByOffset(e.Offset + e.RemovalLength).LineNumber - 1;
 
                     for (int i = endLine; i > startLine; i--)
                     {

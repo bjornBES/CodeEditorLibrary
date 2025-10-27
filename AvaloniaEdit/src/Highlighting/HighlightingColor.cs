@@ -201,8 +201,8 @@ namespace AvaloniaEdit.Highlighting
         [SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "CSS usually uses lowercase, and all possible values are English-only")]
         public virtual string ToCss()
         {
-            var b = new StringBuilder();
-            var c = Foreground?.GetColor(null);
+            StringBuilder b = new StringBuilder();
+            Color? c = Foreground?.GetColor(null);
             if (c != null)
             {
                 b.AppendFormat(CultureInfo.InvariantCulture, "color: #{0:x2}{1:x2}{2:x2}; ", c.Value.R, c.Value.G, c.Value.B);
@@ -274,7 +274,7 @@ namespace AvaloniaEdit.Highlighting
         /// </summary>
         public virtual HighlightingColor Clone()
         {
-            var c = (HighlightingColor)MemberwiseClone();
+            HighlightingColor c = (HighlightingColor)MemberwiseClone();
             c.IsFrozen = false;
             return c;
         }
@@ -305,7 +305,7 @@ namespace AvaloniaEdit.Highlighting
         [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
         public override int GetHashCode()
         {
-            var hashCode = 0;
+            int hashCode = 0;
             unchecked
             {
                 if (_name != null)

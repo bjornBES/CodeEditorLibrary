@@ -34,9 +34,9 @@ namespace AvaloniaEdit.Snippets
         /// <inheritdoc/>
         public override void Insert(InsertionContext context)
         {
-            var start = context.InsertionPosition;
+            int start = context.InsertionPosition;
             base.Insert(context);
-            var end = context.InsertionPosition;
+            int end = context.InsertionPosition;
             context.RegisterActiveElement(this, new ReplaceableActiveElement(context, start, end));
         }
 
@@ -121,10 +121,10 @@ namespace AvaloniaEdit.Snippets
 
         private void Caret_PositionChanged(object sender, EventArgs e)
         {
-            var s = Segment;
+            ISegment s = Segment;
             if (s != null)
             {
-                var newIsCaretInside = s.Contains(_context.TextArea.Caret.Offset, 0);
+                bool newIsCaretInside = s.Contains(_context.TextArea.Caret.Offset, 0);
                 if (newIsCaretInside != _isCaretInside)
                 {
                     _isCaretInside = newIsCaretInside;
@@ -148,7 +148,7 @@ namespace AvaloniaEdit.Snippets
 
         void OnDocumentTextChanged(object sender, EventArgs e)
         {
-            var newText = GetText();
+            string newText = GetText();
             if (Text != newText)
             {
                 Text = newText;
@@ -175,13 +175,13 @@ namespace AvaloniaEdit.Snippets
 
             private static IBrush CreateBackgroundBrush()
             {
-				var b = new ImmutableSolidColorBrush(Colors.LimeGreen, 0.4);
+                ImmutableSolidColorBrush b = new ImmutableSolidColorBrush(Colors.LimeGreen, 0.4);
                 return b;
             }
 
             private static Pen CreateBorderPen()
             {
-                var p = new Pen(Brushes.Black, dashStyle: DashStyle.Dot);
+                Pen p = new Pen(Brushes.Black, dashStyle: DashStyle.Dot);
                 return p;
             }
 
@@ -191,10 +191,10 @@ namespace AvaloniaEdit.Snippets
 
             public void Draw(TextView textView, DrawingContext drawingContext)
             {
-                var s = Element.Segment;
+                ISegment s = Element.Segment;
                 if (s != null)
                 {
-                    var geoBuilder = new BackgroundGeometryBuilder
+                    BackgroundGeometryBuilder geoBuilder = new BackgroundGeometryBuilder
                     {
                         AlignToWholePixels = true,
                         BorderThickness = ActiveBorderPen?.Thickness ?? 0
@@ -202,7 +202,7 @@ namespace AvaloniaEdit.Snippets
                     if (Layer == KnownLayer.Background)
                     {
                         geoBuilder.AddSegment(textView, s);
-                        var geometry = geoBuilder.CreateGeometry(); 
+                        Geometry geometry = geoBuilder.CreateGeometry(); 
                         if(geometry != null)
                         {
                             drawingContext.DrawGeometry(BackgroundBrush, null, geometry);
@@ -214,7 +214,7 @@ namespace AvaloniaEdit.Snippets
                         if (Element._isCaretInside)
                         {
                             geoBuilder.AddSegment(textView, s);
-                            foreach (var boundElement in Element._context.ActiveElements.OfType<BoundActiveElement>())
+                            foreach (BoundActiveElement boundElement in Element._context.ActiveElements.OfType<BoundActiveElement>())
                             {
                                 if (boundElement.TargetElement == Element)
                                 {
@@ -222,7 +222,7 @@ namespace AvaloniaEdit.Snippets
                                     geoBuilder.CloseFigure();
                                 }
                             }
-                            var geometry = geoBuilder.CreateGeometry(); 
+                            Geometry geometry = geoBuilder.CreateGeometry(); 
                             if(geometry != null)
                             {
                                 drawingContext.DrawGeometry(null, ActiveBorderPen, geometry);

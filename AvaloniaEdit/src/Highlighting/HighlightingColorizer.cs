@@ -67,7 +67,7 @@ namespace AvaloniaEdit.Highlighting
 
         private void TextView_DocumentChanged(object sender, EventArgs e)
         {
-            var textView = (TextView)sender;
+            TextView textView = (TextView)sender;
             DeregisterServices(textView);
             RegisterServices(textView);
         }
@@ -222,9 +222,9 @@ namespace AvaloniaEdit.Highlighting
             if (_highlighter != null)
             {
                 _lineNumberBeingColorized = line.LineNumber;
-                var hl = _highlighter.HighlightLine(_lineNumberBeingColorized);
+                HighlightedLine hl = _highlighter.HighlightLine(_lineNumberBeingColorized);
                 _lineNumberBeingColorized = 0;
-                foreach (var section in hl.Sections)
+                foreach (HighlightedSection section in hl.Sections)
                 {
                     if (IsEmptyColor(section.Color))
                         continue;
@@ -259,17 +259,17 @@ namespace AvaloniaEdit.Highlighting
 		internal static void ApplyColorToElement(VisualLineElement element, HighlightingColor color, ITextRunConstructionContext context)
 		{
 			if (color.Foreground != null) {
-				var b = color.Foreground.GetBrush(context);
+                IBrush b = color.Foreground.GetBrush(context);
 				if (b != null)
 					element.TextRunProperties.SetForegroundBrush(b);
 			}
 			if (color.Background != null) {
-				var b = color.Background.GetBrush(context);
+                IBrush b = color.Background.GetBrush(context);
 				if (b != null)
 					element.BackgroundBrush = b;
 			}
 			if (color.FontStyle != null || color.FontWeight != null || color.FontFamily != null) {
-				var tf = element.TextRunProperties.Typeface;
+                Typeface tf = element.TextRunProperties.Typeface;
 				element.TextRunProperties.SetTypeface(new Typeface(
 					color.FontFamily ?? tf.FontFamily,
 					color.FontStyle ?? tf.Style,
@@ -362,9 +362,9 @@ namespace AvaloniaEdit.Highlighting
                 // for the highlighting during rendering.
                 // However this callback is also called outside of the rendering process, e.g. when a highlighter
                 // decides to re-highlight some section based on external feedback (e.g. semantic highlighting).
-                var fromLine = _textView.Document.GetLineByNumber(fromLineNumber);
-                var toLine = _textView.Document.GetLineByNumber(toLineNumber);
-                var startOffset = fromLine.Offset;
+                DocumentLine fromLine = _textView.Document.GetLineByNumber(fromLineNumber);
+                DocumentLine toLine = _textView.Document.GetLineByNumber(toLineNumber);
+                int startOffset = fromLine.Offset;
                 _textView.Redraw(startOffset, toLine.EndOffset - startOffset);
             }
 

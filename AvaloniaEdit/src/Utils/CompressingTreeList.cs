@@ -66,7 +66,7 @@ namespace AvaloniaEdit.Utils
             {
                 get
                 {
-                    var node = this;
+                    Node node = this;
                     while (node.Left != null)
                         node = node.Left;
                     return node;
@@ -77,7 +77,7 @@ namespace AvaloniaEdit.Utils
             {
                 get
                 {
-                    var node = this;
+                    Node node = this;
                     while (node.Right != null)
                         node = node.Right;
                     return node;
@@ -95,7 +95,7 @@ namespace AvaloniaEdit.Utils
                     {
                         return Left.RightMost;
                     }
-                    var node = this;
+                    Node node = this;
                     Node oldNode;
                     do
                     {
@@ -118,7 +118,7 @@ namespace AvaloniaEdit.Utils
                     {
                         return Right.LeftMost;
                     }
-                    var node = this;
+                    Node node = this;
                     Node oldNode;
                     do
                     {
@@ -190,7 +190,7 @@ namespace AvaloniaEdit.Utils
             }
             else
             {
-                var n = GetNode(ref index);
+                Node n = GetNode(ref index);
                 // check if we can put the value into the node n:
                 if (_comparisonFunc(n.Value, item))
                 {
@@ -207,7 +207,7 @@ namespace AvaloniaEdit.Utils
                 {
                     // insert before:
                     // maybe we can put the value in the previous node?
-                    var p = n.Predecessor;
+                    Node p = n.Predecessor;
                     if (p != null && _comparisonFunc(p.Value, item))
                     {
                         p.Count += count;
@@ -260,7 +260,7 @@ namespace AvaloniaEdit.Utils
             if (count == 0)
                 return;
 
-            var n = GetNode(ref index);
+            Node n = GetNode(ref index);
             if (index + count < n.Count)
             {
                 // just remove inside a single node
@@ -287,7 +287,7 @@ namespace AvaloniaEdit.Utils
                 while (n != null && count >= n.Count)
                 {
                     count -= n.Count;
-                    var s = n.Successor;
+                    Node s = n.Successor;
                     RemoveNode(n);
                     n = s;
                 }
@@ -329,7 +329,7 @@ namespace AvaloniaEdit.Utils
 
         private Node GetNode(ref int index)
         {
-            var node = _root;
+            Node node = _root;
             while (true)
             {
                 if (node.Left != null && index < node.Left.TotalCount)
@@ -355,7 +355,7 @@ namespace AvaloniaEdit.Utils
 
         private void UpdateAugmentedData(Node node)
         {
-            var totalCount = node.Count;
+            int totalCount = node.Count;
             if (node.Left != null) totalCount += node.Left.TotalCount;
             if (node.Right != null) totalCount += node.Right.TotalCount;
             if (node.TotalCount != totalCount)
@@ -406,10 +406,10 @@ namespace AvaloniaEdit.Utils
         /// </summary>
         public int IndexOf(T item)
         {
-            var index = 0;
+            int index = 0;
             if (_root != null)
             {
-                var n = _root.LeftMost;
+                Node n = _root.LeftMost;
                 while (n != null)
                 {
                     if (_comparisonFunc(n.Value, item))
@@ -430,7 +430,7 @@ namespace AvaloniaEdit.Utils
         {
             if (index < 0 || index >= Count)
                 throw new ArgumentOutOfRangeException(nameof(index), index, "Value must be between 0 and " + (Count - 1));
-            var indexInRun = index;
+            int indexInRun = index;
             GetNode(ref indexInRun);
             return index - indexInRun;
         }
@@ -444,8 +444,8 @@ namespace AvaloniaEdit.Utils
         {
             if (index < 0 || index >= Count)
                 throw new ArgumentOutOfRangeException(nameof(index), index, "Value must be between 0 and " + (Count - 1));
-            var indexInRun = index;
-            var runLength = GetNode(ref indexInRun).Count;
+            int indexInRun = index;
+            int runLength = GetNode(ref indexInRun).Count;
             return index - indexInRun + runLength;
         }
         
@@ -457,7 +457,7 @@ namespace AvaloniaEdit.Utils
             if (_root == null)
                 return;
             Node prevNode = null;
-            for (var n = _root.LeftMost; n != null; n = n.Successor)
+            for (Node n = _root.LeftMost; n != null; n = n.Successor)
             {
                 n.Value = converter(n.Value);
                 if (prevNode != null && _comparisonFunc(prevNode.Value, n.Value))
@@ -478,13 +478,13 @@ namespace AvaloniaEdit.Utils
         {
             if (_root == null)
                 return;
-            var endIndex = index + length;
-            var pos = index;
+            int endIndex = index + length;
+            int pos = index;
             while (pos < endIndex)
             {
-                var endPos = Math.Min(endIndex, GetEndOfRun(pos));
-                var oldValue = this[pos];
-                var newValue = converter(oldValue);
+                int endPos = Math.Min(endIndex, GetEndOfRun(pos));
+                T oldValue = this[pos];
+                T newValue = converter(oldValue);
                 SetRange(pos, endPos - pos, newValue);
                 pos = endPos;
             }
@@ -541,7 +541,7 @@ namespace AvaloniaEdit.Utils
                 throw new ArgumentException("The array is too small", nameof(array));
             if (arrayIndex < 0 || arrayIndex + Count > array.Length)
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex), arrayIndex, "Value must be between 0 and " + (array.Length - Count));
-            foreach (var v in this)
+            foreach (T v in this)
             {
                 array[arrayIndex++] = v;
             }
@@ -552,7 +552,7 @@ namespace AvaloniaEdit.Utils
         /// </summary>
         public bool Remove(T item)
         {
-            var index = IndexOf(item);
+            int index = IndexOf(item);
             if (index >= 0)
             {
                 RemoveAt(index);
@@ -570,10 +570,10 @@ namespace AvaloniaEdit.Utils
         {
             if (_root != null)
             {
-                var n = _root.LeftMost;
+                Node n = _root.LeftMost;
                 while (n != null)
                 {
-                    for (var i = 0; i < n.Count; i++)
+                    for (int i = 0; i < n.Count; i++)
                     {
                         yield return n.Value;
                     }
@@ -619,7 +619,7 @@ namespace AvaloniaEdit.Utils
             Debug.Assert(node.Left == null || node.Left.Color == Black);
             Debug.Assert(node.Right == null || node.Right.Color == Black);
 
-            var parentNode = node.Parent;
+            Node parentNode = node.Parent;
             if (parentNode == null)
             {
                 // we inserted in the root -> the node must be black
@@ -638,8 +638,8 @@ namespace AvaloniaEdit.Utils
             // parentNode is red, so there is a conflict here!
 
             // because the root is black, parentNode is not the root -> there is a grandparent node
-            var grandparentNode = parentNode.Parent;
-            var uncleNode = Sibling(parentNode);
+            Node grandparentNode = parentNode.Parent;
+            Node uncleNode = Sibling(parentNode);
             if (uncleNode != null && uncleNode.Color == Red)
             {
                 parentNode.Color = Black;
@@ -687,7 +687,7 @@ namespace AvaloniaEdit.Utils
             {
                 // replace removedNode with it's in-order successor
 
-                var leftMost = removedNode.Right.LeftMost;
+                Node leftMost = removedNode.Right.LeftMost;
                 RemoveNode(leftMost); // remove leftMost from its current location
 
                 // and overwrite the removedNode with it
@@ -705,8 +705,8 @@ namespace AvaloniaEdit.Utils
 
             // now either removedNode.left or removedNode.right is null
             // get the remaining child
-            var parentNode = removedNode.Parent;
-            var childNode = removedNode.Left ?? removedNode.Right;
+            Node parentNode = removedNode.Parent;
+            Node childNode = removedNode.Left ?? removedNode.Right;
             ReplaceNode(removedNode, childNode);
             if (parentNode != null) UpdateAugmentedData(parentNode);
             if (removedNode.Color == Black)
@@ -729,7 +729,7 @@ namespace AvaloniaEdit.Utils
                 return;
 
             // warning: node may be null
-            var sibling = Sibling(node, parentNode);
+            Node sibling = Sibling(node, parentNode);
             if (sibling.Color == Red)
             {
                 parentNode.Color = Red;
@@ -832,7 +832,7 @@ namespace AvaloniaEdit.Utils
         private void RotateLeft(Node p)
         {
             // let q be p's right child
-            var q = p.Right;
+            Node q = p.Right;
             Debug.Assert(q != null);
             Debug.Assert(q.Parent == p);
             // set q to be the new root
@@ -851,7 +851,7 @@ namespace AvaloniaEdit.Utils
         private void RotateRight(Node p)
         {
             // let q be p's left child
-            var q = p.Left;
+            Node q = p.Left;
             Debug.Assert(q != null);
             Debug.Assert(q.Parent == p);
             // set q to be the new root
@@ -898,12 +898,12 @@ namespace AvaloniaEdit.Utils
                 CheckProperties(_root);
 
                 // check red-black property:
-                var blackCount = -1;
+                int blackCount = -1;
                 CheckNodeProperties(_root, null, Red, 0, ref blackCount);
 
                 // ensure that the tree is compressed:
-                var p = _root.LeftMost;
-                var n = p.Successor;
+                Node p = _root.LeftMost;
+                Node n = p.Successor;
                 while (n != null)
                 {
                     Debug.Assert(!_comparisonFunc(p.Value, n.Value));
@@ -919,7 +919,7 @@ namespace AvaloniaEdit.Utils
         private void CheckProperties(Node node)
         {
             Debug.Assert(node.Count > 0);
-            var totalCount = node.Count;
+            int totalCount = node.Count;
             if (node.Left != null)
             {
                 CheckProperties(node.Left);
@@ -975,7 +975,7 @@ namespace AvaloniaEdit.Utils
 #if DEBUG
             if (_root == null)
                 return "<empty tree>";
-            var b = new StringBuilder();
+            StringBuilder b = new StringBuilder();
             AppendTreeToString(_root, b, 0);
             return b.ToString();
 #else

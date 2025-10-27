@@ -81,7 +81,7 @@ namespace AvaloniaEdit.Document
 
             public bool BelongsToSameDocumentAs(ITextSourceVersion other)
             {
-                var o = other as Version;
+                Version o = other as Version;
                 return o != null && _provider == o._provider;
             }
 
@@ -89,7 +89,7 @@ namespace AvaloniaEdit.Document
             {
                 if (other == null)
                     throw new ArgumentNullException(nameof(other));
-                var o = other as Version;
+                Version o = other as Version;
                 if (o == null || _provider != o._provider)
                     throw new ArgumentException("Versions do not belong to the same document.");
                 // We will allow overflows, but assume that the maximum distance between checkpoints is 2^31-1.
@@ -99,8 +99,8 @@ namespace AvaloniaEdit.Document
 
             public IEnumerable<TextChangeEventArgs> GetChangesTo(ITextSourceVersion other)
             {
-                var result = CompareAge(other);
-                var o = (Version)other;
+                int result = CompareAge(other);
+                Version o = (Version)other;
                 if (result < 0)
                     return GetForwardChanges(o);
                 if (result > 0)
@@ -111,7 +111,7 @@ namespace AvaloniaEdit.Document
             private IEnumerable<TextChangeEventArgs> GetForwardChanges(Version other)
             {
                 // Return changes from this(inclusive) to other(exclusive).
-                for (var node = this; node != other; node = node.Next)
+                for (Version node = this; node != other; node = node.Next)
                 {
                     yield return node.Change;
                 }

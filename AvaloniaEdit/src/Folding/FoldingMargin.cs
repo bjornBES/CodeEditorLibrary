@@ -26,6 +26,7 @@ using AvaloniaEdit.Utils;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using System.Collections.ObjectModel;
 
 namespace AvaloniaEdit.Folding
 {
@@ -136,25 +137,25 @@ namespace AvaloniaEdit.Folding
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            foreach (var m in _markers)
+            foreach (FoldingMarginMarker m in _markers)
             {
                 m.Measure(availableSize);
             }
-            var width = SizeFactor * GetValue(TextBlock.FontSizeProperty);
+            double width = SizeFactor * GetValue(TextBlock.FontSizeProperty);
             return new Size(PixelSnapHelpers.RoundToOdd(width, PixelSnapHelpers.GetPixelSize(this).Width), 0);
         }
 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var pixelSize = PixelSnapHelpers.GetPixelSize(this);
-            foreach (var m in _markers)
+            Size pixelSize = PixelSnapHelpers.GetPixelSize(this);
+            foreach (FoldingMarginMarker m in _markers)
             {
-                var visualColumn = m.VisualLine.GetVisualColumn(m.FoldingSection.StartOffset - m.VisualLine.FirstDocumentLine.Offset);
-                var textLine = m.VisualLine.GetTextLine(visualColumn);
-                var yPos = m.VisualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.TextMiddle) - TextView.VerticalOffset;
+                int visualColumn = m.VisualLine.GetVisualColumn(m.FoldingSection.StartOffset - m.VisualLine.FirstDocumentLine.Offset);
+                TextLine textLine = m.VisualLine.GetTextLine(visualColumn);
+                double yPos = m.VisualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.TextMiddle) - TextView.VerticalOffset;
                 yPos -= m.DesiredSize.Height / 2;
-                var xPos = (finalSize.Width - m.DesiredSize.Width) / 2;
+                double xPos = (finalSize.Width - m.DesiredSize.Width) / 2;
                 m.Arrange(new Rect(PixelSnapHelpers.Round(new Point(xPos, yPos), pixelSize), m.DesiredSize));
             }
             return finalSize;
@@ -164,7 +165,7 @@ namespace AvaloniaEdit.Folding
 
         protected override void OnTextViewVisualLinesChanged()
         {
-            foreach (var m in _markers)
+            foreach (FoldingMarginMarker m in _markers)
             {
                 VisualChildren.Remove(m);
             }
@@ -173,12 +174,12 @@ namespace AvaloniaEdit.Folding
             InvalidateVisual();
             if (TextView != null && FoldingManager != null && TextView.VisualLinesValid)
             {
-                foreach (var line in TextView.VisualLines)
+                foreach (VisualLine line in TextView.VisualLines)
                 {
-                    var fs = FoldingManager.GetNextFolding(line.FirstDocumentLine.Offset);
+                    FoldingSection fs = FoldingManager.GetNextFolding(line.FirstDocumentLine.Offset);
                     if (fs?.StartOffset <= line.LastDocumentLine.Offset + line.LastDocumentLine.Length)
                     {
-                        var m = new FoldingMarginMarker
+                        FoldingMarginMarker m = new FoldingMarginMarker
                         {
                             IsExpanded = !fs.IsFolded,
                             VisualLine = line,
@@ -214,9 +215,9 @@ namespace AvaloniaEdit.Folding
             if (TextView.VisualLines.Count == 0 || FoldingManager == null)
                 return;
 
-            var allTextLines = TextView.VisualLines.SelectMany(vl => vl.TextLines).ToList();
-            var colors = new Pen[allTextLines.Count + 1];
-            var endMarker = new Pen[allTextLines.Count];
+            List<TextLine> allTextLines = TextView.VisualLines.SelectMany(vl => vl.TextLines).ToList();
+            Pen[] colors = new Pen[allTextLines.Count + 1];
+            Pen[] endMarker = new Pen[allTextLines.Count];
 
             CalculateFoldLinesForFoldingsActiveAtStart(allTextLines, colors, endMarker);
             CalculateFoldLinesForMarkers(allTextLines, colors, endMarker);
@@ -229,16 +230,16 @@ namespace AvaloniaEdit.Folding
         /// </summary>
         private void CalculateFoldLinesForFoldingsActiveAtStart(List<TextLine> allTextLines, Pen[] colors, Pen[] endMarker)
         {
-            var viewStartOffset = TextView.VisualLines[0].FirstDocumentLine.Offset;
-            var viewEndOffset = TextView.VisualLines.Last().LastDocumentLine.EndOffset;
-            var foldings = FoldingManager.GetFoldingsContaining(viewStartOffset);
-            var maxEndOffset = 0;
-            foreach (var fs in foldings)
+            int viewStartOffset = TextView.VisualLines[0].FirstDocumentLine.Offset;
+            int viewEndOffset = TextView.VisualLines.Last().LastDocumentLine.EndOffset;
+            ReadOnlyCollection<FoldingSection> foldings = FoldingManager.GetFoldingsContaining(viewStartOffset);
+            int maxEndOffset = 0;
+            foreach (FoldingSection fs in foldings)
             {
-                var end = fs.EndOffset;
+                int end = fs.EndOffset;
                 if (end <= viewEndOffset && !fs.IsFolded)
                 {
-                    var textLineNr = GetTextLineIndexFromOffset(allTextLines, end);
+                    int textLineNr = GetTextLineIndexFromOffset(allTextLines, end);
                     if (textLineNr >= 0)
                     {
                         endMarker[textLineNr] = _foldingControlPen;
@@ -253,15 +254,15 @@ namespace AvaloniaEdit.Folding
             {
                 if (maxEndOffset > viewEndOffset)
                 {
-                    for (var i = 0; i < colors.Length; i++)
+                    for (int i = 0; i < colors.Length; i++)
                     {
                         colors[i] = _foldingControlPen;
                     }
                 }
                 else
                 {
-                    var maxTextLine = GetTextLineIndexFromOffset(allTextLines, maxEndOffset);
-                    for (var i = 0; i <= maxTextLine; i++)
+                    int maxTextLine = GetTextLineIndexFromOffset(allTextLines, maxEndOffset);
+                    for (int i = 0; i <= maxTextLine; i++)
                     {
                         colors[i] = _foldingControlPen;
                     }
@@ -274,10 +275,10 @@ namespace AvaloniaEdit.Folding
         /// </summary>
         private void CalculateFoldLinesForMarkers(List<TextLine> allTextLines, Pen[] colors, Pen[] endMarker)
         {
-            foreach (var marker in _markers)
+            foreach (FoldingMarginMarker marker in _markers)
             {
-                var end = marker.FoldingSection.EndOffset;
-                var endTextLineNr = GetTextLineIndexFromOffset(allTextLines, end);
+                int end = marker.FoldingSection.EndOffset;
+                int endTextLineNr = GetTextLineIndexFromOffset(allTextLines, end);
                 if (!marker.FoldingSection.IsFolded && endTextLineNr >= 0)
                 {
                     if (marker.IsPointerOver)
@@ -285,10 +286,10 @@ namespace AvaloniaEdit.Folding
                     else if (endMarker[endTextLineNr] == null)
                         endMarker[endTextLineNr] = _foldingControlPen;
                 }
-                var startTextLineNr = GetTextLineIndexFromOffset(allTextLines, marker.FoldingSection.StartOffset);
+                int startTextLineNr = GetTextLineIndexFromOffset(allTextLines, marker.FoldingSection.StartOffset);
                 if (startTextLineNr >= 0)
                 {
-                    for (var i = startTextLineNr + 1; i < colors.Length && i - 1 != endTextLineNr; i++)
+                    for (int i = startTextLineNr + 1; i < colors.Length && i - 1 != endTextLineNr; i++)
                     {
                         if (marker.IsPointerOver)
                             colors[i] = _selectedFoldingControlPen;
@@ -308,23 +309,23 @@ namespace AvaloniaEdit.Folding
             // Because we are using PenLineCap.Flat (the default), for vertical lines,
             // Y coordinates must be on pixel boundaries, whereas the X coordinate must be in the
             // middle of a pixel. (and the other way round for horizontal lines)
-            var pixelSize = PixelSnapHelpers.GetPixelSize(this);
-            var markerXPos = PixelSnapHelpers.PixelAlign(Bounds.Width / 2, pixelSize.Width);
+            Size pixelSize = PixelSnapHelpers.GetPixelSize(this);
+            double markerXPos = PixelSnapHelpers.PixelAlign(Bounds.Width / 2, pixelSize.Width);
             double startY = 0;
-            var currentPen = colors[0];
-            var tlNumber = 0;
-            foreach (var vl in TextView.VisualLines)
+            Pen currentPen = colors[0];
+            int tlNumber = 0;
+            foreach (VisualLine vl in TextView.VisualLines)
             {
-                foreach (var tl in vl.TextLines)
+                foreach (TextLine tl in vl.TextLines)
                 {
                     if (endMarker[tlNumber] != null)
                     {
-                        var visualPos = GetVisualPos(vl, tl, pixelSize.Height);
+                        double visualPos = GetVisualPos(vl, tl, pixelSize.Height);
                         drawingContext.DrawLine(endMarker[tlNumber], new Point(markerXPos - pixelSize.Width / 2, visualPos), new Point(Bounds.Width, visualPos));
                     }
                     if (colors[tlNumber + 1] != currentPen)
                     {
-                        var visualPos = GetVisualPos(vl, tl, pixelSize.Height);
+                        double visualPos = GetVisualPos(vl, tl, pixelSize.Height);
                         if (currentPen != null)
                         {
                             drawingContext.DrawLine(currentPen, new Point(markerXPos, startY + pixelSize.Height / 2), new Point(markerXPos, visualPos - pixelSize.Height / 2));
@@ -343,18 +344,18 @@ namespace AvaloniaEdit.Folding
 
         private double GetVisualPos(VisualLine vl, TextLine tl, double pixelHeight)
         {
-            var pos = vl.GetTextLineVisualYPosition(tl, VisualYPosition.TextMiddle) - TextView.VerticalOffset;
+            double pos = vl.GetTextLineVisualYPosition(tl, VisualYPosition.TextMiddle) - TextView.VerticalOffset;
             return PixelSnapHelpers.PixelAlign(pos, pixelHeight);
         }
 
         private int GetTextLineIndexFromOffset(List<TextLine> textLines, int offset)
         {
-            var lineNumber = TextView.Document.GetLineByOffset(offset).LineNumber;
-            var vl = TextView.GetVisualLine(lineNumber);
+            int lineNumber = TextView.Document.GetLineByOffset(offset).LineNumber;
+            VisualLine vl = TextView.GetVisualLine(lineNumber);
             if (vl != null)
             {
-                var relOffset = offset - vl.FirstDocumentLine.Offset;
-                var line = vl.GetTextLine(vl.GetVisualColumn(relOffset));
+                int relOffset = offset - vl.FirstDocumentLine.Offset;
+                TextLine line = vl.GetTextLine(vl.GetVisualColumn(relOffset));
                 return textLines.IndexOf(line);
             }
             return -1;

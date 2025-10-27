@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 using Avalonia.Input;
 using AvaloniaEdit.Document;
+using AvaloniaEdit.Rendering;
 using AvaloniaEdit.Utils;
 
 namespace AvaloniaEdit.Editing
@@ -104,16 +105,16 @@ namespace AvaloniaEdit.Editing
         {
             if (EnableVirtualSpace && InsertVirtualSpaces(newText, start, end))
             {
-                var line = TextArea.Document.GetLineByNumber(start.Line);
-                var lineText = TextArea.Document.GetText(line);
-                var vLine = TextArea.TextView.GetOrConstructVisualLine(line);
-                var colDiff = start.VisualColumn - vLine.VisualLength;
+                DocumentLine line = TextArea.Document.GetLineByNumber(start.Line);
+                string lineText = TextArea.Document.GetText(line);
+                VisualLine vLine = TextArea.TextView.GetOrConstructVisualLine(line);
+                int colDiff = start.VisualColumn - vLine.VisualLength;
                 if (colDiff > 0)
                 {
-                    var additionalSpaces = "";
+                    string additionalSpaces = "";
                     if (!TextArea.Options.ConvertTabsToSpaces && lineText.Trim('\t').Length == 0)
                     {
-                        var tabCount = colDiff / TextArea.Options.IndentationSize;
+                        int tabCount = colDiff / TextArea.Options.IndentationSize;
                         additionalSpaces = new string('\t', tabCount);
                         colDiff -= tabCount * TextArea.Options.IndentationSize;
                     }
@@ -176,12 +177,12 @@ namespace AvaloniaEdit.Editing
         {
             get
             {
-                var surroundingSegment = SurroundingSegment;
+                ISegment surroundingSegment = SurroundingSegment;
                 if (surroundingSegment == null)
                     return false;
-                var start = surroundingSegment.Offset;
-                var end = start + surroundingSegment.Length;
-                var document = TextArea.Document;
+                int start = surroundingSegment.Offset;
+                int end = start + surroundingSegment.Length;
+                TextDocument document = TextArea.Document;
                 if (document == null)
                     throw ThrowUtil.NoDocumentAssigned();
                 return document.GetLineByOffset(start) != document.GetLineByOffset(end);
@@ -193,12 +194,12 @@ namespace AvaloniaEdit.Editing
         /// </summary>
         public virtual string GetText()
         {
-            var document = TextArea.Document;
+            TextDocument document = TextArea.Document;
             if (document == null)
                 throw ThrowUtil.NoDocumentAssigned();
             StringBuilder b = null;
             string text = null;
-            foreach (var s in Segments)
+            foreach (SelectionSegment s in Segments)
             {
                 if (text != null)
                 {

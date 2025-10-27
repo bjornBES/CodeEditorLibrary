@@ -106,8 +106,8 @@ namespace AvaloniaEdit.Document
                 Debug.Assert(!(OwnerTree == null && Parent != null));
                 Debug.Assert(!(OwnerTree == null && Left != null));
 
-                var n = this;
-                var offset = n.NodeLength;
+                TextSegment n = this;
+                int offset = n.NodeLength;
                 if (n.Left != null)
                     offset += n.Left.TotalNodeLength;
                 while (n.Parent != null)
@@ -129,7 +129,7 @@ namespace AvaloniaEdit.Document
                 if (StartOffset != value)
                 {
                     // need a copy of the variable because ownerTree.Remove() sets this.ownerTree to null
-                    var ownerTree = OwnerTree;
+                    ISegmentTree ownerTree = OwnerTree;
                     if (ownerTree != null)
                     {
                         ownerTree.Remove(this);
@@ -156,7 +156,7 @@ namespace AvaloniaEdit.Document
             get => StartOffset + Length;
             set
             {
-                var newLength = value - StartOffset;
+                int newLength = value - StartOffset;
                 if (newLength < 0)
                     throw new ArgumentOutOfRangeException(nameof(value), "EndOffset must be greater or equal to StartOffset");
                 Length = newLength;
@@ -197,7 +197,7 @@ namespace AvaloniaEdit.Document
         {
             get
             {
-                var node = this;
+                TextSegment node = this;
                 while (node.Left != null)
                     node = node.Left;
                 return node;
@@ -208,7 +208,7 @@ namespace AvaloniaEdit.Document
         {
             get
             {
-                var node = this;
+                TextSegment node = this;
                 while (node.Right != null)
                     node = node.Right;
                 return node;
@@ -226,7 +226,7 @@ namespace AvaloniaEdit.Document
                 {
                     return Right.LeftMost;
                 }
-                var node = this;
+                TextSegment node = this;
                 TextSegment oldNode;
                 do
                 {
@@ -249,7 +249,7 @@ namespace AvaloniaEdit.Document
                 {
                     return Left.RightMost;
                 }
-                var node = this;
+                TextSegment node = this;
                 TextSegment oldNode;
                 do
                 {

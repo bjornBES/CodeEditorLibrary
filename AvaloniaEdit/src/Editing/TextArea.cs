@@ -416,7 +416,7 @@ namespace AvaloniaEdit.Editing
 
             public void Undo()
             {
-                var textArea = (TextArea)_textAreaReference.Target;
+                TextArea textArea = (TextArea)_textAreaReference.Target;
                 if (textArea != null)
                 {
                     textArea.Caret.Position = _caretPosition;
@@ -467,21 +467,21 @@ namespace AvaloniaEdit.Editing
                 {
                     if (TextView != null)
                     {
-                        var oldSegment = _selection.SurroundingSegment;
-                        var newSegment = value.SurroundingSegment;
+                        ISegment oldSegment = _selection.SurroundingSegment;
+                        ISegment newSegment = value.SurroundingSegment;
                         if (!Selection.EnableVirtualSpace && (_selection is SimpleSelection && value is SimpleSelection && oldSegment != null && newSegment != null))
                         {
                             // perf optimization:
                             // When a simple selection changes, don't redraw the whole selection, but only the changed parts.
-                            var oldSegmentOffset = oldSegment.Offset;
-                            var newSegmentOffset = newSegment.Offset;
+                            int oldSegmentOffset = oldSegment.Offset;
+                            int newSegmentOffset = newSegment.Offset;
                             if (oldSegmentOffset != newSegmentOffset)
                             {
                                 TextView.Redraw(Math.Min(oldSegmentOffset, newSegmentOffset),
                                                 Math.Abs(oldSegmentOffset - newSegmentOffset));
                             }
-                            var oldSegmentEndOffset = oldSegment.EndOffset;
-                            var newSegmentEndOffset = newSegment.EndOffset;
+                            int oldSegmentEndOffset = oldSegment.EndOffset;
+                            int newSegmentEndOffset = newSegment.EndOffset;
                             if (oldSegmentEndOffset != newSegmentEndOffset)
                             {
                                 TextView.Redraw(Math.Min(oldSegmentEndOffset, newSegmentEndOffset),
@@ -650,7 +650,7 @@ namespace AvaloniaEdit.Editing
         /// <param name="line">The line to scroll to.</param>
         public void ScrollToLine(int line)
         {
-            var viewPortLines = (int)(this as IScrollable).Viewport.Height;
+            int viewPortLines = (int)(this as IScrollable).Viewport.Height;
 
             if (viewPortLines < Document.LineCount)
             {
@@ -676,7 +676,7 @@ namespace AvaloniaEdit.Editing
         /// <param name="linesBelow">The number of lines below.</param>
         public void ScrollToLine(int line, int linesAbove, int linesBelow)
         {
-            var offset = line - linesAbove;
+            int offset = line - linesAbove;
 
             if (offset < 0)
             {
@@ -723,14 +723,14 @@ namespace AvaloniaEdit.Editing
         {
             if (e.OldItems != null)
             {
-                foreach (var c in e.OldItems.OfType<ITextViewConnect>())
+                foreach (ITextViewConnect c in e.OldItems.OfType<ITextViewConnect>())
                 {
                     c.RemoveFromTextView(TextView);
                 }
             }
             if (e.NewItems != null)
             {
-                foreach (var c in e.NewItems.OfType<ITextViewConnect>())
+                foreach (ITextViewConnect c in e.NewItems.OfType<ITextViewConnect>())
                 {
                     c.AddToTextView(TextView);
                 }
@@ -868,7 +868,7 @@ namespace AvaloniaEdit.Editing
         /// </summary>
         public void PerformTextInput(string text)
         {
-            var e = new TextInputEventArgs
+            TextInputEventArgs e = new TextInputEventArgs
             {
                 Text = text,
                 RoutedEvent = TextInputEvent
@@ -906,14 +906,14 @@ namespace AvaloniaEdit.Editing
 
         private void ReplaceSelectionWithNewLine()
         {
-            var newLine = TextUtilities.GetNewLineFromDocument(Document, Caret.Line);
+            string newLine = TextUtilities.GetNewLineFromDocument(Document, Caret.Line);
             using (Document.RunUpdate())
             {
                 ReplaceSelectionWithText(newLine);
                 if (IndentationStrategy != null)
                 {
-                    var line = Document.GetLineByNumber(Caret.Line);
-                    var deletable = GetDeletableSegments(line);
+                    DocumentLine line = Document.GetLineByNumber(Caret.Line);
+                    ISegment[] deletable = GetDeletableSegments(line);
                     if (deletable.Length == 1 && deletable[0].Offset == line.Offset && deletable[0].Length == line.Length)
                     {
                         // use indentation strategy only if the line is not read-only
@@ -931,7 +931,7 @@ namespace AvaloniaEdit.Editing
 #if DEBUG
             if (!_selection.IsEmpty)
             {
-                foreach (var s in _selection.Segments)
+                foreach (SelectionSegment s in _selection.Segments)
                 {
                     Debug.Assert(!ReadOnlySectionProvider.GetDeletableSegments(s).Any());
                 }
@@ -950,12 +950,12 @@ namespace AvaloniaEdit.Editing
 
         internal ISegment[] GetDeletableSegments(ISegment segment)
         {
-            var deletableSegments = ReadOnlySectionProvider.GetDeletableSegments(segment);
+            IEnumerable<ISegment> deletableSegments = ReadOnlySectionProvider.GetDeletableSegments(segment);
             if (deletableSegments == null)
                 throw new InvalidOperationException("ReadOnlySectionProvider.GetDeletableSegments returned null");
-            var array = deletableSegments.ToArray();
-            var lastIndex = segment.Offset;
-            foreach (var t in array)
+            ISegment[] array = deletableSegments.ToArray();
+            int lastIndex = segment.Offset;
+            foreach (ISegment t in array)
             {
                 if (t.Offset < lastIndex)
                     throw new InvalidOperationException("ReadOnlySectionProvider returned incorrect segments (outside of input segment / wrong order)");
@@ -1010,7 +1010,7 @@ namespace AvaloniaEdit.Editing
 
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            foreach (var h in StackedInputHandlers)
+            foreach (TextAreaStackedInputHandler h in StackedInputHandlers)
             {
                 if (e.Handled)
                     break;
@@ -1027,7 +1027,7 @@ namespace AvaloniaEdit.Editing
 
         private void OnPreviewKeyUp(object sender, KeyEventArgs e)
         {
-            foreach (var h in StackedInputHandlers)
+            foreach (TextAreaStackedInputHandler h in StackedInputHandlers)
             {
                 if (e.Handled)
                     break;
@@ -1209,16 +1209,16 @@ namespace AvaloniaEdit.Editing
                         return default;
                     }
 
-                    var transform = _textArea.TextView.TransformToVisual(_textArea);
+                    Matrix? transform = _textArea.TextView.TransformToVisual(_textArea);
 
                     if (transform == null)
                     {
                         return default;
                     }
 
-                    var rect = _textArea.Caret.CalculateCaretRectangle().TransformToAABB(transform.Value);
+                    Rect rect = _textArea.Caret.CalculateCaretRectangle().TransformToAABB(transform.Value);
 
-                    var scrollOffset = _textArea.TextView.ScrollOffset;
+                    Vector scrollOffset = _textArea.TextView.ScrollOffset;
 
                     rect = rect.WithX(rect.X - scrollOffset.X).WithY(rect.Y - scrollOffset.Y);
 
@@ -1241,11 +1241,11 @@ namespace AvaloniaEdit.Editing
                         return default;
                     }
 
-                    var lineIndex = _textArea.Caret.Line;
+                    int lineIndex = _textArea.Caret.Line;
 
-                    var documentLine = _textArea.Document.GetLineByNumber(lineIndex);
+                    DocumentLine documentLine = _textArea.Document.GetLineByNumber(lineIndex);
 
-                    var text = _textArea.Document.GetText(documentLine.Offset, documentLine.Length);
+                    string text = _textArea.Document.GetText(documentLine.Offset, documentLine.Length);
 
                     return text;
                 }
@@ -1262,7 +1262,7 @@ namespace AvaloniaEdit.Editing
                 set
                 {
                     if (_textArea == null) return;
-                    var selection =  _textArea.Selection;
+                    Selection selection =  _textArea.Selection;
                     if (selection.StartPosition.Line == 0) return;
 
                     _textArea.Selection = selection.StartSelectionOrSetEndpoint(

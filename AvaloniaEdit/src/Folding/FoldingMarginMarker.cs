@@ -67,20 +67,20 @@ namespace AvaloniaEdit.Folding
 
         protected override Size MeasureCore(Size availableSize)
         {
-            var size = MarginSizeFactor * FoldingMargin.SizeFactor * GetValue(TextBlock.FontSizeProperty);
+            double size = MarginSizeFactor * FoldingMargin.SizeFactor * GetValue(TextBlock.FontSizeProperty);
             size = PixelSnapHelpers.RoundToOdd(size, PixelSnapHelpers.GetPixelSize(this).Width);
             return new Size(size, size);
         }
 
         public override void Render(DrawingContext drawingContext)
         {
-            var margin = (FoldingMargin)Parent;
-            var activePen = new Pen(margin.SelectedFoldingMarkerBrush,
+            FoldingMargin margin = (FoldingMargin)Parent;
+            Pen activePen = new Pen(margin.SelectedFoldingMarkerBrush,
                 lineCap: PenLineCap.Square);
-            var inactivePen = new Pen(margin.FoldingMarkerBrush,
+            Pen inactivePen = new Pen(margin.FoldingMarkerBrush,
                 lineCap: PenLineCap.Square);
-            var pixelSize = PixelSnapHelpers.GetPixelSize(this);
-            var rect = new Rect(pixelSize.Width / 2,
+            Size pixelSize = PixelSnapHelpers.GetPixelSize(this);
+            Rect rect = new Rect(pixelSize.Width / 2,
                                  pixelSize.Height / 2,
                                  Bounds.Width - pixelSize.Width,
                                  Bounds.Height - pixelSize.Height);
@@ -93,9 +93,9 @@ namespace AvaloniaEdit.Folding
                 IsPointerOver ? activePen : inactivePen,
                 rect);
 
-            var middleX = rect.X + rect.Width / 2;
-            var middleY = rect.Y + rect.Height / 2;
-            var space = PixelSnapHelpers.Round(rect.Width / 8, pixelSize.Width) + pixelSize.Width;
+            double middleX = rect.X + rect.Width / 2;
+            double middleY = rect.Y + rect.Height / 2;
+            double space = PixelSnapHelpers.Round(rect.Width / 8, pixelSize.Width) + pixelSize.Width;
             drawingContext.DrawLine(activePen,
                                     new Point(rect.X + space, middleY),
                                     new Point(rect.Right - space, middleY));

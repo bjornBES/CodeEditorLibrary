@@ -49,7 +49,7 @@ namespace AvaloniaEdit.Rendering
 
         internal void SetVisualLines(ICollection<VisualLine> visualLines)
         {
-            foreach (var v in _visuals)
+            foreach (VisualLineDrawingVisual v in _visuals)
             {
                 if (v.VisualLine.IsDisposed)
                 {
@@ -58,9 +58,9 @@ namespace AvaloniaEdit.Rendering
             }
 
             _visuals.Clear();
-            foreach (var newLine in visualLines)
+            foreach (VisualLine newLine in visualLines)
             {
-                var visual = newLine.Render();
+                VisualLineDrawingVisual visual = newLine.Render();
                 if (!visual.IsAdded)
                 {
                     VisualChildren.Add(visual);

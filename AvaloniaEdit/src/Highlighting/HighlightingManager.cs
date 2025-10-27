@@ -65,7 +65,7 @@ namespace AvaloniaEdit.Highlighting
                 IHighlightingDefinition def = null;
                 try
                 {
-                    using (var busyLock = BusyManager.Enter(this))
+                    using (BusyManager.BusyLock busyLock = BusyManager.Enter(this))
                     {
                         if (!busyLock.Success)
                             throw new InvalidOperationException("Tried to create delay-loaded highlighting definition recursively. Make sure the are no cyclic references between the highlighting definitions.");
@@ -127,7 +127,7 @@ namespace AvaloniaEdit.Highlighting
         {
             lock (_lockObj)
             {
-                return _highlightingsByName.TryGetValue(name, out var rh) ? rh : null;
+                return _highlightingsByName.TryGetValue(name, out IHighlightingDefinition rh) ? rh : null;
             }
         }
 
@@ -153,7 +153,7 @@ namespace AvaloniaEdit.Highlighting
         {
             lock (_lockObj)
             {
-                return _highlightingsByExtension.TryGetValue(extension, out var rh) ? rh : null;
+                return _highlightingsByExtension.TryGetValue(extension, out IHighlightingDefinition rh) ? rh : null;
             }
         }
 
@@ -177,7 +177,7 @@ namespace AvaloniaEdit.Highlighting
                 }
                 if (extensions != null)
                 {
-                    foreach (var ext in extensions)
+                    foreach (string ext in extensions)
                     {
                         _highlightingsByExtension[ext] = highlighting;
                     }
@@ -235,8 +235,8 @@ namespace AvaloniaEdit.Highlighting
                 IHighlightingDefinition Func()
                 {
                     XshdSyntaxDefinition xshd;
-                    using (var s = Resources.OpenStream(resourceName))
-                    using (var reader = XmlReader.Create(s))
+                    using (Stream s = Resources.OpenStream(resourceName))
+                    using (XmlReader reader = XmlReader.Create(s))
                     {
                         // in release builds, skip validating the built-in highlightings
                         xshd = HighlightingLoader.LoadXshd(reader, true);

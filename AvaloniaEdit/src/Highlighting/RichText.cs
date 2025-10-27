@@ -53,10 +53,10 @@ namespace AvaloniaEdit.Highlighting
             Text = text ?? throw new ArgumentNullException(nameof(text));
             if (model != null)
             {
-                var sections = model.GetHighlightedSections(0, text.Length).ToArray();
+                HighlightedSection[] sections = model.GetHighlightedSections(0, text.Length).ToArray();
                 StateChangeOffsets = new int[sections.Length];
                 StateChanges = new HighlightingColor[sections.Length];
-                for (var i = 0; i < sections.Length; i++)
+                for (int i = 0; i < sections.Length; i++)
                 {
                     StateChangeOffsets[i] = sections[i].Offset;
                     StateChanges[i] = sections[i].Color;
@@ -92,7 +92,7 @@ namespace AvaloniaEdit.Highlighting
         {
             if (offset < 0 || offset > Text.Length)
                 throw new ArgumentOutOfRangeException(nameof(offset));
-            var index = Array.BinarySearch(StateChangeOffsets, offset);
+            int index = Array.BinarySearch(StateChangeOffsets, offset);
             if (index < 0)
             {
                 // If no color change exists directly at offset,
@@ -124,12 +124,12 @@ namespace AvaloniaEdit.Highlighting
         /// </summary>
         public IEnumerable<HighlightedSection> GetHighlightedSections(int offset, int length)
         {
-            var index = GetIndexForOffset(offset);
-            var pos = offset;
-            var endOffset = offset + length;
+            int index = GetIndexForOffset(offset);
+            int pos = offset;
+            int endOffset = offset + length;
             while (pos < endOffset)
             {
-                var endPos = Math.Min(endOffset, GetEnd(index));
+                int endPos = Math.Min(endOffset, GetEnd(index));
                 yield return new HighlightedSection
                 {
                     Offset = pos,
@@ -217,9 +217,9 @@ namespace AvaloniaEdit.Highlighting
         {
             if (offset == 0 && length == Length)
                 return this;
-            var newText = Text.Substring(offset, length);
-            var model = ToRichTextModel();
-            var map = new OffsetChangeMap(2)
+            string newText = Text.Substring(offset, length);
+            RichTextModel model = ToRichTextModel();
+            OffsetChangeMap map = new OffsetChangeMap(2)
             {
                 new OffsetChangeMapEntry(offset + length, Text.Length - offset - length, 0),
                 new OffsetChangeMapEntry(0, offset, 0)
@@ -237,10 +237,10 @@ namespace AvaloniaEdit.Highlighting
                 return Empty;
             if (texts.Length == 1)
                 return texts[0];
-            var newText = string.Concat(texts.Select(txt => txt.Text));
-            var model = texts[0].ToRichTextModel();
-            var offset = texts[0].Length;
-            for (var i = 1; i < texts.Length; i++)
+            string newText = string.Concat(texts.Select(txt => txt.Text));
+            RichTextModel model = texts[0].ToRichTextModel();
+            int offset = texts[0].Length;
+            for (int i = 1; i < texts.Length; i++)
             {
                 model.Append(offset, texts[i].StateChangeOffsets, texts[i].StateChanges);
                 offset += texts[i].Length;

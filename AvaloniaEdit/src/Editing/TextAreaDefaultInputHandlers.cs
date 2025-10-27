@@ -75,13 +75,13 @@ namespace AvaloniaEdit.Editing
 
         private UndoStack GetUndoStack()
         {
-            var document = TextArea.Document;
+            TextDocument document = TextArea.Document;
             return document?.UndoStack;
         }
 
         private void ExecuteUndo(object sender, ExecutedRoutedEventArgs e)
         {
-            var undoStack = GetUndoStack();
+            UndoStack undoStack = GetUndoStack();
             if (undoStack != null)
             {
                 if (undoStack.CanUndo)
@@ -95,7 +95,7 @@ namespace AvaloniaEdit.Editing
 
         private void CanExecuteUndo(object sender, CanExecuteRoutedEventArgs e)
         {
-            var undoStack = GetUndoStack();
+            UndoStack undoStack = GetUndoStack();
             if (undoStack != null)
             {
                 e.Handled = true;
@@ -105,7 +105,7 @@ namespace AvaloniaEdit.Editing
 
         private void ExecuteRedo(object sender, ExecutedRoutedEventArgs e)
         {
-            var undoStack = GetUndoStack();
+            UndoStack undoStack = GetUndoStack();
             if (undoStack != null)
             {
                 if (undoStack.CanRedo)
@@ -119,7 +119,7 @@ namespace AvaloniaEdit.Editing
 
         private void CanExecuteRedo(object sender, CanExecuteRoutedEventArgs e)
         {
-            var undoStack = GetUndoStack();
+            UndoStack undoStack = GetUndoStack();
             if (undoStack != null)
             {
                 e.Handled = true;

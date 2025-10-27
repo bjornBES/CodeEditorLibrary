@@ -248,7 +248,7 @@ namespace AvaloniaEdit.CodeCompletion
 
         private void OnPointerPressed(object sender, PointerPressedEventArgs e)
         {
-            var visual = e.Source as Visual;
+            Visual visual = e.Source as Visual;
             if (!e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed) 
                 return;
 
@@ -261,7 +261,7 @@ namespace AvaloniaEdit.CodeCompletion
                 return;
 
             // Ignore event if pointer is released outside the selected item.
-            var listBoxItem = _listBox.ContainerFromIndex(_listBox.SelectedIndex);
+            Control listBoxItem = _listBox.ContainerFromIndex(_listBox.SelectedIndex);
             if (listBoxItem == null || !this.GetVisualsAt(e.GetPosition(this)).Any(v => v == listBoxItem || listBoxItem.IsVisualAncestorOf(v)))
                 return;
 
@@ -348,7 +348,7 @@ namespace AvaloniaEdit.CodeCompletion
         private void SelectItemFiltering(string query)
         {
             // if the user just typed one more character, don't filter all data but just filter what we are already displaying
-            var listToFilter = _currentList != null && !string.IsNullOrEmpty(_currentText) && !string.IsNullOrEmpty(query) &&
+            List<ICompletionData> listToFilter = _currentList != null && !string.IsNullOrEmpty(_currentText) && !string.IsNullOrEmpty(query) &&
                                query.StartsWith(_currentText, StringComparison.Ordinal) ?
                 _currentList : _completionData;
 
@@ -359,17 +359,17 @@ namespace AvaloniaEdit.CodeCompletion
                 select new { Item = item, Quality = quality };
 
             // e.g. "DateTimeKind k = (*cc here suggests DateTimeKind*)"
-            var suggestedItem = _listBox.SelectedIndex != -1 ? (ICompletionData)_listBox.SelectedItem : null;
+            ICompletionData suggestedItem = _listBox.SelectedIndex != -1 ? (ICompletionData)_listBox.SelectedItem : null;
 
-            var listBoxItems = new List<ICompletionData>();
-            var bestIndex = -1;
-            var bestQuality = -1;
+            List<ICompletionData> listBoxItems = new List<ICompletionData>();
+            int bestIndex = -1;
+            int bestQuality = -1;
             double bestPriority = 0;
-            var i = 0;
+            int i = 0;
             foreach (var matchingItem in matchingItems)
             {
-                var priority = matchingItem.Item == suggestedItem ? double.PositiveInfinity : matchingItem.Item.Priority;
-                var quality = matchingItem.Quality;
+                double priority = matchingItem.Item == suggestedItem ? double.PositiveInfinity : matchingItem.Item.Priority;
+                int quality = matchingItem.Quality;
                 if (quality > bestQuality || quality == bestQuality && priority > bestPriority)
                 {
                     bestIndex = i;
@@ -394,18 +394,18 @@ namespace AvaloniaEdit.CodeCompletion
             if (string.IsNullOrEmpty(query))
                 return;
 
-            var suggestedIndex = _listBox.SelectedIndex;
+            int suggestedIndex = _listBox.SelectedIndex;
 
-            var bestIndex = -1;
-            var bestQuality = -1;
+            int bestIndex = -1;
+            int bestQuality = -1;
             double bestPriority = 0;
-            for (var i = 0; i < _completionData.Count; ++i)
+            for (int i = 0; i < _completionData.Count; ++i)
             {
-                var quality = GetMatchQuality(_completionData[i].Text, query);
+                int quality = GetMatchQuality(_completionData[i].Text, query);
                 if (quality < 0)
                     continue;
 
-                var priority = _completionData[i].Priority;
+                double priority = _completionData[i].Priority;
                 bool useThisItem;
                 if (bestQuality < quality)
                 {
@@ -445,7 +445,7 @@ namespace AvaloniaEdit.CodeCompletion
             }
             else
             {
-                var firstItem = _listBox.FirstVisibleItem;
+                int firstItem = _listBox.FirstVisibleItem;
                 if (bestIndex < firstItem || firstItem + _listBox.VisibleItemCount <= bestIndex)
                 {
                     // CenterViewOn does nothing as CompletionListBox.ScrollViewer is null
@@ -512,12 +512,12 @@ namespace AvaloniaEdit.CodeCompletion
         {
             // We take the first letter of the text regardless of whether or not it's upper case so we match
             // against camelCase text as well as PascalCase text ("cct" matches "camelCaseText")
-            var theFirstLetterOfEachWord = text.AsEnumerable()
+            IEnumerable<char> theFirstLetterOfEachWord = text.AsEnumerable()
                 .Take(1)
                 .Concat(text.AsEnumerable().Skip(1).Where(char.IsUpper));
 
-            var i = 0;
-            foreach (var letter in theFirstLetterOfEachWord)
+            int i = 0;
+            foreach (char letter in theFirstLetterOfEachWord)
             {
                 if (i > query.Length - 1)
                     return true;    // return true here for CamelCase partial match ("CQ" matches "CodeQualityAnalysis")

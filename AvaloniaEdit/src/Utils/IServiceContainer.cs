@@ -44,7 +44,7 @@ namespace AvaloniaEdit.Utils
 
         public object GetService(Type serviceType)
         {
-            _services.TryGetValue(serviceType, out var service);
+            _services.TryGetValue(serviceType, out object service);
             return service;
         }
 

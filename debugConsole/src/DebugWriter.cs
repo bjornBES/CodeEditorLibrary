@@ -26,7 +26,7 @@ public static class DebugWriter
 
     public static void AddModules(string FileName, string logModuleDirectory, params string[] modules)
     {
-        foreach (var module in modules)
+        foreach (string module in modules)
         {
             AltLogFileName.Add(module, FileName);
             AltLogModule.Add(module, logModuleDirectory);
@@ -44,7 +44,7 @@ public static class DebugWriter
         string FileName = AltLogFileName[parentModule];
         string logModuleDirectory = AltLogModule[parentModule];
 
-        foreach (var module in modules)
+        foreach (string module in modules)
         {
             AltLogFileName.Add(module, FileName);
             AltLogModule.Add(module, logModuleDirectory);
@@ -55,7 +55,7 @@ public static class DebugWriter
     {
         if (Directory.Exists("logs"))
         {
-            Directory.GetFiles("logs", "debug_log*console.log", SearchOption.AllDirectories).ToList().ForEach(File.Delete);
+            Directory.GetFiles("logs", "debug*.log", SearchOption.AllDirectories).ToList().ForEach(File.Delete);
             File.Delete("logs/debug.log");
 
             Directory.EnumerateDirectories("logs", "*", SearchOption.AllDirectories).ToList().ForEach(Directory.Delete);

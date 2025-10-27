@@ -79,7 +79,7 @@ namespace AvaloniaEdit.Utils
                 // ReSharper disable ExpressionIsAlwaysNull
                 // ReSharper disable SuspiciousTypeConversion.Global
 #pragma warning disable IDE0019 // Use pattern matching
-                var text = input as string;
+                string text = input as string;
 #pragma warning restore IDE0019 // Use pattern matching
                 // ReSharper restore SuspiciousTypeConversion.Global
                 if (text != null)
@@ -93,7 +93,7 @@ namespace AvaloniaEdit.Utils
                 // ReSharper restore HeuristicUnreachableCode
                 else
                 {
-                    var arr = ToArray(input);
+                    T[] arr = ToArray(input);
                     Root = RopeNode<T>.CreateFromArray(arr, 0, arr.Length);
                 }
             }
@@ -144,7 +144,7 @@ namespace AvaloniaEdit.Utils
 
         private static T[] ToArray(IEnumerable<T> input)
         {
-            var arr = input as T[];
+            T[] arr = input as T[];
             return arr ?? input.ToArray();
         }
 
@@ -233,7 +233,7 @@ namespace AvaloniaEdit.Utils
             }
             else
             {
-                var arr = ToArray(newElements);
+                T[] arr = ToArray(newElements);
                 InsertRange(index, arr, 0, arr.Length);
             }
         }
@@ -329,8 +329,8 @@ namespace AvaloniaEdit.Utils
         public Rope<T> GetRange(int index, int count)
         {
             VerifyRange(index, count);
-            var newRope = Clone();
-            var endIndex = index + count;
+            Rope<T> newRope = Clone();
+            int endIndex = index + count;
             newRope.RemoveRange(endIndex, newRope.Length - endIndex);
             newRope.RemoveRange(0, index);
             return newRope;
@@ -430,8 +430,8 @@ namespace AvaloniaEdit.Utils
         {
             if (ropes == null)
                 throw new ArgumentNullException(nameof(ropes));
-            var result = new Rope<T>();
-            foreach (var r in ropes)
+            Rope<T> result = new Rope<T>();
+            foreach (Rope<T> r in ropes)
                 result.AddRange(r);
             return result;
         }
@@ -483,7 +483,7 @@ namespace AvaloniaEdit.Utils
                 {
                     throw new ArgumentOutOfRangeException(nameof(index), index, "0 <= index < " + Length.ToString(CultureInfo.InvariantCulture));
                 }
-                var entry = FindNodeUsingCache(index).PeekOrDefault();
+                RopeCacheEntry entry = FindNodeUsingCache(index).PeekOrDefault();
                 return entry.Node.Contents[index - entry.NodeStartIndex];
             }
             set
@@ -539,8 +539,8 @@ namespace AvaloniaEdit.Utils
             Debug.Assert(index >= 0 && index < Length);
 
             // thread safety: fetch stack into local variable
-            var stack = _lastUsedNodeStack;
-            var oldStack = stack;
+            ImmutableStack<RopeCacheEntry> stack = _lastUsedNodeStack;
+            ImmutableStack<RopeCacheEntry> oldStack = stack;
 
             if (stack == null)
             {
@@ -550,7 +550,7 @@ namespace AvaloniaEdit.Utils
                 stack = stack.Pop();
             while (true)
             {
-                var entry = stack.PeekOrDefault();
+                RopeCacheEntry entry = stack.PeekOrDefault();
                 // check if we've reached a leaf or function node
                 if (entry.Node.Height == 0)
                 {
@@ -625,15 +625,15 @@ namespace AvaloniaEdit.Utils
         public override string ToString()
         {
 #pragma warning disable IDE0019 // Use pattern matching
-            var charRope = this as Rope<char>;
+            Rope<char> charRope = this as Rope<char>;
 #pragma warning restore IDE0019 // Use pattern matching
             if (charRope != null)
             {
                 return charRope.ToString(0, Length);
             }
 
-            var b = new StringBuilder();
-            foreach (var element in this)
+            StringBuilder b = new StringBuilder();
+            foreach (T element in this)
             {
                 if (b.Length == 0)
                     b.Append('{');
@@ -686,11 +686,11 @@ namespace AvaloniaEdit.Utils
 
             while (count > 0)
             {
-                var entry = FindNodeUsingCache(startIndex).PeekOrDefault();
-                var contents = entry.Node.Contents;
-                var startWithinNode = startIndex - entry.NodeStartIndex;
-                var nodeLength = Math.Min(entry.Node.Length, startWithinNode + count);
-                var r = Array.IndexOf(contents, item, startWithinNode, nodeLength - startWithinNode);
+                RopeCacheEntry entry = FindNodeUsingCache(startIndex).PeekOrDefault();
+                T[] contents = entry.Node.Contents;
+                int startWithinNode = startIndex - entry.NodeStartIndex;
+                int nodeLength = Math.Min(entry.Node.Length, startWithinNode + count);
+                int r = Array.IndexOf(contents, item, startWithinNode, nodeLength - startWithinNode);
                 if (r >= 0)
                     return entry.NodeStartIndex + r;
                 count -= nodeLength - startWithinNode;
@@ -720,8 +720,8 @@ namespace AvaloniaEdit.Utils
         {
             VerifyRange(startIndex, count);
 
-            var comparer = EqualityComparer<T>.Default;
-            for (var i = startIndex + count - 1; i >= startIndex; i--)
+            EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+            for (int i = startIndex + count - 1; i >= startIndex; i--)
             {
                 if (comparer.Equals(this[i], item))
                     return i;
@@ -812,7 +812,7 @@ namespace AvaloniaEdit.Utils
         /// </summary>
         public bool Remove(T item)
         {
-            var index = IndexOf(item);
+            int index = IndexOf(item);
             if (index >= 0)
             {
                 RemoveAt(index);
@@ -844,7 +844,7 @@ namespace AvaloniaEdit.Utils
         /// </remarks>
         public T[] ToArray()
         {
-            var arr = new T[Length];
+            T[] arr = new T[Length];
             Root.CopyTo(0, arr, 0, arr.Length);
             return arr;
         }
@@ -859,14 +859,14 @@ namespace AvaloniaEdit.Utils
         public T[] ToArray(int startIndex, int count)
         {
             VerifyRange(startIndex, count);
-            var arr = new T[count];
+            T[] arr = new T[count];
             CopyTo(startIndex, arr, 0, count);
             return arr;
         }
 
         private static IEnumerator<T> Enumerate(RopeNode<T> node)
         {
-            var stack = new Stack<RopeNode<T>>();
+            Stack<RopeNode<T>> stack = new Stack<RopeNode<T>>();
             while (node != null)
             {
                 // go to leftmost node, pushing the right parts that we'll have to visit later
@@ -883,7 +883,7 @@ namespace AvaloniaEdit.Utils
                     node = node.Left;
                 }
                 // yield contents of leaf node
-                for (var i = 0; i < node.Length; i++)
+                for (int i = 0; i < node.Length; i++)
                 {
                     yield return node.Contents[i];
                 }

@@ -184,8 +184,8 @@ namespace AvaloniaEdit.Document
         /// <inheritdoc/>
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            var s = value as string;
-            var parts = s?.Split(';', ',');
+            string s = value as string;
+            string[] parts = s?.Split(';', ',');
             if (parts?.Length == 2)
             {
                 return new TextLocation(int.Parse(parts[0], culture), int.Parse(parts[1], culture));

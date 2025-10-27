@@ -74,7 +74,7 @@ namespace AvaloniaEdit.Folding
                 DocumentLine startLinePlusOne = startLine.NextLine;
                 for (int i = 0; i < CollapsedSections.Length; i++)
                 {
-                    var collapsedSection = CollapsedSections[i];
+                    CollapsedLineSection collapsedSection = CollapsedSections[i];
                     if (collapsedSection == null || collapsedSection.Start != startLinePlusOne || collapsedSection.End != endLine)
                     {
                         // recreate this collapsed section
@@ -141,7 +141,7 @@ namespace AvaloniaEdit.Folding
         {
             if (CollapsedSections != null)
             {
-                foreach (var collapsedSection in CollapsedSections)
+                foreach (CollapsedLineSection collapsedSection in CollapsedSections)
                 {
                     if (collapsedSection?.Start != null)
                         collapsedSection.Uncollapse();

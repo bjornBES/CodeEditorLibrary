@@ -65,24 +65,24 @@ namespace AvaloniaEdit.Indentation.CSharp
         public void Indent(IDocumentAccessor document, bool keepEmptyLines)
         {
             if (document == null) throw new ArgumentNullException(nameof(document));
-            var settings = new IndentationSettings
+            IndentationSettings settings = new IndentationSettings
             {
                 IndentString = IndentationString,
                 LeaveEmptyLines = keepEmptyLines
             };
 
-            var r = new IndentationReformatter();
+            IndentationReformatter r = new IndentationReformatter();
             r.Reformat(document, settings);
         }
 
         /// <inheritdoc cref="IIndentationStrategy.IndentLine"/>
         public override void IndentLine(TextDocument document, DocumentLine line)
         {
-            var lineNr = line.LineNumber;
-            var acc = new TextDocumentAccessor(document, lineNr, lineNr);
+            int lineNr = line.LineNumber;
+            TextDocumentAccessor acc = new TextDocumentAccessor(document, lineNr, lineNr);
             Indent(acc, false);
 
-            var t = acc.Text;
+            string t = acc.Text;
             if (t.Length == 0)
             {
                 // use AutoIndentation for new lines in comments / verbatim strings.

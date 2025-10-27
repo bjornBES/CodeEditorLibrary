@@ -33,7 +33,7 @@ namespace AvaloniaEdit.Highlighting
         /// </summary>
         private static string BuildHeader(int startHTML, int endHTML, int startFragment, int endFragment)
         {
-            var b = new StringBuilder();
+            StringBuilder b = new StringBuilder();
             b.AppendLine("Version:0.9");
             b.AppendLine("StartHTML:" + startHTML.ToString("d8", CultureInfo.InvariantCulture));
             b.AppendLine("EndHTML:" + endHTML.ToString("d8", CultureInfo.InvariantCulture));
@@ -88,17 +88,17 @@ namespace AvaloniaEdit.Highlighting
             if (segment == null)
                 segment = new SimpleSegment(0, document.TextLength);
 
-            var html = new StringBuilder();
-            var segmentEndOffset = segment.EndOffset;
-            var line = document.GetLineByOffset(segment.Offset);
+            StringBuilder html = new StringBuilder();
+            int segmentEndOffset = segment.EndOffset;
+            IDocumentLine line = document.GetLineByOffset(segment.Offset);
             while (line != null && line.Offset < segmentEndOffset)
             {
                 // ReSharper disable once UnusedVariable
-                var highlightedLine = highlighter != null ? highlighter.HighlightLine(line.LineNumber) : new HighlightedLine(document, line);
+                HighlightedLine highlightedLine = highlighter != null ? highlighter.HighlightLine(line.LineNumber) : new HighlightedLine(document, line);
                 if (html.Length > 0)
                     html.AppendLine("<br>");
                 // TODO: html
-                var s = SimpleSegment.GetOverlap(segment, line);
+                SimpleSegment s = SimpleSegment.GetOverlap(segment, line);
                 html.Append(highlightedLine.ToHtml(s.Offset, s.EndOffset, options));
                 line = line.NextLine;
             }

@@ -55,7 +55,7 @@ namespace AvaloniaEdit.Highlighting.Xshd
         /// </summary>
         public void AcceptElements(IXshdVisitor visitor)
         {
-            foreach (var element in Elements)
+            foreach (XshdElement element in Elements)
             {
                 element.AcceptVisitor(visitor);
             }

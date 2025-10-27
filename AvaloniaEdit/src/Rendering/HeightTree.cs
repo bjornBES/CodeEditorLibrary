@@ -85,12 +85,12 @@ namespace AvaloniaEdit.Rendering
 		public double DefaultLineHeight {
 			get { return _defaultLineHeight; }
 			set {
-				var oldValue = _defaultLineHeight;
+                double oldValue = _defaultLineHeight;
 				if (oldValue == value)
 					return;
 				_defaultLineHeight = value;
 				// update the stored value in all nodes:
-				foreach (var node in AllNodes) {
+				foreach (HeightTreeNode node in AllNodes) {
 					if (node.LineNode.Height == oldValue) {
 						node.LineNode.Height = value;
 						UpdateAugmentedData(node, UpdateAfterChildrenChangeRecursionMode.IfRequired);
@@ -119,19 +119,19 @@ namespace AvaloniaEdit.Rendering
 		/// </summary>
 		public void RebuildDocument()
 		{
-			foreach (var s in GetAllCollapsedSections()) {
+			foreach (CollapsedLineSection s in GetAllCollapsedSections()) {
 				s.Start = null;
 				s.End = null;
 			}
 
-			var nodes = new HeightTreeNode[_document.LineCount];
-			var lineNumber = 0;
-			foreach (var ls in _document.Lines) {
+            HeightTreeNode[] nodes = new HeightTreeNode[_document.LineCount];
+            int lineNumber = 0;
+			foreach (DocumentLine ls in _document.Lines) {
 				nodes[lineNumber++] = new HeightTreeNode(ls, _defaultLineHeight);
 			}
 			Debug.Assert(nodes.Length > 0);
-			// now build the corresponding balanced tree
-			var height = DocumentLineTree.GetTreeHeight(nodes.Length);
+            // now build the corresponding balanced tree
+            int height = DocumentLineTree.GetTreeHeight(nodes.Length);
 			DebugWriter.WriteLine("AvaloniaEdit", "HeightTree will have height: " + height);
 			_root = BuildTree(nodes, 0, nodes.Length, height);
 			_root.Color = Black;
@@ -149,8 +149,8 @@ namespace AvaloniaEdit.Rendering
 			if (start == end) {
 				return null;
 			}
-			var middle = (start + end) / 2;
-			var node = nodes[middle];
+            int middle = (start + end) / 2;
+            HeightTreeNode node = nodes[middle];
 			node.Left = BuildTree(nodes, start, middle, subtreeHeight - 1);
 			node.Right = BuildTree(nodes, middle + 1, end, subtreeHeight - 1);
 			if (node.Left != null) node.Left.Parent = node;
@@ -165,9 +165,9 @@ namespace AvaloniaEdit.Rendering
 		#region Insert/Remove lines
 		void ILineTracker.BeforeRemoveLine(DocumentLine line)
 		{
-			var node = GetNode(line);
+            HeightTreeNode node = GetNode(line);
 			if (node.LineNode.CollapsedSections != null) {
-				foreach (var cs in node.LineNode.CollapsedSections.ToArray()) {
+				foreach (CollapsedLineSection cs in node.LineNode.CollapsedSections.ToArray()) {
 					if (cs.Start == line && cs.End == line) {
 						cs.Start = null;
 						cs.End = null;
@@ -204,12 +204,12 @@ namespace AvaloniaEdit.Rendering
 
 		private HeightTreeNode InsertAfter(HeightTreeNode node, DocumentLine newLine)
 		{
-			var newNode = new HeightTreeNode(newLine, _defaultLineHeight);
+            HeightTreeNode newNode = new HeightTreeNode(newLine, _defaultLineHeight);
 			if (node.Right == null) {
 				if (node.LineNode.CollapsedSections != null) {
 					// we are inserting directly after node - so copy all collapsedSections
 					// that do not end at node.
-					foreach (var cs in node.LineNode.CollapsedSections) {
+					foreach (CollapsedLineSection cs in node.LineNode.CollapsedSections) {
 						if (cs.End != node.DocumentLine)
 							newNode.AddDirectlyCollapsed(cs);
 					}
@@ -220,7 +220,7 @@ namespace AvaloniaEdit.Rendering
 				if (node.LineNode.CollapsedSections != null) {
 					// we are inserting directly before node - so copy all collapsedSections
 					// that do not start at node.
-					foreach (var cs in node.LineNode.CollapsedSections) {
+					foreach (CollapsedLineSection cs in node.LineNode.CollapsedSections) {
 						if (cs.Start != node.DocumentLine)
 							newNode.AddDirectlyCollapsed(cs);
 					}
@@ -247,8 +247,8 @@ namespace AvaloniaEdit.Rendering
 
 		private static void UpdateAugmentedData(HeightTreeNode node, UpdateAfterChildrenChangeRecursionMode mode)
 		{
-			var totalCount = 1;
-			var totalHeight = node.LineNode.TotalHeight;
+            int totalCount = 1;
+            double totalHeight = node.LineNode.TotalHeight;
 			if (node.Left != null) {
 				totalCount += node.Left.TotalCount;
 				totalHeight += node.Left.TotalHeight;
@@ -272,16 +272,16 @@ namespace AvaloniaEdit.Rendering
 
 		private void UpdateAfterRotateLeft(HeightTreeNode node)
 		{
-			// node = old parent
-			// node.parent = pivot, new parent
-			var collapsedP = node.Parent.CollapsedSections;
-			var collapsedQ = node.CollapsedSections;
+            // node = old parent
+            // node.parent = pivot, new parent
+            List<CollapsedLineSection> collapsedP = node.Parent.CollapsedSections;
+            List<CollapsedLineSection> collapsedQ = node.CollapsedSections;
 			// move collapsedSections from old parent to new parent
 			node.Parent.CollapsedSections = collapsedQ;
 			node.CollapsedSections = null;
 			// split the collapsedSections from the new parent into its old children:
 			if (collapsedP != null) {
-				foreach (var cs in collapsedP) {
+				foreach (CollapsedLineSection cs in collapsedP) {
 					if (node.Parent.Right != null)
 						node.Parent.Right.AddDirectlyCollapsed(cs);
 					node.Parent.LineNode.AddDirectlyCollapsed(cs);
@@ -300,16 +300,16 @@ namespace AvaloniaEdit.Rendering
 
 		private void UpdateAfterRotateRight(HeightTreeNode node)
 		{
-			// node = old parent
-			// node.parent = pivot, new parent
-			var collapsedP = node.Parent.CollapsedSections;
-			var collapsedQ = node.CollapsedSections;
+            // node = old parent
+            // node.parent = pivot, new parent
+            List<CollapsedLineSection> collapsedP = node.Parent.CollapsedSections;
+            List<CollapsedLineSection> collapsedQ = node.CollapsedSections;
 			// move collapsedSections from old parent to new parent
 			node.Parent.CollapsedSections = collapsedQ;
 			node.CollapsedSections = null;
 			// split the collapsedSections from the new parent into its old children:
 			if (collapsedP != null) {
-				foreach (var cs in collapsedP) {
+				foreach (CollapsedLineSection cs in collapsedP) {
 					if (node.Parent.Left != null)
 						node.Parent.Left.AddDirectlyCollapsed(cs);
 					node.Parent.LineNode.AddDirectlyCollapsed(cs);
@@ -335,11 +335,11 @@ namespace AvaloniaEdit.Rendering
 		{
 			Debug.Assert(removedNode.Left == null || removedNode.Right == null);
 
-			var collapsed = removedNode.CollapsedSections;
+            List<CollapsedLineSection> collapsed = removedNode.CollapsedSections;
 			if (collapsed != null) {
-				var childNode = removedNode.Left ?? removedNode.Right;
+                HeightTreeNode childNode = removedNode.Left ?? removedNode.Right;
 				if (childNode != null) {
-					foreach (var cs in collapsed)
+					foreach (CollapsedLineSection cs in collapsed)
 						childNode.AddDirectlyCollapsed(cs);
 				}
 			}
@@ -353,14 +353,14 @@ namespace AvaloniaEdit.Rendering
 			Debug.Assert(newNode != null);
 			while (newNodeOldParent != removedNode) {
 				if (newNodeOldParent.CollapsedSections != null) {
-					foreach (var cs in newNodeOldParent.CollapsedSections) {
+					foreach (CollapsedLineSection cs in newNodeOldParent.CollapsedSections) {
 						newNode.LineNode.AddDirectlyCollapsed(cs);
 					}
 				}
 				newNodeOldParent = newNodeOldParent.Parent;
 			}
 			if (newNode.CollapsedSections != null) {
-				foreach (var cs in newNode.CollapsedSections) {
+				foreach (CollapsedLineSection cs in newNode.CollapsedSections) {
 					newNode.LineNode.AddDirectlyCollapsed(cs);
 				}
 			}
@@ -384,7 +384,7 @@ namespace AvaloniaEdit.Rendering
 		{
 			Debug.Assert(_inRemoval);
 			_inRemoval = false;
-			foreach (var node in _nodesToCheckForMerging) {
+			foreach (HeightTreeNode node in _nodesToCheckForMerging) {
 				MergeCollapsedSectionsIfPossible(node);
 			}
 			_nodesToCheckForMerging.Clear();
@@ -397,12 +397,12 @@ namespace AvaloniaEdit.Rendering
 				_nodesToCheckForMerging.Add(node);
 				return;
 			}
-			// now check if we need to merge collapsedSections together
-			var merged = false;
-			var collapsedL = node.LineNode.CollapsedSections;
+            // now check if we need to merge collapsedSections together
+            bool merged = false;
+            List<CollapsedLineSection> collapsedL = node.LineNode.CollapsedSections;
 			if (collapsedL != null) {
-				for (var i = collapsedL.Count - 1; i >= 0; i--) {
-					var cs = collapsedL[i];
+				for (int i = collapsedL.Count - 1; i >= 0; i--) {
+                    CollapsedLineSection cs = collapsedL[i];
 					if (cs.Start == node.DocumentLine || cs.End == node.DocumentLine)
 						continue;
 					if (node.Left == null
@@ -435,7 +435,7 @@ namespace AvaloniaEdit.Rendering
 		{
 			Debug.Assert(index >= 0);
 			Debug.Assert(index < _root.TotalCount);
-			var node = _root;
+            HeightTreeNode node = _root;
 			while (true) {
 				if (node.Left != null && index < node.Left.TotalCount) {
 					node = node.Left;
@@ -453,9 +453,9 @@ namespace AvaloniaEdit.Rendering
 
 		private HeightTreeNode GetNodeByVisualPosition(double position)
 		{
-			var node = _root;
+            HeightTreeNode node = _root;
 			while (true) {
-				var positionAfterLeft = position;
+                double positionAfterLeft = position;
 				if (node.Left != null) {
 					positionAfterLeft -= node.Left.TotalHeight;
 					if (positionAfterLeft < 0) {
@@ -464,7 +464,7 @@ namespace AvaloniaEdit.Rendering
 						continue;
 					}
 				}
-				var positionBeforeRight = positionAfterLeft - node.LineNode.TotalHeight;
+                double positionBeforeRight = positionAfterLeft - node.LineNode.TotalHeight;
 				if (positionBeforeRight < 0) {
 					// Found the correct node
 					return node;
@@ -489,7 +489,7 @@ namespace AvaloniaEdit.Rendering
 
 		private static double GetVisualPositionFromNode(HeightTreeNode node)
 		{
-			var position = (node.Left != null) ? node.Left.TotalHeight : 0;
+            double position = (node.Left != null) ? node.Left.TotalHeight : 0;
 			while (node.Parent != null) {
 				if (node.IsDirectlyCollapsed)
 					position = 0;
@@ -527,14 +527,14 @@ namespace AvaloniaEdit.Rendering
 
 		public void SetHeight(DocumentLine line, double val)
 		{
-			var node = GetNode(line);
+            HeightTreeNode node = GetNode(line);
 			node.LineNode.Height = val;
 			UpdateAfterChildrenChange(node);
 		}
 
 		public bool GetIsCollapsed(int lineNumber)
 		{
-			var node = GetNodeByIndex(lineNumber - 1);
+            HeightTreeNode node = GetNodeByIndex(lineNumber - 1);
 			return node.LineNode.IsDirectlyCollapsed || GetIsCollapedFromNode(node);
 		}
 
@@ -548,10 +548,10 @@ namespace AvaloniaEdit.Rendering
 				throw new ArgumentException("Line is not part of this document", nameof(start));
 			if (!_document.Lines.Contains(end))
 				throw new ArgumentException("Line is not part of this document", nameof(end));
-			var length = end.LineNumber - start.LineNumber + 1;
+            int length = end.LineNumber - start.LineNumber + 1;
 			if (length < 0)
 				throw new ArgumentException("start must be a line before end");
-			var section = new CollapsedLineSection(this, start, end);
+            CollapsedLineSection section = new CollapsedLineSection(this, start, end);
 			AddCollapsedSection(section, length);
 #if DEBUG
 			CheckProperties();
@@ -579,7 +579,7 @@ namespace AvaloniaEdit.Rendering
 		private IEnumerable<HeightTreeNode> AllNodes {
 			get {
 				if (_root != null) {
-					var node = _root.LeftMost;
+                    HeightTreeNode node = _root.LeftMost;
 					while (node != null) {
 						yield return node;
 						node = node.Successor;
@@ -590,7 +590,7 @@ namespace AvaloniaEdit.Rendering
 
 		internal IEnumerable<CollapsedLineSection> GetAllCollapsedSections()
 		{
-			var emptyCsList = new List<CollapsedLineSection>();
+            List<CollapsedLineSection> emptyCsList = new List<CollapsedLineSection>();
 			return System.Linq.Enumerable.Distinct(
 				System.Linq.Enumerable.SelectMany(
 					AllNodes, node => System.Linq.Enumerable.Concat(node.LineNode.CollapsedSections ?? emptyCsList,
@@ -606,23 +606,23 @@ namespace AvaloniaEdit.Rendering
 		{
 			CheckProperties(_root);
 
-			foreach (var cs in GetAllCollapsedSections()) {
+			foreach (CollapsedLineSection cs in GetAllCollapsedSections()) {
 				Debug.Assert(GetNode(cs.Start).LineNode.CollapsedSections.Contains(cs));
 				Debug.Assert(GetNode(cs.End).LineNode.CollapsedSections.Contains(cs));
-				var endLine = cs.End.LineNumber;
-				for (var i = cs.Start.LineNumber; i <= endLine; i++) {
+                int endLine = cs.End.LineNumber;
+				for (int i = cs.Start.LineNumber; i <= endLine; i++) {
 					CheckIsInSection(cs, GetLineByNumber(i));
 				}
 			}
 
-			// check red-black property:
-			var blackCount = -1;
+            // check red-black property:
+            int blackCount = -1;
 			CheckNodeProperties(_root, null, Red, 0, ref blackCount);
 		}
 
 		private void CheckIsInSection(CollapsedLineSection cs, DocumentLine line)
 		{
-			var node = GetNode(line);
+            HeightTreeNode node = GetNode(line);
 			if (node.LineNode.CollapsedSections != null && node.LineNode.CollapsedSections.Contains(cs))
 				return;
 			while (node != null) {
@@ -635,8 +635,8 @@ namespace AvaloniaEdit.Rendering
 
 		private void CheckProperties(HeightTreeNode node)
 		{
-			var totalCount = 1;
-			var totalHeight = node.LineNode.TotalHeight;
+            int totalCount = 1;
+            double totalHeight = node.LineNode.TotalHeight;
 			if (node.LineNode.IsDirectlyCollapsed)
 				Debug.Assert(node.LineNode.CollapsedSections.Count > 0);
 			if (node.Left != null) {
@@ -655,7 +655,7 @@ namespace AvaloniaEdit.Rendering
 			}
 			if (node.Left != null && node.Right != null) {
 				if (node.Left.CollapsedSections != null && node.Right.CollapsedSections != null) {
-					var intersection = System.Linq.Enumerable.Intersect(node.Left.CollapsedSections, node.Right.CollapsedSections);
+                    IEnumerable<CollapsedLineSection> intersection = System.Linq.Enumerable.Intersect(node.Left.CollapsedSections, node.Right.CollapsedSections);
 					Debug.Assert(System.Linq.Enumerable.Count(intersection) == 0);
 				}
 			}
@@ -674,7 +674,7 @@ namespace AvaloniaEdit.Rendering
 		{
 			if (list1 == null) list1 = new List<CollapsedLineSection>();
 			if (list2 == null) list2 = new List<CollapsedLineSection>();
-			foreach (var cs in list1) {
+			foreach (CollapsedLineSection cs in list1) {
 				Debug.Assert(list2.Contains(cs));
 			}
 		}
@@ -712,7 +712,7 @@ namespace AvaloniaEdit.Rendering
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
 		public string GetTreeAsString()
 		{
-			var b = new StringBuilder();
+            StringBuilder b = new StringBuilder();
 			AppendTreeToString(_root, b, 0);
 			return b.ToString();
 		}
@@ -771,7 +771,7 @@ namespace AvaloniaEdit.Rendering
 			Debug.Assert(node.Left == null || node.Left.Color == Black);
 			Debug.Assert(node.Right == null || node.Right.Color == Black);
 
-			var parentNode = node.Parent;
+            HeightTreeNode parentNode = node.Parent;
 			if (parentNode == null) {
 				// we inserted in the root -> the node must be black
 				// since this is a root node, making the node black increments the number of black nodes
@@ -785,11 +785,11 @@ namespace AvaloniaEdit.Rendering
 				// -> the tree is still balanced
 				return;
 			}
-			// parentNode is red, so there is a conflict here!
+            // parentNode is red, so there is a conflict here!
 
-			// because the root is black, parentNode is not the root -> there is a grandparent node
-			var grandparentNode = parentNode.Parent;
-			var uncleNode = Sibling(parentNode);
+            // because the root is black, parentNode is not the root -> there is a grandparent node
+            HeightTreeNode grandparentNode = parentNode.Parent;
+            HeightTreeNode uncleNode = Sibling(parentNode);
 			if (uncleNode != null && uncleNode.Color == Red) {
 				parentNode.Color = Black;
 				uncleNode.Color = Black;
@@ -826,10 +826,10 @@ namespace AvaloniaEdit.Rendering
 		private void RemoveNode(HeightTreeNode removedNode)
 		{
 			if (removedNode.Left != null && removedNode.Right != null) {
-				// replace removedNode with it's in-order successor
+                // replace removedNode with it's in-order successor
 
-				var leftMost = removedNode.Right.LeftMost;
-				var parentOfLeftMost = leftMost.Parent;
+                HeightTreeNode leftMost = removedNode.Right.LeftMost;
+                HeightTreeNode parentOfLeftMost = leftMost.Parent;
 				RemoveNode(leftMost); // remove leftMost from its current location
 
 				BeforeNodeReplace(removedNode, leftMost, parentOfLeftMost);
@@ -846,10 +846,10 @@ namespace AvaloniaEdit.Rendering
 				return;
 			}
 
-			// now either removedNode.left or removedNode.right is null
-			// get the remaining child
-			var parentNode = removedNode.Parent;
-			var childNode = removedNode.Left ?? removedNode.Right;
+            // now either removedNode.left or removedNode.right is null
+            // get the remaining child
+            HeightTreeNode parentNode = removedNode.Parent;
+            HeightTreeNode childNode = removedNode.Left ?? removedNode.Right;
 			BeforeNodeRemove(removedNode);
 			ReplaceNode(removedNode, childNode);
 			if (parentNode != null) UpdateAfterChildrenChange(parentNode);
@@ -868,8 +868,8 @@ namespace AvaloniaEdit.Rendering
 			if (parentNode == null)
 				return;
 
-			// warning: node may be null
-			var sibling = Sibling(node, parentNode);
+            // warning: node may be null
+            HeightTreeNode sibling = Sibling(node, parentNode);
 			if (sibling.Color == Red) {
 				parentNode.Color = Red;
 				sibling.Color = Black;
@@ -958,8 +958,8 @@ namespace AvaloniaEdit.Rendering
 
 		private void RotateLeft(HeightTreeNode p)
 		{
-			// let q be p's right child
-			var q = p.Right;
+            // let q be p's right child
+            HeightTreeNode q = p.Right;
 			Debug.Assert(q != null);
 			Debug.Assert(q.Parent == p);
 			// set q to be the new root
@@ -976,8 +976,8 @@ namespace AvaloniaEdit.Rendering
 
 		private void RotateRight(HeightTreeNode p)
 		{
-			// let q be p's left child
-			var q = p.Left;
+            // let q be p's left child
+            HeightTreeNode q = p.Left;
 			Debug.Assert(q != null);
 			Debug.Assert(q.Parent == p);
 			// set q to be the new root
@@ -1036,7 +1036,7 @@ namespace AvaloniaEdit.Rendering
 		{
 			Debug.Assert(sectionLength > 0);
 
-			var node = GetNode(section.Start);
+            HeightTreeNode node = GetNode(section.Start);
 			// Go up in the tree.
 			while (true) {
 				// Mark all middle nodes as collapsed
@@ -1064,8 +1064,8 @@ namespace AvaloniaEdit.Rendering
 						break;
 					}
 				}
-				// go up to the next node
-				var parentNode = node.Parent;
+                // go up to the next node
+                HeightTreeNode parentNode = node.Parent;
 				Debug.Assert(parentNode != null);
 				while (parentNode.Right == node) {
 					node = parentNode;
@@ -1114,7 +1114,7 @@ namespace AvaloniaEdit.Rendering
 
 		public void Uncollapse(CollapsedLineSection section)
 		{
-			var sectionLength = section.End.LineNumber - section.Start.LineNumber + 1;
+            int sectionLength = section.End.LineNumber - section.Start.LineNumber + 1;
 			AddRemoveCollapsedSection(section, sectionLength, false);
 			// do not call CheckProperties() in here - Uncollapse is also called during line removals
 		}

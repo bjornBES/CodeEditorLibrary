@@ -102,18 +102,18 @@ namespace AvaloniaEdit.Document
         public void Rebuild()
         {
             // keep the first document line
-            var ls = _documentLineTree.GetByNumber(1);
+            DocumentLine ls = _documentLineTree.GetByNumber(1);
             // but mark all other lines as deleted, and detach them from the other nodes
-            for (var line = ls.NextLine; line != null; line = line.NextLine)
+            for (DocumentLine line = ls.NextLine; line != null; line = line.NextLine)
             {
                 line.IsDeleted = true;
                 line.Parent = line.Left = line.Right = null;
             }
             // Reset the first line to detach it from the deleted lines
             ls.ResetLine();
-            var ds = NewLineFinder.NextNewLine(_document, 0);
-            var lines = new List<DocumentLine>();
-            var lastDelimiterEnd = 0;
+            SimpleSegment ds = NewLineFinder.NextNewLine(_document, 0);
+            List<DocumentLine> lines = new List<DocumentLine>();
+            int lastDelimiterEnd = 0;
             while (ds != SimpleSegment.Invalid)
             {
                 ls.TotalLength = ds.Offset + ds.Length - lastDelimiterEnd;
@@ -127,7 +127,7 @@ namespace AvaloniaEdit.Document
             ls.TotalLength = _document.TextLength - lastDelimiterEnd;
             lines.Add(ls);
             _documentLineTree.RebuildTree(lines);
-            foreach (var lineTracker in _lineTrackers)
+            foreach (ILineTracker lineTracker in _lineTrackers)
                 lineTracker.RebuildDocument();
         }
         #endregion
@@ -137,8 +137,8 @@ namespace AvaloniaEdit.Document
         {
             Debug.Assert(length >= 0);
             if (length == 0) return;
-            var startLine = _documentLineTree.GetByOffset(offset);
-            var startLineOffset = startLine.Offset;
+            DocumentLine startLine = _documentLineTree.GetByOffset(offset);
+            int startLineOffset = startLine.Offset;
 
             Debug.Assert(offset < startLineOffset + startLine.TotalLength);
             if (offset > startLineOffset + startLine.Length)
@@ -162,12 +162,12 @@ namespace AvaloniaEdit.Document
             }
             // merge startLine with another line because startLine's delimiter was deleted
             // possibly remove lines in between if multiple delimiters were deleted
-            var charactersRemovedInStartLine = startLineOffset + startLine.TotalLength - offset;
+            int charactersRemovedInStartLine = startLineOffset + startLine.TotalLength - offset;
             Debug.Assert(charactersRemovedInStartLine > 0);
             //startLine.RemovedLinePart(ref deferredEventList, offset - startLineOffset, charactersRemovedInStartLine);
 
 
-            var endLine = _documentLineTree.GetByOffset(offset + length);
+            DocumentLine endLine = _documentLineTree.GetByOffset(offset + length);
             if (endLine == startLine)
             {
                 // special case: we are removing a part of the last line up to the
@@ -175,13 +175,13 @@ namespace AvaloniaEdit.Document
                 SetLineLength(startLine, startLine.TotalLength - length);
                 return;
             }
-            var endLineOffset = endLine.Offset;
-            var charactersLeftInEndLine = endLineOffset + endLine.TotalLength - (offset + length);
+            int endLineOffset = endLine.Offset;
+            int charactersLeftInEndLine = endLineOffset + endLine.TotalLength - (offset + length);
             //endLine.RemovedLinePart(ref deferredEventList, 0, endLine.TotalLength - charactersLeftInEndLine);
             //startLine.MergedWith(endLine, offset - startLineOffset);
 
             // remove all lines between startLine (excl.) and endLine (incl.)
-            var tmp = startLine.NextLine;
+            DocumentLine tmp = startLine.NextLine;
             DocumentLine lineToRemove;
             do
             {
@@ -195,7 +195,7 @@ namespace AvaloniaEdit.Document
 
         private void RemoveLine(DocumentLine lineToRemove)
         {
-            foreach (var lt in _lineTrackers)
+            foreach (ILineTracker lt in _lineTrackers)
                 lt.BeforeRemoveLine(lineToRemove);
             _documentLineTree.RemoveLine(lineToRemove);
             //			foreach (ILineTracker lt in lineTracker)
@@ -209,8 +209,8 @@ namespace AvaloniaEdit.Document
         #region Insert
         public void Insert(int offset, ITextSource text)
         {
-            var line = _documentLineTree.GetByOffset(offset);
-            var lineOffset = line.Offset;
+            DocumentLine line = _documentLineTree.GetByOffset(offset);
+            int lineOffset = line.Offset;
 
             Debug.Assert(offset <= lineOffset + line.TotalLength);
             if (offset > lineOffset + line.Length)
@@ -225,7 +225,7 @@ namespace AvaloniaEdit.Document
                 line = SetLineLength(line, 1);
             }
 
-            var ds = NewLineFinder.NextNewLine(text, 0);
+            SimpleSegment ds = NewLineFinder.NextNewLine(text, 0);
             if (ds == SimpleSegment.Invalid)
             {
                 // no newline is being inserted, all text is inserted in a single line
@@ -235,15 +235,15 @@ namespace AvaloniaEdit.Document
             }
             //DocumentLine firstLine = line;
             //firstLine.InsertedLinePart(offset - firstLine.Offset, ds.Offset);
-            var lastDelimiterEnd = 0;
+            int lastDelimiterEnd = 0;
             while (ds != SimpleSegment.Invalid)
             {
                 // split line segment at line delimiter
-                var lineBreakOffset = offset + ds.Offset + ds.Length;
+                int lineBreakOffset = offset + ds.Offset + ds.Length;
                 lineOffset = line.Offset;
-                var lengthAfterInsertionPos = lineOffset + line.TotalLength - (offset + lastDelimiterEnd);
+                int lengthAfterInsertionPos = lineOffset + line.TotalLength - (offset + lastDelimiterEnd);
                 line = SetLineLength(line, lineBreakOffset - lineOffset);
-                var newLine = InsertLineAfter(line, lengthAfterInsertionPos);
+                DocumentLine newLine = InsertLineAfter(line, lengthAfterInsertionPos);
                 newLine = SetLineLength(newLine, lengthAfterInsertionPos);
 
                 line = newLine;
@@ -262,8 +262,8 @@ namespace AvaloniaEdit.Document
 
         private DocumentLine InsertLineAfter(DocumentLine line, int length)
         {
-            var newLine = _documentLineTree.InsertLineAfter(line, length);
-            foreach (var lt in _lineTrackers)
+            DocumentLine newLine = _documentLineTree.InsertLineAfter(line, length);
+            foreach (ILineTracker lt in _lineTrackers)
                 lt.LineInserted(line, newLine);
             return newLine;
         }
@@ -279,10 +279,10 @@ namespace AvaloniaEdit.Document
         /// the "\r\n" merge, returns the previous line.</returns>
         private DocumentLine SetLineLength(DocumentLine line, int newTotalLength)
         {
-            var delta = newTotalLength - line.TotalLength;
+            int delta = newTotalLength - line.TotalLength;
             if (delta != 0)
             {
-                foreach (var lt in _lineTrackers)
+                foreach (ILineTracker lt in _lineTrackers)
                     lt.SetLineLength(line, newTotalLength);
                 line.TotalLength = newTotalLength;
                 DocumentLineTree.UpdateAfterChildrenChange(line);
@@ -294,8 +294,8 @@ namespace AvaloniaEdit.Document
             }
             else
             {
-                var lineOffset = line.Offset;
-                var lastChar = _document.GetCharAt(lineOffset + newTotalLength - 1);
+                int lineOffset = line.Offset;
+                char lastChar = _document.GetCharAt(lineOffset + newTotalLength - 1);
                 if (lastChar == '\r')
                 {
                     line.DelimiterLength = 1;
@@ -309,7 +309,7 @@ namespace AvaloniaEdit.Document
                     else if (newTotalLength == 1 && lineOffset > 0 && _document.GetCharAt(lineOffset - 1) == '\r')
                     {
                         // we need to join this line with the previous line
-                        var previousLine = line.PreviousLine;
+                        DocumentLine previousLine = line.PreviousLine;
                         RemoveLine(line);
                         return SetLineLength(previousLine, previousLine.TotalLength + 1);
                     }
@@ -330,7 +330,7 @@ namespace AvaloniaEdit.Document
         #region ChangeComplete
         public void ChangeComplete(DocumentChangeEventArgs e)
         {
-            foreach (var lt in _lineTrackers)
+            foreach (ILineTracker lt in _lineTrackers)
             {
                 lt.ChangeComplete(e);
             }

@@ -109,7 +109,7 @@ namespace AvaloniaEdit.Rendering
         {
             if (!e.Handled && LinkIsClickable(e.KeyModifiers))
             {
-                var eventArgs = new OpenUriRoutedEventArgs(NavigateUri) { RoutedEvent = OpenUriEvent };
+                OpenUriRoutedEventArgs eventArgs = new OpenUriRoutedEventArgs(NavigateUri) { RoutedEvent = OpenUriEvent };
 
                 if(e.Source is Interactive interactive)
                 {
@@ -133,7 +133,7 @@ namespace AvaloniaEdit.Rendering
 
         private static void ExecuteOpenUriEventHandler(Window window, OpenUriRoutedEventArgs arg)
         {
-            var url = arg.Uri.ToString();
+            string url = arg.Uri.ToString();
             try
             {
                 Process.Start(new ProcessStartInfo

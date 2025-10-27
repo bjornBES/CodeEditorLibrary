@@ -66,7 +66,7 @@ namespace AvaloniaEdit.Document
 
         private void RecalcIsOriginalFile()
         {
-            var newIsOriginalFile = (_elementsOnUndoUntilOriginalFile == 0);
+            bool newIsOriginalFile = (_elementsOnUndoUntilOriginalFile == 0);
             if (newIsOriginalFile != IsOriginalFile)
             {
                 IsOriginalFile = newIsOriginalFile;
@@ -227,7 +227,7 @@ namespace AvaloniaEdit.Document
                 if (_actionCountInUndoGroup == _optionalActionCount)
                 {
                     // only optional actions: don't store them
-                    for (var i = 0; i < _optionalActionCount; i++)
+                    for (int i = 0; i < _optionalActionCount; i++)
                     {
                         _undostack.PopBack();
                     }
@@ -279,7 +279,7 @@ namespace AvaloniaEdit.Document
         {
             if (_affectedDocuments != null)
             {
-                foreach (var doc in _affectedDocuments)
+                foreach (TextDocument doc in _affectedDocuments)
                 {
                     doc.EndUpdate();
                 }
@@ -298,7 +298,7 @@ namespace AvaloniaEdit.Document
                 // disallow continuing undo groups after undo operation
                 LastGroupDescriptor = null; _allowContinue = false;
                 // fetch operation to undo and move it to redo stack
-                var uedit = _undostack.PopBack();
+                IUndoableOperation uedit = _undostack.PopBack();
                 _redostack.PushBack(uedit);
                 State = StatePlayback;
                 try
@@ -337,7 +337,7 @@ namespace AvaloniaEdit.Document
             {
                 LastGroupDescriptor = null;
                 _allowContinue = false;
-                var uedit = _redostack.PopBack();
+                IUndoableOperation uedit = _redostack.PopBack();
                 _undostack.PushBack(uedit);
                 State = StatePlayback;
                 try
@@ -398,9 +398,9 @@ namespace AvaloniaEdit.Document
 
             if (State == StateListen && _sizeLimit > 0)
             {
-                var wasEmpty = _undostack.Count == 0;
+                bool wasEmpty = _undostack.Count == 0;
 
-                var needsUndoGroup = _undoGroupDepth == 0;
+                bool needsUndoGroup = _undoGroupDepth == 0;
                 if (needsUndoGroup) StartUndoGroup();
                 _undostack.PushBack(operation);
                 _actionCountInUndoGroup++;
@@ -465,7 +465,7 @@ namespace AvaloniaEdit.Document
 
         private void NotifyPropertyChanged(string propertyName)
         {
-            var args = new PropertyChangedEventArgs(propertyName);
+            PropertyChangedEventArgs args = new PropertyChangedEventArgs(propertyName);
             PropertyChanged?.Invoke(this, args);
         }
     }

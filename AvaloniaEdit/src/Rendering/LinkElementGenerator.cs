@@ -18,6 +18,7 @@
 
 using System;
 using System.Text.RegularExpressions;
+using AvaloniaEdit.Utils;
 
 namespace AvaloniaEdit.Rendering
 {
@@ -71,9 +72,9 @@ namespace AvaloniaEdit.Rendering
 
 		private Match GetMatch(int startOffset, out int matchOffset)
 		{
-			var endOffset = CurrentContext.VisualLine.LastDocumentLine.EndOffset;
-			var relevantText = CurrentContext.GetText(startOffset, endOffset - startOffset);
-			var m = _linkRegex.Match(relevantText.Text, relevantText.Offset, relevantText.Count);
+            int endOffset = CurrentContext.VisualLine.LastDocumentLine.EndOffset;
+            StringSegment relevantText = CurrentContext.GetText(startOffset, endOffset - startOffset);
+            Match m = _linkRegex.Match(relevantText.Text, relevantText.Offset, relevantText.Count);
 			matchOffset = m.Success ? m.Index - relevantText.Offset + startOffset : -1;
 			return m;
 		}
@@ -81,14 +82,14 @@ namespace AvaloniaEdit.Rendering
 		/// <inheritdoc/>
 		public override int GetFirstInterestedOffset(int startOffset)
 		{
-			GetMatch(startOffset, out var matchOffset);
+			GetMatch(startOffset, out int matchOffset);
 			return matchOffset;
 		}
 
 		/// <inheritdoc/>
 		public override VisualLineElement ConstructElement(int offset)
 		{
-			var m = GetMatch(offset, out var matchOffset);
+            Match m = GetMatch(offset, out int matchOffset);
 			if (m.Success && matchOffset == offset) {
 				return ConstructElementFromMatch(m);
 			} else {
@@ -103,10 +104,10 @@ namespace AvaloniaEdit.Rendering
 		/// </summary>
 		protected virtual VisualLineElement ConstructElementFromMatch(Match m)
 		{
-			var uri = GetUriFromMatch(m);
+            Uri uri = GetUriFromMatch(m);
 			if (uri == null)
 				return null;
-			var linkText = new VisualLineLinkText(CurrentContext.VisualLine, m.Length)
+            VisualLineLinkText linkText = new VisualLineLinkText(CurrentContext.VisualLine, m.Length)
 			{
 				NavigateUri = uri,
 				RequireControlModifierForClick = RequireControlModifierForClick
@@ -119,7 +120,7 @@ namespace AvaloniaEdit.Rendering
 		/// </summary>
 		protected virtual Uri GetUriFromMatch(Match match)
 		{
-			var targetUrl = match.Value;
+            string targetUrl = match.Value;
 			if (targetUrl.StartsWith("www.", StringComparison.Ordinal))
 				targetUrl = "http://" + targetUrl;
 			return Uri.IsWellFormedUriString(targetUrl, UriKind.Absolute) ? new Uri(targetUrl) : null;
@@ -147,7 +148,7 @@ namespace AvaloniaEdit.Rendering
 
 		protected override Uri GetUriFromMatch(Match match)
 		{
-			var targetUrl = "mailto:" + match.Value;
+            string targetUrl = "mailto:" + match.Value;
 			return Uri.IsWellFormedUriString(targetUrl, UriKind.Absolute) ? new Uri(targetUrl) : null;
 		}
 	}

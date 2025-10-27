@@ -131,7 +131,7 @@ namespace AvaloniaEdit
         [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
         public override int GetHashCode()
         {
-            var hashCode = IsAtEndOfLine ? 115817 : 0;
+            int hashCode = IsAtEndOfLine ? 115817 : 0;
             unchecked
             {
                 hashCode += 1000000007 * Line.GetHashCode();

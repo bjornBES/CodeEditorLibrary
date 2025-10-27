@@ -117,14 +117,14 @@ namespace AvaloniaEdit.Highlighting
         {
             _position = 0;
             ResetColorStack();
-            var currentRuleSet = CurrentRuleSet;
-            var storedMatchArrays = new Stack<Match[]>();
-            var matches = AllocateMatchArray(currentRuleSet.Spans.Count);
+            HighlightingRuleSet currentRuleSet = CurrentRuleSet;
+            Stack<Match[]> storedMatchArrays = new Stack<Match[]>();
+            Match[] matches = AllocateMatchArray(currentRuleSet.Spans.Count);
             Match endSpanMatch = null;
 
             while (true)
             {
-                for (var i = 0; i < matches.Length; i++)
+                for (int i = 0; i < matches.Length; i++)
                 {
                     if (matches[i] == null || (matches[i].Success && matches[i].Index < _position))
                         matches[i] = currentRuleSet.Spans[i].StartExpression.Match(_lineText, _position);
@@ -132,7 +132,7 @@ namespace AvaloniaEdit.Highlighting
                 if (!_spanStack.IsEmpty)
                     endSpanMatch = _spanStack.Peek().EndExpression.Match(_lineText, _position);
 
-                var firstMatch = Minimum(matches, endSpanMatch);
+                Match firstMatch = Minimum(matches, endSpanMatch);
                 if (firstMatch == null)
                     break;
 
@@ -142,7 +142,7 @@ namespace AvaloniaEdit.Highlighting
 
                 if (firstMatch == endSpanMatch)
                 {
-                    var poppedSpan = _spanStack.Peek();
+                    HighlightingSpan poppedSpan = _spanStack.Peek();
                     if (!poppedSpan.SpanColorIncludesEnd)
                         PopColor(); // pop SpanColor
                     PushColor(poppedSpan.EndColor);
@@ -156,7 +156,7 @@ namespace AvaloniaEdit.Highlighting
                     if (storedMatchArrays.Count > 0)
                     {
                         matches = storedMatchArrays.Pop();
-                        var index = currentRuleSet.Spans.IndexOf(poppedSpan);
+                        int index = currentRuleSet.Spans.IndexOf(poppedSpan);
                         Debug.Assert(index >= 0 && index < matches.Length);
                         if (matches[index].Index == _position)
                         {
@@ -174,9 +174,9 @@ namespace AvaloniaEdit.Highlighting
                 }
                 else
                 {
-                    var index = Array.IndexOf(matches, firstMatch);
+                    int index = Array.IndexOf(matches, firstMatch);
                     Debug.Assert(index >= 0);
-                    var newSpan = currentRuleSet.Spans[index];
+                    HighlightingSpan newSpan = currentRuleSet.Spans[index];
                     _spanStack = _spanStack.Push(newSpan);
                     currentRuleSet = CurrentRuleSet;
                     storedMatchArrays.Push(matches);
@@ -203,21 +203,21 @@ namespace AvaloniaEdit.Highlighting
                 return;
             if (_highlightedLine != null)
             {
-                var rules = CurrentRuleSet.Rules;
-                var matches = AllocateMatchArray(rules.Count);
+                IList<HighlightingRule> rules = CurrentRuleSet.Rules;
+                Match[] matches = AllocateMatchArray(rules.Count);
                 while (true)
                 {
-                    for (var i = 0; i < matches.Length; i++)
+                    for (int i = 0; i < matches.Length; i++)
                     {
                         if (matches[i] == null || (matches[i].Success && matches[i].Index < _position))
                             matches[i] = rules[i].Regex.Match(_lineText, _position, until - _position);
                     }
-                    var firstMatch = Minimum(matches, null);
+                    Match firstMatch = Minimum(matches, null);
                     if (firstMatch == null)
                         break;
 
                     _position = firstMatch.Index;
-                    var ruleIndex = Array.IndexOf(matches, firstMatch);
+                    int ruleIndex = Array.IndexOf(matches, firstMatch);
                     if (firstMatch.Length == 0)
                     {
                         throw new InvalidOperationException(
@@ -263,7 +263,7 @@ namespace AvaloniaEdit.Highlighting
             else
             {
                 _highlightedSectionStack = new Stack<HighlightedSection>();
-                foreach (var span in _spanStack.Reverse())
+                foreach (HighlightingSpan span in _spanStack.Reverse())
                 {
                     PushColor(span.SpanColor);
                 }
@@ -286,7 +286,7 @@ namespace AvaloniaEdit.Highlighting
             }
             else
             {
-                var hs = new HighlightedSection
+                HighlightedSection hs = new HighlightedSection
                 {
                     Offset = _position + _lineStartOffset,
                     Color = color
@@ -301,7 +301,7 @@ namespace AvaloniaEdit.Highlighting
         {
             if (_highlightedLine == null)
                 return;
-            var s = _highlightedSectionStack.Pop();
+            HighlightedSection s = _highlightedSectionStack.Pop();
             if (s != null)
             {
                 s.Length = (_position + _lineStartOffset) - s.Offset;
@@ -329,7 +329,7 @@ namespace AvaloniaEdit.Highlighting
         private static Match Minimum(Match[] arr, Match endSpanMatch)
         {
             Match min = null;
-            foreach (var v in arr)
+            foreach (Match v in arr)
             {
                 if (v.Success && (min == null || v.Index < min.Index))
                     min = v;

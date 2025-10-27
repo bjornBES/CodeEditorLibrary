@@ -70,7 +70,7 @@ namespace AvaloniaEdit.Editing
         private void StartBlinkAnimation()
         {
             // TODO
-            var blinkTime = TimeSpan.FromMilliseconds(500); //Win32.CaretBlinkTime;
+            TimeSpan blinkTime = TimeSpan.FromMilliseconds(500); //Win32.CaretBlinkTime;
             _blink = true; // the caret should visible initially
                           // This is important if blinking is disabled (system reports a negative blinkTime)
             if (blinkTime.TotalMilliseconds > 0)
@@ -93,19 +93,19 @@ namespace AvaloniaEdit.Editing
 
             if (_isVisible && _blink)
             {
-                var caretBrush = CaretBrush ?? TextView.GetValue(TextBlock.ForegroundProperty);
+                IBrush caretBrush = CaretBrush ?? TextView.GetValue(TextBlock.ForegroundProperty);
 
                 if (_textArea.OverstrikeMode)
                 {
                     if (caretBrush is ISolidColorBrush scBrush)
                     {
-                        var brushColor = scBrush.Color;
-                        var newColor = Color.FromArgb(100, brushColor.R, brushColor.G, brushColor.B);
+                        Color brushColor = scBrush.Color;
+                        Color newColor = Color.FromArgb(100, brushColor.R, brushColor.G, brushColor.B);
                         caretBrush = new SolidColorBrush(newColor);
                     }
                 }
 
-                var r = new Rect(_caretRectangle.X - TextView.HorizontalOffset,
+                Rect r = new Rect(_caretRectangle.X - TextView.HorizontalOffset,
                                   _caretRectangle.Y - TextView.VerticalOffset,
                                   _caretRectangle.Width,
                                   _caretRectangle.Height);

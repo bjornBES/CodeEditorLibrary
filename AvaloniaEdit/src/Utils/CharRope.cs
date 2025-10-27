@@ -176,7 +176,7 @@ namespace AvaloniaEdit.Utils
 			rope.VerifyRange(startIndex, length);
 			
 			while (length > 0) {
-				var entry = rope.FindNodeUsingCache(startIndex).PeekOrDefault();
+                Rope<char>.RopeCacheEntry entry = rope.FindNodeUsingCache(startIndex).PeekOrDefault();
 				char[] contents = entry.Node.Contents;
 				int startWithinNode = startIndex - entry.NodeStartIndex;
 				int nodeLength = Math.Min(entry.Node.Length, startWithinNode + length);

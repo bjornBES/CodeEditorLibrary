@@ -206,7 +206,7 @@ namespace AvaloniaEdit.Editing
         // workaround since InputElement.KeyBindings can't be marked as handled
         private void TextAreaOnKeyDown(object sender, KeyEventArgs keyEventArgs)
         {
-            foreach (var keyBinding in _keyBindings)
+            foreach (KeyBinding keyBinding in _keyBindings)
             {
                 if (keyEventArgs.Handled)
                 {
@@ -216,7 +216,7 @@ namespace AvaloniaEdit.Editing
                 keyBinding.TryHandle(keyEventArgs);
             }
 
-            foreach (var commandBinding in CommandBindings)
+            foreach (RoutedCommandBinding commandBinding in CommandBindings)
             {
                 if (commandBinding.Command.Gesture?.Matches(keyEventArgs) == true)
                 {
@@ -240,7 +240,7 @@ namespace AvaloniaEdit.Editing
             TextArea.CommandBindings.AddRange(_commandBindings);
             TextArea.KeyDown += TextAreaOnKeyDown;
             //TextArea.KeyBindings.AddRange(_keyBindings);
-            foreach (var handler in _nestedInputHandlers)
+            foreach (ITextAreaInputHandler handler in _nestedInputHandlers)
                 handler.Attach();
         }
 
@@ -251,13 +251,13 @@ namespace AvaloniaEdit.Editing
                 throw new InvalidOperationException("Input handler is not attached");
             IsAttached = false;
 
-            foreach (var b in _commandBindings)
+            foreach (RoutedCommandBinding b in _commandBindings)
                 TextArea.CommandBindings.Remove(b);
 
             TextArea.KeyDown -= TextAreaOnKeyDown;
             //foreach (var b in _keyBindings)
             //    TextArea.KeyBindings.Remove(b);
-            foreach (var handler in _nestedInputHandlers)
+            foreach (ITextAreaInputHandler handler in _nestedInputHandlers)
                 handler.Detach();
         }
         #endregion

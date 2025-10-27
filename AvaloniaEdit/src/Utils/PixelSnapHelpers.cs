@@ -35,10 +35,10 @@ namespace AvaloniaEdit.Utils
 		{
             if (visual == null)
                 throw new ArgumentNullException(nameof(visual));
-            var source = TopLevel.GetTopLevel(visual);
+            TopLevel source = TopLevel.GetTopLevel(visual);
             if (source != null)
             {
-                var scaling = source.RenderScaling;
+                double scaling = source.RenderScaling;
                 return new Size(1 / scaling , 1 / scaling);
             }
             else
@@ -67,10 +67,10 @@ namespace AvaloniaEdit.Utils
 		/// </summary>
 		public static Rect PixelAlign(Rect rect, Size pixelSize)
 		{
-			var x = PixelAlign(rect.X, pixelSize.Width);
-			var y = PixelAlign(rect.Y, pixelSize.Height);
-			var width = Round(rect.Width, pixelSize.Width);
-			var height = Round(rect.Height, pixelSize.Height);
+            double x = PixelAlign(rect.X, pixelSize.Width);
+            double y = PixelAlign(rect.Y, pixelSize.Height);
+            double width = Round(rect.Width, pixelSize.Width);
+            double height = Round(rect.Height, pixelSize.Height);
 			return new Rect(x, y, width, height);
 		}
 		

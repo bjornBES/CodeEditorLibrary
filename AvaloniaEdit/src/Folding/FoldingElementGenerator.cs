@@ -52,13 +52,13 @@ namespace AvaloniaEdit.Folding
                 {
                     if (_foldingManager != null)
                     {
-                        foreach (var v in _textViews)
+                        foreach (TextView v in _textViews)
                             _foldingManager.RemoveFromTextView(v);
                     }
                     _foldingManager = value;
                     if (_foldingManager != null)
                     {
-                        foreach (var v in _textViews)
+                        foreach (TextView v in _textViews)
                             _foldingManager.AddToTextView(v);
                     }
                 }
@@ -96,7 +96,7 @@ namespace AvaloniaEdit.Folding
         {
             if (_foldingManager != null)
             {
-                foreach (var fs in _foldingManager.GetFoldingsContaining(startOffset))
+                foreach (FoldingSection fs in _foldingManager.GetFoldingsContaining(startOffset))
                 {
                     // Test whether we're currently within a folded folding (that didn't just end).
                     // If so, create the fold marker immediately.
@@ -119,9 +119,9 @@ namespace AvaloniaEdit.Folding
         {
             if (_foldingManager == null)
                 return null;
-            var foldedUntil = -1;
+            int foldedUntil = -1;
             FoldingSection foldingSection = null;
-            foreach (var fs in _foldingManager.GetFoldingsContaining(offset))
+            foreach (FoldingSection fs in _foldingManager.GetFoldingsContaining(offset))
             {
                 if (fs.IsFolded)
                 {
@@ -141,7 +141,7 @@ namespace AvaloniaEdit.Folding
                 do
                 {
                     foundOverlappingFolding = false;
-                    foreach (var fs in FoldingManager.GetFoldingsContaining(foldedUntil))
+                    foreach (FoldingSection fs in FoldingManager.GetFoldingsContaining(foldedUntil))
                     {
                         if (fs.IsFolded && fs.EndOffset > foldedUntil)
                         {
@@ -154,9 +154,9 @@ namespace AvaloniaEdit.Folding
 				string title = foldingSection.Title;
 				if (string.IsNullOrEmpty(title))
 					title = "...";
-				var properties = new VisualLineElementTextRunProperties(CurrentContext.GlobalTextRunProperties);
+                VisualLineElementTextRunProperties properties = new VisualLineElementTextRunProperties(CurrentContext.GlobalTextRunProperties);
 				properties.SetForegroundBrush(TextBrush);
-				var text = TextFormatter.Current.FormatLine(new SimpleTextSource(title, properties), 0, double.MaxValue, new GenericTextParagraphProperties(properties));
+                TextLine text = TextFormatter.Current.FormatLine(new SimpleTextSource(title, properties), 0, double.MaxValue, new GenericTextParagraphProperties(properties));
 				return new FoldingLineElement(foldingSection, text, foldedUntil - offset, TextBrush);
 			} else {
 				return null;
@@ -199,8 +199,8 @@ namespace AvaloniaEdit.Folding
 
             public override void Draw(DrawingContext drawingContext, Point origin)
             {
-                var (width, height) = Size;
-                var r = new Rect(origin.X, origin.Y, width, height);
+                (double width, double height) = Size;
+                Rect r = new Rect(origin.X, origin.Y, width, height);
                 drawingContext.DrawRectangle(new ImmutablePen(_textBrush.ToImmutable()), r);
                 base.Draw(drawingContext, origin);
             }

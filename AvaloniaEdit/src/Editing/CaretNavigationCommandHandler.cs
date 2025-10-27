@@ -55,7 +55,7 @@ namespace AvaloniaEdit.Editing
         /// </summary>
         public static TextAreaInputHandler Create(TextArea textArea)
         {
-            var handler = new TextAreaInputHandler(textArea);
+            TextAreaInputHandler handler = new TextAreaInputHandler(textArea);
             handler.CommandBindings.AddRange(CommandBindings);
             handler.KeyBindings.AddRange(KeyBindings);
             return handler;
@@ -93,8 +93,8 @@ namespace AvaloniaEdit.Editing
 
         static CaretNavigationCommandHandler()
         {
-            var keymap = HotkeyConfiguration.Keymap;
-            var boxSelectionModifiers = HotkeyConfiguration.BoxSelectionModifiers;
+            PlatformHotkeyConfiguration keymap = HotkeyConfiguration.Keymap;
+            KeyModifiers boxSelectionModifiers = HotkeyConfiguration.BoxSelectionModifiers;
 
             AddBinding(EditingCommands.MoveLeftByCharacter, KeyModifiers.None, Key.Left, OnMoveCaret(CaretMovementType.CharLeft));
             AddBinding(EditingCommands.SelectLeftByCharacter, keymap.SelectionModifiers, Key.Left, OnMoveCaretExtendSelection(CaretMovementType.CharLeft));
@@ -122,25 +122,25 @@ namespace AvaloniaEdit.Editing
             AddBinding(EditingCommands.MoveUpByPage, KeyModifiers.None, Key.PageUp, OnMoveCaret(CaretMovementType.PageUp));
             AddBinding(EditingCommands.SelectUpByPage, keymap.SelectionModifiers, Key.PageUp, OnMoveCaretExtendSelection(CaretMovementType.PageUp));
 
-            foreach (var keyGesture in keymap.MoveCursorToTheStartOfLine)
+            foreach (KeyGesture keyGesture in keymap.MoveCursorToTheStartOfLine)
                 AddBinding(EditingCommands.MoveToLineStart, keyGesture, OnMoveCaret(CaretMovementType.LineStart));
-            foreach (var keyGesture in keymap.MoveCursorToTheStartOfLineWithSelection)
+            foreach (KeyGesture keyGesture in keymap.MoveCursorToTheStartOfLineWithSelection)
                 AddBinding(EditingCommands.SelectToLineStart, keyGesture, OnMoveCaretExtendSelection(CaretMovementType.LineStart));
-            foreach (var keyGesture in keymap.MoveCursorToTheEndOfLine)
+            foreach (KeyGesture keyGesture in keymap.MoveCursorToTheEndOfLine)
                 AddBinding(EditingCommands.MoveToLineEnd, keyGesture, OnMoveCaret(CaretMovementType.LineEnd));
-            foreach (var keyGesture in keymap.MoveCursorToTheEndOfLineWithSelection)
+            foreach (KeyGesture keyGesture in keymap.MoveCursorToTheEndOfLineWithSelection)
                 AddBinding(EditingCommands.SelectToLineEnd, keyGesture, OnMoveCaretExtendSelection(CaretMovementType.LineEnd));
 
             AddBinding(RectangleSelection.BoxSelectToLineStart, boxSelectionModifiers | keymap.SelectionModifiers, Key.Home, OnMoveCaretBoxSelection(CaretMovementType.LineStart));
             AddBinding(RectangleSelection.BoxSelectToLineEnd, boxSelectionModifiers | keymap.SelectionModifiers, Key.End, OnMoveCaretBoxSelection(CaretMovementType.LineEnd));
 
-            foreach (var keyGesture in keymap.MoveCursorToTheStartOfDocument)
+            foreach (KeyGesture keyGesture in keymap.MoveCursorToTheStartOfDocument)
                 AddBinding(EditingCommands.MoveToDocumentStart, keyGesture, OnMoveCaret(CaretMovementType.DocumentStart));
-            foreach (var keyGesture in keymap.MoveCursorToTheStartOfDocumentWithSelection)
+            foreach (KeyGesture keyGesture in keymap.MoveCursorToTheStartOfDocumentWithSelection)
                 AddBinding(EditingCommands.SelectToDocumentStart, keyGesture, OnMoveCaretExtendSelection(CaretMovementType.DocumentStart));
-            foreach (var keyGesture in keymap.MoveCursorToTheEndOfDocument)
+            foreach (KeyGesture keyGesture in keymap.MoveCursorToTheEndOfDocument)
                 AddBinding(EditingCommands.MoveToDocumentEnd, keyGesture, OnMoveCaret(CaretMovementType.DocumentEnd));
-            foreach (var keyGesture in keymap.MoveCursorToTheEndOfDocumentWithSelection)
+            foreach (KeyGesture keyGesture in keymap.MoveCursorToTheEndOfDocumentWithSelection)
                 AddBinding(EditingCommands.SelectToDocumentEnd, keyGesture, OnMoveCaretExtendSelection(CaretMovementType.DocumentEnd));
 
             AddBinding(ApplicationCommands.SelectAll, OnSelectAll, CanSelectAll);
@@ -148,7 +148,7 @@ namespace AvaloniaEdit.Editing
 
         private static void CanSelectAll(object target, CanExecuteRoutedEventArgs args)
         {
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea is { Document: not null })
             {
                 args.Handled = true;
@@ -158,7 +158,7 @@ namespace AvaloniaEdit.Editing
 
         private static void OnSelectAll(object target, ExecutedRoutedEventArgs args)
         {
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea?.Document != null)
             {
                 args.Handled = true;
@@ -176,7 +176,7 @@ namespace AvaloniaEdit.Editing
         {
             return (target, args) =>
             {
-                var textArea = GetTextArea(target);
+                TextArea textArea = GetTextArea(target);
                 if (textArea?.Document != null)
                 {
                     args.Handled = true;
@@ -191,11 +191,11 @@ namespace AvaloniaEdit.Editing
         {
             return (target, args) =>
             {
-                var textArea = GetTextArea(target);
+                TextArea textArea = GetTextArea(target);
                 if (textArea?.Document != null)
                 {
                     args.Handled = true;
-                    var oldPosition = textArea.Caret.Position;
+                    TextViewPosition oldPosition = textArea.Caret.Position;
                     MoveCaret(textArea, direction);
                     textArea.Selection = textArea.Selection.StartSelectionOrSetEndpoint(oldPosition, textArea.Caret.Position);
                     textArea.Caret.BringCaretToView();
@@ -207,7 +207,7 @@ namespace AvaloniaEdit.Editing
         {
             return (target, args) =>
             {
-                var textArea = GetTextArea(target);
+                TextArea textArea = GetTextArea(target);
                 if (textArea?.Document != null)
                 {
                     args.Handled = true;
@@ -221,7 +221,7 @@ namespace AvaloniaEdit.Editing
                                 textArea.Caret.Position);
                     }
                     // Now move the caret and extend the selection
-                    var oldPosition = textArea.Caret.Position;
+                    TextViewPosition oldPosition = textArea.Caret.Position;
                     MoveCaret(textArea, direction);
                     textArea.Selection = textArea.Selection.StartSelectionOrSetEndpoint(oldPosition, textArea.Caret.Position);
                     textArea.Caret.BringCaretToView();
@@ -232,7 +232,7 @@ namespace AvaloniaEdit.Editing
         #region Caret movement
         internal static void MoveCaret(TextArea textArea, CaretMovementType direction)
         {
-            var desiredXPos = textArea.Caret.DesiredXPos;
+            double desiredXPos = textArea.Caret.DesiredXPos;
             textArea.Caret.Position = GetNewCaretPosition(textArea.TextView, textArea.Caret.Position, direction, textArea.Selection.EnableVirtualSpace, ref desiredXPos);
             textArea.Caret.DesiredXPos = desiredXPos;
         }
@@ -250,9 +250,9 @@ namespace AvaloniaEdit.Editing
                     desiredXPos = double.NaN;
                     return new TextViewPosition(textView.Document.GetLocation(textView.Document.TextLength));
             }
-            var caretLine = textView.Document.GetLineByNumber(caretPosition.Line);
-            var visualLine = textView.GetOrConstructVisualLine(caretLine);
-            var textLine = visualLine.GetTextLine(caretPosition.VisualColumn, caretPosition.IsAtEndOfLine);
+            DocumentLine caretLine = textView.Document.GetLineByNumber(caretPosition.Line);
+            VisualLine visualLine = textView.GetOrConstructVisualLine(caretLine);
+            TextLine textLine = visualLine.GetTextLine(caretPosition.VisualColumn, caretPosition.IsAtEndOfLine);
             switch (direction)
             {
                 case CaretMovementType.CharLeft:
@@ -294,7 +294,7 @@ namespace AvaloniaEdit.Editing
 
         private static TextViewPosition GetStartOfLineCaretPosition(int oldVisualColumn, VisualLine visualLine, TextLine textLine, bool enableVirtualSpace)
         {
-            var newVisualCol = visualLine.GetTextLineVisualStartColumn(textLine);
+            int newVisualCol = visualLine.GetTextLineVisualStartColumn(textLine);
             if (newVisualCol == 0)
                 newVisualCol = visualLine.GetNextCaretPosition(newVisualCol - 1, LogicalDirection.Forward, CaretPositioningMode.WordStart, enableVirtualSpace);
             if (newVisualCol < 0)
@@ -307,8 +307,8 @@ namespace AvaloniaEdit.Editing
 
         private static TextViewPosition GetEndOfLineCaretPosition(VisualLine visualLine, TextLine textLine)
         {
-            var newVisualCol = visualLine.GetTextLineVisualStartColumn(textLine) + textLine.Length - textLine.NewLineLength;
-            var pos = visualLine.GetTextViewPosition(newVisualCol);
+            int newVisualCol = visualLine.GetTextLineVisualStartColumn(textLine) + textLine.Length - textLine.NewLineLength;
+            TextViewPosition pos = visualLine.GetTextViewPosition(newVisualCol);
             pos.IsAtEndOfLine = true;
             return pos;
         }
@@ -318,7 +318,7 @@ namespace AvaloniaEdit.Editing
 
         private static TextViewPosition GetNextCaretPosition(TextView textView, TextViewPosition caretPosition, VisualLine visualLine, CaretPositioningMode mode, bool enableVirtualSpace)
         {
-            var pos = visualLine.GetNextCaretPosition(caretPosition.VisualColumn, LogicalDirection.Forward, mode, enableVirtualSpace);
+            int pos = visualLine.GetNextCaretPosition(caretPosition.VisualColumn, LogicalDirection.Forward, mode, enableVirtualSpace);
             if (pos >= 0)
             {
                 return visualLine.GetTextViewPosition(pos);
@@ -326,10 +326,10 @@ namespace AvaloniaEdit.Editing
             else
             {
                 // move to start of next line
-                var nextDocumentLine = visualLine.LastDocumentLine.NextLine;
+                DocumentLine nextDocumentLine = visualLine.LastDocumentLine.NextLine;
                 if (nextDocumentLine != null)
                 {
-                    var nextLine = textView.GetOrConstructVisualLine(nextDocumentLine);
+                    VisualLine nextLine = textView.GetOrConstructVisualLine(nextDocumentLine);
                     pos = nextLine.GetNextCaretPosition(-1, LogicalDirection.Forward, mode, enableVirtualSpace);
                     if (pos < 0)
                         throw ThrowUtil.NoValidCaretPosition();
@@ -346,7 +346,7 @@ namespace AvaloniaEdit.Editing
 
         private static TextViewPosition GetPrevCaretPosition(TextView textView, TextViewPosition caretPosition, VisualLine visualLine, CaretPositioningMode mode, bool enableVirtualSpace)
         {
-            var pos = visualLine.GetNextCaretPosition(caretPosition.VisualColumn, LogicalDirection.Backward, mode, enableVirtualSpace);
+            int pos = visualLine.GetNextCaretPosition(caretPosition.VisualColumn, LogicalDirection.Backward, mode, enableVirtualSpace);
             if (pos >= 0)
             {
                 return visualLine.GetTextViewPosition(pos);
@@ -354,10 +354,10 @@ namespace AvaloniaEdit.Editing
             else
             {
                 // move to end of previous line
-                var previousDocumentLine = visualLine.FirstDocumentLine.PreviousLine;
+                DocumentLine previousDocumentLine = visualLine.FirstDocumentLine.PreviousLine;
                 if (previousDocumentLine != null)
                 {
-                    var previousLine = textView.GetOrConstructVisualLine(previousDocumentLine);
+                    VisualLine previousLine = textView.GetOrConstructVisualLine(previousDocumentLine);
                     pos = previousLine.GetNextCaretPosition(previousLine.VisualLength + 1, LogicalDirection.Backward, mode, enableVirtualSpace);
                     if (pos < 0)
                         throw ThrowUtil.NoValidCaretPosition();
@@ -381,23 +381,23 @@ namespace AvaloniaEdit.Editing
             if (double.IsNaN(xPos))
                 xPos = visualLine.GetTextLineVisualXPosition(textLine, caretPosition.VisualColumn);
             // now find the TextLine+VisualLine where the caret will end up in
-            var targetVisualLine = visualLine;
+            VisualLine targetVisualLine = visualLine;
             TextLine targetLine;
-            var textLineIndex = visualLine.TextLines.IndexOf(textLine);
+            int textLineIndex = visualLine.TextLines.IndexOf(textLine);
             switch (direction)
             {
                 case CaretMovementType.LineUp:
                     {
                         // Move up: move to the previous TextLine in the same visual line
                         // or move to the last TextLine of the previous visual line
-                        var prevLineNumber = visualLine.FirstDocumentLine.LineNumber - 1;
+                        int prevLineNumber = visualLine.FirstDocumentLine.LineNumber - 1;
                         if (textLineIndex > 0)
                         {
                             targetLine = visualLine.TextLines[textLineIndex - 1];
                         }
                         else if (prevLineNumber >= 1)
                         {
-                            var prevLine = textView.Document.GetLineByNumber(prevLineNumber);
+                            DocumentLine prevLine = textView.Document.GetLineByNumber(prevLineNumber);
                             targetVisualLine = textView.GetOrConstructVisualLine(prevLine);
                             targetLine = targetVisualLine.TextLines[targetVisualLine.TextLines.Count - 1];
                         }
@@ -411,14 +411,14 @@ namespace AvaloniaEdit.Editing
                     {
                         // Move down: move to the next TextLine in the same visual line
                         // or move to the first TextLine of the next visual line
-                        var nextLineNumber = visualLine.LastDocumentLine.LineNumber + 1;
+                        int nextLineNumber = visualLine.LastDocumentLine.LineNumber + 1;
                         if (textLineIndex < visualLine.TextLines.Count - 1)
                         {
                             targetLine = visualLine.TextLines[textLineIndex + 1];
                         }
                         else if (nextLineNumber <= textView.Document.LineCount)
                         {
-                            var nextLine = textView.Document.GetLineByNumber(nextLineNumber);
+                            DocumentLine nextLine = textView.Document.GetLineByNumber(nextLineNumber);
                             targetVisualLine = textView.GetOrConstructVisualLine(nextLine);
                             targetLine = targetVisualLine.TextLines[0];
                         }
@@ -432,12 +432,12 @@ namespace AvaloniaEdit.Editing
                 case CaretMovementType.PageDown:
                     {
                         // Page up/down: find the target line using its visual position
-                        var yPos = visualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.LineMiddle);
+                        double yPos = visualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.LineMiddle);
                         if (direction == CaretMovementType.PageUp)
                             yPos -= textView.Bounds.Height;
                         else
                             yPos += textView.Bounds.Height;
-                        var newLine = textView.GetDocumentLineByVisualTop(yPos);
+                        DocumentLine newLine = textView.GetDocumentLineByVisualTop(yPos);
                         targetVisualLine = textView.GetOrConstructVisualLine(newLine);
                         targetLine = targetVisualLine.GetTextLineByVisualYPosition(yPos);
                         break;
@@ -447,11 +447,11 @@ namespace AvaloniaEdit.Editing
             }
             if (targetLine != null)
             {
-                var yPos = targetVisualLine.GetTextLineVisualYPosition(targetLine, VisualYPosition.LineMiddle);
-                var newVisualColumn = targetVisualLine.GetVisualColumn(new Point(xPos, yPos), enableVirtualSpace);
+                double yPos = targetVisualLine.GetTextLineVisualYPosition(targetLine, VisualYPosition.LineMiddle);
+                int newVisualColumn = targetVisualLine.GetVisualColumn(new Point(xPos, yPos), enableVirtualSpace);
 
                 // prevent wrapping to the next line; TODO: could 'IsAtEnd' help here?
-                var targetLineStartCol = targetVisualLine.GetTextLineVisualStartColumn(targetLine);
+                int targetLineStartCol = targetVisualLine.GetTextLineVisualStartColumn(targetLine);
                 if (newVisualColumn >= targetLineStartCol + targetLine.Length)
                 {
                     if (newVisualColumn <= targetVisualLine.VisualLength)

@@ -36,7 +36,7 @@ namespace AvaloniaEdit.Snippets
         /// <inheritdoc/>
         public override void Insert(InsertionContext context)
         {
-            foreach (var e in Elements)
+            foreach (SnippetElement e in Elements)
             {
                 e.Insert(context);
             }

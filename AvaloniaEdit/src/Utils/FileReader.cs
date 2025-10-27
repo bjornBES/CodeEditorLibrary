@@ -61,7 +61,7 @@ namespace AvaloniaEdit.Utils
 
         private static bool IsAsciiCompatible(Encoding encoding)
         {
-            var bytes = encoding.GetBytes("Az");
+            byte[] bytes = encoding.GetBytes("Az");
             return bytes.Length == 2 && bytes[0] == 'A' && bytes[1] == 'z';
         }
 
@@ -90,7 +90,7 @@ namespace AvaloniaEdit.Utils
         /// <returns>The file content as string.</returns>
         public static string ReadFileContent(Stream stream, Encoding defaultEncoding)
         {
-            using (var reader = OpenStream(stream, defaultEncoding))
+            using (StreamReader reader = OpenStream(stream, defaultEncoding))
             {
                 return reader.ReadToEnd();
             }
@@ -152,8 +152,8 @@ namespace AvaloniaEdit.Utils
             {
                 // the autodetection of StreamReader is not capable of detecting the difference
                 // between ISO-8859-1 and UTF-8 without BOM.
-                var firstByte = stream.ReadByte();
-                var secondByte = stream.ReadByte();
+                int firstByte = stream.ReadByte();
+                int secondByte = stream.ReadByte();
                 switch ((firstByte << 8) | secondByte)
                 {
                     case 0x0000: // either UTF-32 Big Endian or a binary file; use StreamReader
@@ -175,16 +175,16 @@ namespace AvaloniaEdit.Utils
 
         private static StreamReader AutoDetect(Stream fs, byte firstByte, byte secondByte, Encoding defaultEncoding)
         {
-            var max = (int)Math.Min(fs.Length, 500000); // look at max. 500 KB
+            int max = (int)Math.Min(fs.Length, 500000); // look at max. 500 KB
             // ReSharper disable InconsistentNaming
             const int ASCII = 0;
             const int Error = 1;
             const int UTF8 = 2;
             const int UTF8Sequence = 3;
             // ReSharper restore InconsistentNaming
-            var state = ASCII;
-            var sequenceLength = 0;
-            for (var i = 0; i < max; i++)
+            int state = ASCII;
+            int sequenceLength = 0;
+            for (int i = 0; i < max; i++)
             {
                 byte b;
                 if (i == 0)

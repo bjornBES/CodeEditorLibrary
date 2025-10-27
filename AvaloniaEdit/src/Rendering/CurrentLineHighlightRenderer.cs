@@ -82,16 +82,16 @@ namespace AvaloniaEdit.Rendering
             if (!_textView.Options.HighlightCurrentLine)
                 return;
 
-            var builder = new BackgroundGeometryBuilder();
+            BackgroundGeometryBuilder builder = new BackgroundGeometryBuilder();
 
-            var visualLine = _textView.GetVisualLine(_line);
+            VisualLine visualLine = _textView.GetVisualLine(_line);
             if (visualLine == null) return;
 
-            var linePosY = visualLine.VisualTop - _textView.ScrollOffset.Y;
+            double linePosY = visualLine.VisualTop - _textView.ScrollOffset.Y;
 
             builder.AddRectangle(textView, new Rect(0, linePosY, textView.Bounds.Width, visualLine.Height));
 
-            var geometry = builder.CreateGeometry();
+            Geometry geometry = builder.CreateGeometry();
             if (geometry != null) {
                 drawingContext.DrawGeometry(BackgroundBrush, BorderPen, geometry);
             }

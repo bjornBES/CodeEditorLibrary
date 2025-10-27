@@ -49,7 +49,7 @@ namespace AvaloniaEdit.CodeCompletion
         {
             base.OnApplyTemplate(args);
 
-            var upButton = args.NameScope.Find<Button>("PART_UP");
+            Button upButton = args.NameScope.Find<Button>("PART_UP");
             if (upButton != null)
             {
                 upButton.Click += (sender, e) =>
@@ -59,7 +59,7 @@ namespace AvaloniaEdit.CodeCompletion
                   };
             }
 
-            var downButton = args.NameScope.Find<Button>("PART_DOWN");
+            Button downButton = args.NameScope.Find<Button>("PART_DOWN");
             if (downButton != null)
             {
                 downButton.Click += (sender, e) =>
@@ -91,10 +91,10 @@ namespace AvaloniaEdit.CodeCompletion
         /// <param name="relativeIndexChange">The relative index change - usual values are +1 or -1.</param>
         public void ChangeIndex(int relativeIndexChange)
         {
-            var p = Provider;
+            IOverloadProvider p = Provider;
             if (p != null)
             {
-                var newIndex = p.SelectedIndex + relativeIndexChange;
+                int newIndex = p.SelectedIndex + relativeIndexChange;
                 if (newIndex < 0)
                     newIndex = p.Count - 1;
                 if (newIndex >= p.Count)

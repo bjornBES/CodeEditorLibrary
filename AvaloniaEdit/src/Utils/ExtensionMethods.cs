@@ -26,6 +26,7 @@ using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Reactive;
+using Avalonia.Rendering;
 using Avalonia.VisualTree;
 using lib.debug;
 
@@ -218,25 +219,25 @@ namespace AvaloniaEdit.Utils
         #region Snap to device pixels
         public static Point SnapToDevicePixels(this Point p, Visual targetVisual)
         {
-            var root = targetVisual.GetVisualRoot();
+            IRenderRoot root = targetVisual.GetVisualRoot();
 
             // Get the root control and its scaling
-            var scaling = new Vector(root.RenderScaling, root.RenderScaling);
+            Vector scaling = new Vector(root.RenderScaling, root.RenderScaling);
 
             // Create a matrix to translate from control coordinates to device coordinates.
-            var m = targetVisual.TransformToVisual((Control)root) * Matrix.CreateScale(scaling);
+            Matrix? m = targetVisual.TransformToVisual((Control)root) * Matrix.CreateScale(scaling);
 
             if (m == null)
                 return p;
 
             // Translate the point to device coordinates.
-            var devicePoint = p.Transform(m.Value);
+            Point devicePoint = p.Transform(m.Value);
 
             // Snap the coordinate to the midpoint between device pixels.
             devicePoint = new Point(((int)devicePoint.X) + 0.5, ((int)devicePoint.Y) + 0.5);
 
             // Translate the point back to control coordinates.
-            var inv = m.Value.Invert();
+            Matrix inv = m.Value.Invert();
             Point result = devicePoint.Transform(inv);
             return result;
         }
@@ -261,7 +262,7 @@ namespace AvaloniaEdit.Utils
         public static IEnumerable<char> AsEnumerable(this string s)
         {
             // ReSharper disable once ForCanBeConvertedToForeach
-            for (var i = 0; i < s.Length; i++)
+            for (int i = 0; i < s.Length; i++)
             {
                 yield return s[i];
             }

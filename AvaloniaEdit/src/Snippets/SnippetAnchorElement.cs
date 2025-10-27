@@ -41,10 +41,10 @@ namespace AvaloniaEdit.Snippets
         /// <inheritdoc />
         public override void Insert(InsertionContext context)
         {
-            var start = context.Document.CreateAnchor(context.InsertionPosition);
+            TextAnchor start = context.Document.CreateAnchor(context.InsertionPosition);
             start.MovementType = AnchorMovementType.BeforeInsertion;
             start.SurviveDeletion = true;
-            var segment = new AnchorSegment(start, start);
+            AnchorSegment segment = new AnchorSegment(start, start);
             context.RegisterActiveElement(this, new AnchorElement(segment, Name, context));
         }
     }
@@ -81,8 +81,8 @@ namespace AvaloniaEdit.Snippets
             get => _context.Document.GetText(_segment);
             set
             {
-                var offset = _segment.Offset;
-                var length = _segment.Length;
+                int offset = _segment.Offset;
+                int length = _segment.Length;
                 _context.Document.Replace(offset, length, value);
                 if (length == 0)
                 {

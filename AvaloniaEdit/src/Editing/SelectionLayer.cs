@@ -45,9 +45,9 @@ namespace AvaloniaEdit.Editing
         {
             base.Render(drawingContext);
 
-            var selectionBorder = _textArea.SelectionBorder;
+            Pen selectionBorder = _textArea.SelectionBorder;
 
-            var geoBuilder = new BackgroundGeometryBuilder
+            BackgroundGeometryBuilder geoBuilder = new BackgroundGeometryBuilder
             {
                 AlignToWholePixels = true,
                 BorderThickness = selectionBorder?.Thickness ?? 0,
@@ -55,12 +55,12 @@ namespace AvaloniaEdit.Editing
                 CornerRadius = _textArea.SelectionCornerRadius
             };
 
-            foreach (var segment in _textArea.Selection.Segments)
+            foreach (SelectionSegment segment in _textArea.Selection.Segments)
             {
                 geoBuilder.AddSegment(TextView, segment);
             }
 
-            var geometry = geoBuilder.CreateGeometry();
+            Geometry geometry = geoBuilder.CreateGeometry();
             if (geometry != null)
             {
                 drawingContext.DrawGeometry(_textArea.SelectionBrush, selectionBorder, geometry);

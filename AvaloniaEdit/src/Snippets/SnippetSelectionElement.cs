@@ -33,16 +33,16 @@ namespace AvaloniaEdit.Snippets
         /// <inheritdoc/>
         public override void Insert(InsertionContext context)
         {
-            var tabString = new StringBuilder();
+            StringBuilder tabString = new StringBuilder();
 
-            for (var i = 0; i < Indentation; i++)
+            for (int i = 0; i < Indentation; i++)
             {
                 tabString.Append(context.Tab);
             }
 
-            var indent = tabString.ToString();
+            string indent = tabString.ToString();
 
-            var text = context.SelectedText.TrimStart(' ', '\t');
+            string text = context.SelectedText.TrimStart(' ', '\t');
 
             text = text.Replace(context.LineTerminator,
                                          context.LineTerminator + indent);

@@ -39,7 +39,7 @@ namespace AvaloniaEdit.Utils
 		
 		public void Dispose()
 		{
-			var a = Interlocked.Exchange(ref _action, null);
+            Action a = Interlocked.Exchange(ref _action, null);
 		    a?.Invoke();
 		}
 	}

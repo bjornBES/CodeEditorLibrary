@@ -31,7 +31,7 @@ namespace AvaloniaEdit
         {
             if (control is IRoutedCommandBindable bindable)
             {
-                var binding = bindable.CommandBindings.Where(c => c != null)
+                RoutedCommandBinding binding = bindable.CommandBindings.Where(c => c != null)
                .FirstOrDefault(c => c.Command == args.Command && c.DoCanExecute(control, args));
                 args.CanExecute = binding != null;
             }
@@ -42,7 +42,7 @@ namespace AvaloniaEdit
             if (control is IRoutedCommandBindable bindable)
             {
                 // ReSharper disable once UnusedVariable
-                var binding = bindable.CommandBindings.Where(c => c != null)
+                RoutedCommandBinding binding = bindable.CommandBindings.Where(c => c != null)
                     .FirstOrDefault(c => c.Command == args.Command && c.DoExecuted(control, args));
 
             }
@@ -59,7 +59,7 @@ namespace AvaloniaEdit
         {
             if (target == null) return false;
 
-            var args = new CanExecuteRoutedEventArgs(this, parameter);
+            CanExecuteRoutedEventArgs args = new CanExecuteRoutedEventArgs(this, parameter);
             target.RaiseEvent(args);
 
             return args.CanExecute;
@@ -76,7 +76,7 @@ namespace AvaloniaEdit
         {
             if (target == null) return;
 
-            var args = new ExecutedRoutedEventArgs(this, parameter);
+            ExecutedRoutedEventArgs args = new ExecutedRoutedEventArgs(this, parameter);
             target.RaiseEvent(args);
         }
 
@@ -125,7 +125,7 @@ namespace AvaloniaEdit
         {
             if (e.Handled) return true;
 
-            var canExecute = CanExecute;
+            EventHandler<CanExecuteRoutedEventArgs> canExecute = CanExecute;
             if (canExecute == null)
             {
                 if (Executed != null)
@@ -151,7 +151,7 @@ namespace AvaloniaEdit
         {
             if (!e.Handled)
             {
-                var executed = Executed;
+                EventHandler<ExecutedRoutedEventArgs> executed = Executed;
 
                 if (executed != null)
                 {

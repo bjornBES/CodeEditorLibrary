@@ -37,8 +37,8 @@ namespace AvaloniaEdit.Document
         /// </summary>
         public static SimpleSegment GetOverlap(ISegment segment1, ISegment segment2)
         {
-            var start = Math.Max(segment1.Offset, segment2.Offset);
-            var end = Math.Min(segment1.EndOffset, segment2.EndOffset);
+            int start = Math.Max(segment1.Offset, segment2.Offset);
+            int end = Math.Min(segment1.EndOffset, segment2.EndOffset);
             return end < start ? Invalid : new SimpleSegment(start, end - start);
         }
 

@@ -93,10 +93,10 @@ namespace AvaloniaEdit.Rendering
                     newlineText = "?";
             }
 
-            var p = new VisualLineElementTextRunProperties(GlobalTextRunProperties);
+            VisualLineElementTextRunProperties p = new VisualLineElementTextRunProperties(GlobalTextRunProperties);
             p.SetForegroundBrush(TextView.NonPrintableCharacterBrush);
             p.SetFontRenderingEmSize(GlobalTextRunProperties.FontRenderingEmSize - 2);
-            var textElement = new FormattedTextElement(TextView.CachedElements.GetTextForNonPrintableCharacter(newlineText, p), 0);
+            FormattedTextElement textElement = new FormattedTextElement(TextView.CachedElements.GetTextForNonPrintableCharacter(newlineText, p), 0);
 
             textElement.RelativeTextOffset = lastDocumentLine.Offset + lastDocumentLine.Length;
 
@@ -109,7 +109,7 @@ namespace AvaloniaEdit.Rendering
 				foreach (VisualLineElement element in VisualLine.Elements) {
 					if (textSourceCharacterIndexLimit > element.VisualColumn
 						&& textSourceCharacterIndexLimit <= element.VisualColumn + element.VisualLength) {
-						var span = element.GetPrecedingText(textSourceCharacterIndexLimit, this);
+                        ReadOnlyMemory<char> span = element.GetPrecedingText(textSourceCharacterIndexLimit, this);
 						if (span.IsEmpty)
 							break;
 						int relativeOffset = textSourceCharacterIndexLimit - element.VisualColumn;

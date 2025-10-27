@@ -61,12 +61,12 @@ namespace AvaloniaEdit.Rendering
 
             foreach (int column in _columns)
             {
-                var offset = textView.WideSpaceWidth * column;
-                var pixelSize = PixelSnapHelpers.GetPixelSize(textView);
-                var markerXPos = PixelSnapHelpers.PixelAlign(offset, pixelSize.Width);
+                double offset = textView.WideSpaceWidth * column;
+                Size pixelSize = PixelSnapHelpers.GetPixelSize(textView);
+                double markerXPos = PixelSnapHelpers.PixelAlign(offset, pixelSize.Width);
                 markerXPos -= textView.ScrollOffset.X;
-                var start = new Point(markerXPos, 0);
-                var end = new Point(markerXPos, Math.Max(textView.DocumentHeight, textView.Bounds.Height));
+                Point start = new Point(markerXPos, 0);
+                Point end = new Point(markerXPos, Math.Max(textView.DocumentHeight, textView.Bounds.Height));
 
                 drawingContext.DrawLine(
                     _pen,

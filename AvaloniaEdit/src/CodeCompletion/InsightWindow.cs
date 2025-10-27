@@ -19,6 +19,8 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Platform;
 using AvaloniaEdit.Editing;
 
 namespace AvaloniaEdit.CodeCompletion
@@ -40,17 +42,17 @@ namespace AvaloniaEdit.CodeCompletion
 
         private void Initialize()
         {
-            var caret = this.TextArea.Caret.CalculateCaretRectangle();
-            var topLevel = TopLevel.GetTopLevel(this.TextArea.TextView) as WindowBase;
+            Rect caret = this.TextArea.Caret.CalculateCaretRectangle();
+            WindowBase topLevel = TopLevel.GetTopLevel(this.TextArea.TextView) as WindowBase;
             if (topLevel?.Presenter != null)
             {
-                var presenter = topLevel.Presenter;
-                var pointOnScreen = presenter.PointToScreen(caret.Position - this.TextArea.TextView.ScrollOffset);
-                var screen = topLevel.Screens.ScreenFromPoint(pointOnScreen);
+                ContentPresenter presenter = topLevel.Presenter;
+                PixelPoint pointOnScreen = presenter.PointToScreen(caret.Position - this.TextArea.TextView.ScrollOffset);
+                Screen screen = topLevel.Screens.ScreenFromPoint(pointOnScreen);
 
                 if (screen != null)
                 {
-                    var scaledWorkingArea = screen.WorkingArea.ToRect(topLevel.RenderScaling);
+                    Rect scaledWorkingArea = screen.WorkingArea.ToRect(topLevel.RenderScaling);
                     MaxHeight = scaledWorkingArea.Height;
                     MaxWidth = Math.Min(scaledWorkingArea.Width, Math.Max(1000, scaledWorkingArea.Width * 0.6));
                 }
@@ -82,7 +84,7 @@ namespace AvaloniaEdit.CodeCompletion
         {
             if (CloseAutomatically)
             {
-                var offset = TextArea.Caret.Offset;
+                int offset = TextArea.Caret.Offset;
                 if (offset < StartOffset || offset > EndOffset)
                 {
                     Hide();

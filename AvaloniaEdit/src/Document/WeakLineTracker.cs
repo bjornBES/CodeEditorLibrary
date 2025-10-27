@@ -45,7 +45,7 @@ namespace AvaloniaEdit.Document
                 throw new ArgumentNullException(nameof(textDocument));
             if (targetTracker == null)
                 throw new ArgumentNullException(nameof(targetTracker));
-            var wlt = new WeakLineTracker(textDocument, targetTracker);
+            WeakLineTracker wlt = new WeakLineTracker(textDocument, targetTracker);
             textDocument.LineTrackers.Add(wlt);
             return wlt;
         }

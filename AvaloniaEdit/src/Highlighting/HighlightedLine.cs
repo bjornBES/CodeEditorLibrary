@@ -68,17 +68,17 @@ namespace AvaloniaEdit.Highlighting
         /// <seealso cref="Sections"/>
         public void ValidateInvariants()
         {
-            var line = this;
-            var lineStartOffset = line.DocumentLine.Offset;
-            var lineEndOffset = line.DocumentLine.EndOffset;
-            for (var i = 0; i < line.Sections.Count; i++)
+            HighlightedLine line = this;
+            int lineStartOffset = line.DocumentLine.Offset;
+            int lineEndOffset = line.DocumentLine.EndOffset;
+            for (int i = 0; i < line.Sections.Count; i++)
             {
-                var s1 = line.Sections[i];
+                HighlightedSection s1 = line.Sections[i];
                 if (s1.Offset < lineStartOffset || s1.Length < 0 || s1.Offset + s1.Length > lineEndOffset)
                     throw new InvalidOperationException("Section is outside line bounds");
-                for (var j = i + 1; j < line.Sections.Count; j++)
+                for (int j = i + 1; j < line.Sections.Count; j++)
                 {
-                    var s2 = line.Sections[j];
+                    HighlightedSection s2 = line.Sections[j];
                     if (s2.Offset >= s1.Offset + s1.Length)
                     {
                         // s2 is after s1
@@ -108,18 +108,18 @@ namespace AvaloniaEdit.Highlighting
             additionalLine.ValidateInvariants();
 #endif
 
-            var pos = 0;
-            var activeSectionEndOffsets = new Stack<int>();
-            var lineEndOffset = DocumentLine.EndOffset;
+            int pos = 0;
+            Stack<int> activeSectionEndOffsets = new Stack<int>();
+            int lineEndOffset = DocumentLine.EndOffset;
             activeSectionEndOffsets.Push(lineEndOffset);
-            foreach (var newSection in additionalLine.Sections)
+            foreach (HighlightedSection newSection in additionalLine.Sections)
             {
-                var newSectionStart = newSection.Offset;
+                int newSectionStart = newSection.Offset;
                 // Track the existing sections using the stack, up to the point where
                 // we need to insert the first part of the newSection
                 while (pos < Sections.Count)
                 {
-                    var s = Sections[pos];
+                    HighlightedSection s = Sections[pos];
                     if (newSection.Offset < s.Offset)
                         break;
                     while (s.Offset > activeSectionEndOffsets.Peek())
@@ -132,13 +132,13 @@ namespace AvaloniaEdit.Highlighting
                 // Now insert the new section
                 // Create a copy of the stack so that we can track the sections we traverse
                 // during the insertion process:
-                var insertionStack = new Stack<int>(activeSectionEndOffsets.Reverse());
+                Stack<int> insertionStack = new Stack<int>(activeSectionEndOffsets.Reverse());
                 // The stack enumerator reverses the order of the elements, so we call Reverse() to restore
                 // the original order.
                 int i;
                 for (i = pos; i < Sections.Count; i++)
                 {
-                    var s = Sections[i];
+                    HighlightedSection s = Sections[i];
                     if (newSection.Offset + newSection.Length <= s.Offset)
                         break;
                     // Insert a segment in front of s:
@@ -172,7 +172,7 @@ namespace AvaloniaEdit.Highlighting
             }
             while (insertionStack.Peek() < insertionEndPos)
             {
-                var end = insertionStack.Pop();
+                int end = insertionStack.Pop();
                 // insert the portion from newSectionStart to end
                 if (end > newSectionStart)
                 {
@@ -218,7 +218,7 @@ namespace AvaloniaEdit.Highlighting
             [SuppressMessage("ReSharper", "ImpureMethodCallOnReadonlyValueField")]
             public int CompareTo(HtmlElement other)
             {
-                var r = Offset.CompareTo(other.Offset);
+                int r = Offset.CompareTo(other.Offset);
                 if (r != 0)
                     return r;
                 if (IsEnd != other.IsEnd)
@@ -287,7 +287,7 @@ namespace AvaloniaEdit.Highlighting
         public string ToHtml(HtmlOptions options = null)
         {
         	StringWriter stringWriter = new StringWriter(CultureInfo.InvariantCulture);
-        	using (var htmlWriter = new HtmlRichTextWriter(stringWriter, options)) {
+        	using (HtmlRichTextWriter htmlWriter = new HtmlRichTextWriter(stringWriter, options)) {
         		WriteTo(htmlWriter);
         	}
         	return stringWriter.ToString();
@@ -299,7 +299,7 @@ namespace AvaloniaEdit.Highlighting
         public string ToHtml(int startOffset, int endOffset, HtmlOptions options = null)
         {
         	StringWriter stringWriter = new StringWriter(CultureInfo.InvariantCulture);
-        	using (var htmlWriter = new HtmlRichTextWriter(stringWriter, options)) {
+        	using (HtmlRichTextWriter htmlWriter = new HtmlRichTextWriter(stringWriter, options)) {
         		WriteTo(htmlWriter, startOffset, endOffset);
         	}
         	return stringWriter.ToString();
@@ -317,9 +317,9 @@ namespace AvaloniaEdit.Highlighting
         /// </summary>
         public RichTextModel ToRichTextModel()
         {
-            var builder = new RichTextModel();
-            var startOffset = DocumentLine.Offset;
-            foreach (var section in Sections)
+            RichTextModel builder = new RichTextModel();
+            int startOffset = DocumentLine.Offset;
+            foreach (HighlightedSection section in Sections)
             {
                 builder.ApplyHighlighting(section.Offset - startOffset, section.Length, section.Color);
             }

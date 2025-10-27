@@ -7,7 +7,8 @@ namespace lib.debug;
 public class DebugStreamWriter : StreamWriter
 {
     string LogFileName;
-    public DebugStreamWriter(NamedPipeServerStream stream) : base(stream) { }
+    public DebugStreamWriter(NamedPipeServerStream stream, bool leaveOpen = false) : base(stream, leaveOpen: leaveOpen) { }
+    public DebugStreamWriter(NamedPipeClientStream stream, bool leaveOpen = false) : base(stream, leaveOpen: leaveOpen) { }
 
 
     public void SetFile(string file)
@@ -45,6 +46,8 @@ public class DebugStreamReader : StreamReader
     public string LogFileName;
     public DebugStreamReader(NamedPipeServerStream stream, bool leaveOpen = false)
         : base(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: leaveOpen) { }
+        public DebugStreamReader(NamedPipeClientStream stream, bool leaveOpen = false)
+        : base(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: leaveOpen) { }
 
     public void SetFile(string file)
     {
@@ -57,7 +60,15 @@ public class DebugStreamReader : StreamReader
 
     public override string ReadLine()
     {
-
+        if (EndOfStream)
+        {
+            return null;
+        }
+        char c = (char)base.Peek();
+        if (c == '\0')
+        {
+            return null;
+        }
         string line = base.ReadLine();
         if (line != null)
         {

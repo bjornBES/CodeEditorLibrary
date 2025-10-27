@@ -47,7 +47,7 @@ namespace AvaloniaEdit.Utils
 		public static IList<T> FreezeListAndElements<T>(IList<T> list)
 		{
 			if (list != null) {
-				foreach (var item in list)
+				foreach (T item in list)
 					Freeze(item);
 			}
 			return FreezeList(list);
@@ -68,7 +68,7 @@ namespace AvaloniaEdit.Utils
 		
 		public static void Freeze(object item)
 		{
-			var f = item as IFreezable;
+            IFreezable f = item as IFreezable;
 		    f?.Freeze();
 		}
 		

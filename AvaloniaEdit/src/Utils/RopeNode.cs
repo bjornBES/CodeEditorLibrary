@@ -108,7 +108,7 @@ namespace AvaloniaEdit.Utils
                 // If a function node needs cloning, we'll evaluate it.
                 if (Contents == null)
                     return GetContentNode().Clone();
-                var newContents = new T[NodeSize];
+                T[] newContents = new T[NodeSize];
                 Contents.CopyTo(newContents, 0);
                 return new RopeNode<T>
                 {
@@ -151,13 +151,13 @@ namespace AvaloniaEdit.Utils
             {
                 return EmptyRopeNode;
             }
-            var node = CreateNodes(length);
+            RopeNode<T> node = CreateNodes(length);
             return node.StoreElements(0, arr, index, length);
         }
 
         internal static RopeNode<T> CreateNodes(int totalLength)
         {
-            var leafCount = (totalLength + NodeSize - 1) / NodeSize;
+            int leafCount = (totalLength + NodeSize - 1) / NodeSize;
             return CreateNodes(leafCount, totalLength);
         }
 
@@ -165,16 +165,16 @@ namespace AvaloniaEdit.Utils
         {
             Debug.Assert(leafCount > 0);
             Debug.Assert(totalLength > 0);
-            var result = new RopeNode<T> { Length = totalLength };
+            RopeNode<T> result = new RopeNode<T> { Length = totalLength };
             if (leafCount == 1)
             {
                 result.Contents = new T[NodeSize];
             }
             else
             {
-                var rightSide = leafCount / 2;
-                var leftSide = leafCount - rightSide;
-                var leftLength = leftSide * NodeSize;
+                int rightSide = leafCount / 2;
+                int leftSide = leafCount - rightSide;
+                int leftLength = leftSide * NodeSize;
                 result.Left = CreateNodes(leftSide, leftLength);
                 result.Right = CreateNodes(rightSide, totalLength - leftLength);
                 result.Height = (byte)(1 + Math.Max(result.Left.Height, result.Right.Height));
@@ -245,9 +245,9 @@ namespace AvaloniaEdit.Utils
 			 *           / \          / \
 			 *          B   C        A   B
 			 */
-            var a = Left;
-            var b = Right.Left;
-            var c = Right.Right;
+            RopeNode<T> a = Left;
+            RopeNode<T> b = Right.Left;
+            RopeNode<T> c = Right.Right;
             // reuse right concat node, if possible
             Left = Right._isShared ? new RopeNode<T>() : Right;
             Left.Left = a;
@@ -271,9 +271,9 @@ namespace AvaloniaEdit.Utils
 			 *     / \                   /  \
 			 *    A   B                 B    C
 			 */
-            var a = Left.Left;
-            var b = Left.Right;
-            var c = Right;
+            RopeNode<T> a = Left.Left;
+            RopeNode<T> b = Left.Right;
+            RopeNode<T> c = Right;
             // reuse left concat node, if possible
             Right = Left._isShared ? new RopeNode<T>() : Left;
             Right.Left = b;
@@ -295,7 +295,7 @@ namespace AvaloniaEdit.Utils
                 // We know left and right cannot be concat nodes (they would have merged already),
                 // but they could be function nodes.
                 Height = 0;
-                var lengthOnLeftSide = Left.Length;
+                int lengthOnLeftSide = Left.Length;
                 if (Left._isShared)
                 {
                     Contents = new T[NodeSize];
@@ -324,7 +324,7 @@ namespace AvaloniaEdit.Utils
         /// </summary>
         internal RopeNode<T> StoreElements(int index, T[] array, int arrayIndex, int count)
         {
-            var result = CloneIfShared();
+            RopeNode<T> result = CloneIfShared();
             // result cannot be function node after a call to Clone()
             if (result.Height == 0)
             {
@@ -344,7 +344,7 @@ namespace AvaloniaEdit.Utils
                 }
                 else
                 {
-                    var amountInLeft = result.Left.Length - index;
+                    int amountInLeft = result.Left.Length - index;
                     result.Left = result.Left.StoreElements(index, array, arrayIndex, amountInLeft);
                     result.Right = result.Right.StoreElements(0, array, arrayIndex + amountInLeft, count - amountInLeft);
                 }
@@ -384,7 +384,7 @@ namespace AvaloniaEdit.Utils
                 }
                 else
                 {
-                    var amountInLeft = Left.Length - index;
+                    int amountInLeft = Left.Length - index;
                     Left.CopyTo(index, array, arrayIndex, amountInLeft);
                     Right.CopyTo(0, array, arrayIndex + amountInLeft, count - amountInLeft);
                 }
@@ -393,7 +393,7 @@ namespace AvaloniaEdit.Utils
 
         internal RopeNode<T> SetElement(int offset, T value)
         {
-            var result = CloneIfShared();
+            RopeNode<T> result = CloneIfShared();
             // result of CloneIfShared() is leaf or concat node
             if (result.Height == 0)
             {
@@ -431,7 +431,7 @@ namespace AvaloniaEdit.Utils
                 left.Length += right.Length;
                 return left;
             }
-            var concatNode = new RopeNode<T>
+            RopeNode<T> concatNode = new RopeNode<T>
             {
                 Left = left,
                 Right = right,
@@ -447,7 +447,7 @@ namespace AvaloniaEdit.Utils
         private RopeNode<T> SplitAfter(int offset)
         {
             Debug.Assert(!_isShared && Height == 0 && Contents != null);
-            var newPart = new RopeNode<T>
+            RopeNode<T> newPart = new RopeNode<T>
             {
                 Contents = new T[NodeSize],
                 Length = Length - offset
@@ -469,12 +469,12 @@ namespace AvaloniaEdit.Utils
             }
 
             // first clone this node (converts function nodes to leaf or concat nodes)
-            var result = CloneIfShared();
+            RopeNode<T> result = CloneIfShared();
             if (result.Height == 0)
             {
                 // leaf node: we'll need to split this node
-                var left = result;
-                var right = left.SplitAfter(offset);
+                RopeNode<T> left = result;
+                RopeNode<T> right = left.SplitAfter(offset);
                 return Concat(Concat(left, newElements), right);
             }
             // concat node
@@ -497,11 +497,11 @@ namespace AvaloniaEdit.Utils
 
             if (Length + count < RopeNode<char>.NodeSize)
             {
-                var result = CloneIfShared();
+                RopeNode<T> result = CloneIfShared();
                 // result must be leaf node (Clone never returns function nodes, too short for concat node)
-                var lengthAfterOffset = result.Length - offset;
-                var resultContents = result.Contents;
-                for (var i = lengthAfterOffset; i >= 0; i--)
+                int lengthAfterOffset = result.Length - offset;
+                T[] resultContents = result.Contents;
+                for (int i = lengthAfterOffset; i >= 0; i--)
                 {
                     resultContents[i + offset + count] = resultContents[i + offset];
                 }
@@ -516,7 +516,7 @@ namespace AvaloniaEdit.Utils
             }
             {
                 // this is a concat node (both leafs and function nodes are handled by the case above)
-                var result = CloneIfShared();
+                RopeNode<T> result = CloneIfShared();
                 if (offset < result.Left.Length)
                 {
                     result.Left = result.Left.Insert(offset, array, arrayIndex, count);
@@ -539,12 +539,12 @@ namespace AvaloniaEdit.Utils
             if (index == 0 && count == Length)
                 return EmptyRopeNode;
 
-            var endIndex = index + count;
-            var result = CloneIfShared(); // convert function node to concat/leaf
+            int endIndex = index + count;
+            RopeNode<T> result = CloneIfShared(); // convert function node to concat/leaf
             if (result.Height == 0)
             {
-                var remainingAfterEnd = result.Length - endIndex;
-                for (var i = 0; i < remainingAfterEnd; i++)
+                int remainingAfterEnd = result.Length - endIndex;
+                for (int i = 0; i < remainingAfterEnd; i++)
                 {
                     result.Contents[index + i] = result.Contents[endIndex + i];
                 }
@@ -565,7 +565,7 @@ namespace AvaloniaEdit.Utils
                 else
                 {
                     // deletion overlaps both parts
-                    var deletionAmountOnLeftSide = result.Left.Length - index;
+                    int deletionAmountOnLeftSide = result.Left.Length - index;
                     result.Left = result.Left.RemoveRange(index, deletionAmountOnLeftSide);
                     result.Right = result.Right.RemoveRange(0, count - deletionAmountOnLeftSide);
                 }
@@ -607,7 +607,7 @@ namespace AvaloniaEdit.Utils
             if (Contents != null)
             {
 #pragma warning disable IDE0019 // Use pattern matching
-                var charContents = Contents as char[];
+                char[] charContents = Contents as char[];
 #pragma warning restore IDE0019 // Use pattern matching
                 if (charContents != null)
                     return "[Leaf length=" + Length + ", isShared=" + _isShared + ", text=\"" + new string(charContents, 0, Length) + "\"]";
@@ -618,7 +618,7 @@ namespace AvaloniaEdit.Utils
 
         internal string GetTreeAsString()
         {
-            var b = new StringBuilder();
+            StringBuilder b = new StringBuilder();
             AppendTreeToString(b, 0);
             return b.ToString();
         }
@@ -660,12 +660,12 @@ namespace AvaloniaEdit.Utils
                 {
                     if (_initializer == null)
                         throw new InvalidOperationException("Trying to load this node recursively; or: a previous call to a rope initializer failed.");
-                    var initializerCopy = _initializer;
+                    Func<Rope<T>> initializerCopy = _initializer;
                     _initializer = null;
-                    var resultRope = initializerCopy();
+                    Rope<T> resultRope = initializerCopy();
                     if (resultRope == null)
                         throw new InvalidOperationException("Rope initializer returned null.");
-                    var resultNode = resultRope.Root;
+                    RopeNode<T> resultNode = resultRope.Root;
                     resultNode.Publish(); // result is shared between returned rope and the rope containing this function node
                     if (resultNode.Length != Length)
                         throw new InvalidOperationException("Rope initializer returned rope with incorrect length.");

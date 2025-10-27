@@ -95,7 +95,7 @@ namespace AvaloniaEdit.Utils
 
         private void AddWeakHandler(TEventSource source, TEventHandler handler)
         {
-            if (_sourceToWeakHandlers.TryGetValue(source, out var weakHandlers))
+            if (_sourceToWeakHandlers.TryGetValue(source, out WeakHandlerList weakHandlers))
             {
                 // clone list if we are currently delivering an event
                 if (weakHandlers.IsDeliverActive)
@@ -120,10 +120,10 @@ namespace AvaloniaEdit.Utils
 
         private void AddTargetHandler(TEventHandler handler)
         {
-            var @delegate = handler as Delegate;
-            var key = @delegate?.Target ?? StaticSource;
+            Delegate @delegate = handler as Delegate;
+            object key = @delegate?.Target ?? StaticSource;
 
-            if (_targetToEventHandler.TryGetValue(key, out var delegates))
+            if (_targetToEventHandler.TryGetValue(key, out List<Delegate> delegates))
             {
                 delegates.Add(@delegate);
             }
@@ -151,7 +151,7 @@ namespace AvaloniaEdit.Utils
 
         private void RemoveWeakHandler(TEventSource source, TEventHandler handler)
         {
-            if (_sourceToWeakHandlers.TryGetValue(source, out var weakHandlers))
+            if (_sourceToWeakHandlers.TryGetValue(source, out WeakHandlerList weakHandlers))
             {
                 // clone list if we are currently delivering an event
                 if (weakHandlers.IsDeliverActive)
@@ -171,10 +171,10 @@ namespace AvaloniaEdit.Utils
 
         private void RemoveTargetHandler(TEventHandler handler)
         {
-            var @delegate = handler as Delegate;
-            var key = @delegate?.Target ?? StaticSource;
+            Delegate @delegate = handler as Delegate;
+            object key = @delegate?.Target ?? StaticSource;
 
-            if (_targetToEventHandler.TryGetValue(key, out var delegates))
+            if (_targetToEventHandler.TryGetValue(key, out List<Delegate> delegates))
             {
                 delegates.Remove(@delegate);
 
@@ -187,11 +187,11 @@ namespace AvaloniaEdit.Utils
 
         private void PrivateDeliverEvent(object sender, TEventArgs args)
         {
-            var source = sender ?? StaticSource;
+            object source = sender ?? StaticSource;
 
-            var hasStaleEntries = false;
+            bool hasStaleEntries = false;
 
-            if (_sourceToWeakHandlers.TryGetValue(source, out var weakHandlers))
+            if (_sourceToWeakHandlers.TryGetValue(source, out WeakHandlerList weakHandlers))
             {
                 using (weakHandlers.DeliverActive())
                 {
@@ -207,7 +207,7 @@ namespace AvaloniaEdit.Utils
 
         private void Purge(object source)
         {
-            if (_sourceToWeakHandlers.TryGetValue(source, out var weakHandlers))
+            if (_sourceToWeakHandlers.TryGetValue(source, out WeakHandlerList weakHandlers))
             {
                 if (weakHandlers.IsDeliverActive)
                 {
@@ -271,13 +271,13 @@ namespace AvaloniaEdit.Utils
 
             public void AddWeakHandler(TEventSource source, TEventHandler handler)
             {
-                var handlerSink = new WeakHandler(source, handler);
+                WeakHandler handlerSink = new WeakHandler(source, handler);
                 _handlers.Add(handlerSink);
             }
 
             public bool RemoveWeakHandler(TEventSource source, TEventHandler handler)
             {
-                foreach (var weakHandler in _handlers)
+                foreach (WeakHandler weakHandler in _handlers)
                 {
                     if (weakHandler.Matches(source, handler))
                     {
@@ -290,7 +290,7 @@ namespace AvaloniaEdit.Utils
 
             public WeakHandlerList Clone()
             {
-                var newList = new WeakHandlerList();
+                WeakHandlerList newList = new WeakHandlerList();
                 newList._handlers.AddRange(_handlers.Where(h => h.IsActive));
 
                 return newList;
@@ -310,13 +310,13 @@ namespace AvaloniaEdit.Utils
             // ReSharper disable once MemberHidesStaticFromOuterClass
             public virtual bool DeliverEvent(object sender, TEventArgs args)
             {
-                var hasStaleEntries = false;
+                bool hasStaleEntries = false;
 
-                foreach (var handler in _handlers)
+                foreach (WeakHandler handler in _handlers)
                 {
                     if (handler.IsActive)
                     {
-                        var @delegate = handler.Handler as Delegate;
+                        Delegate @delegate = handler.Handler as Delegate;
                         @delegate?.DynamicInvoke(sender, args);
                     }
                     else
@@ -330,7 +330,7 @@ namespace AvaloniaEdit.Utils
 
             public void Purge()
             {
-                for (var i = _handlers.Count - 1; i >= 0; i--)
+                for (int i = _handlers.Count - 1; i >= 0; i--)
                 {
                     if (!_handlers[i].IsActive)
                     {

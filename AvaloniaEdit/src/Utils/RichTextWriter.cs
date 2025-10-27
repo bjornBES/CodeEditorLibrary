@@ -52,7 +52,7 @@ namespace AvaloniaEdit.Utils
 		/// </summary>
 		public virtual void Write(RichText richText, int offset, int length)
 		{
-			foreach (var section in richText.GetHighlightedSections(offset, length))
+			foreach (HighlightedSection section in richText.GetHighlightedSections(offset, length))
 			{
 				BeginSpan(section.Color);
 				Write(richText.Text.Substring(section.Offset, section.Length));

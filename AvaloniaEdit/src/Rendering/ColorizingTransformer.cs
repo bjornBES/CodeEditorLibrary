@@ -69,8 +69,8 @@ namespace AvaloniaEdit.Rendering
 		{
 			if (action == null)
 				throw new ArgumentNullException(nameof(action));
-			for (var i = 0; i < CurrentElements.Count; i++) {
-				var e = CurrentElements[i];
+			for (int i = 0; i < CurrentElements.Count; i++) {
+                VisualLineElement e = CurrentElements[i];
 				if (e.VisualColumn > visualEndColumn)
 					break;
 				if (e.VisualColumn < visualStartColumn &&

@@ -53,7 +53,7 @@ namespace AvaloniaEdit.Rendering
 
         private void OnPointerMoved(object sender, PointerEventArgs e)
         {
-            var movement = _hoverStartPoint - e.GetPosition(_target);
+            Point movement = _hoverStartPoint - e.GetPosition(_target);
             if (Math.Abs(movement.X) > PointerHoverWidth ||
                 Math.Abs(movement.Y) > PointerHoverHeight)
             {

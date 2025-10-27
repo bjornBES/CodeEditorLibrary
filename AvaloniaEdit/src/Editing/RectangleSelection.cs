@@ -22,7 +22,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Avalonia;
+using Avalonia.Input;
+using Avalonia.Media.TextFormatting;
 using AvaloniaEdit.Document;
+using AvaloniaEdit.Rendering;
 using AvaloniaEdit.Utils;
 
 namespace AvaloniaEdit.Editing
@@ -154,25 +157,25 @@ namespace AvaloniaEdit.Editing
 
         private static double GetXPos(TextArea textArea, TextViewPosition pos)
         {
-            var documentLine = textArea.Document.GetLineByNumber(pos.Line);
-            var visualLine = textArea.TextView.GetOrConstructVisualLine(documentLine);
-            var vc = visualLine.ValidateVisualColumn(pos, true);
-            var textLine = visualLine.GetTextLine(vc, pos.IsAtEndOfLine);
+            DocumentLine documentLine = textArea.Document.GetLineByNumber(pos.Line);
+            VisualLine visualLine = textArea.TextView.GetOrConstructVisualLine(documentLine);
+            int vc = visualLine.ValidateVisualColumn(pos, true);
+            TextLine textLine = visualLine.GetTextLine(vc, pos.IsAtEndOfLine);
             return visualLine.GetTextLineVisualXPosition(textLine, vc);
         }
 
         private void CalculateSegments()
         {
-            var nextLine = _document.GetLineByNumber(Math.Min(_startLine, _endLine));
+            DocumentLine nextLine = _document.GetLineByNumber(Math.Min(_startLine, _endLine));
             do
             {
-                var vl = TextArea.TextView.GetOrConstructVisualLine(nextLine);
-                var startVc = vl.GetVisualColumn(new Point(_startXPos, 0), true);
-                var endVc = vl.GetVisualColumn(new Point(_endXPos, 0), true);
+                VisualLine vl = TextArea.TextView.GetOrConstructVisualLine(nextLine);
+                int startVc = vl.GetVisualColumn(new Point(_startXPos, 0), true);
+                int endVc = vl.GetVisualColumn(new Point(_endXPos, 0), true);
 
-                var baseOffset = vl.FirstDocumentLine.Offset;
-                var startOffset = baseOffset + vl.GetRelativeOffset(startVc);
-                var endOffset = baseOffset + vl.GetRelativeOffset(endVc);
+                int baseOffset = vl.FirstDocumentLine.Offset;
+                int startOffset = baseOffset + vl.GetRelativeOffset(startVc);
+                int endOffset = baseOffset + vl.GetRelativeOffset(endVc);
                 _segments.Add(new SelectionSegment(startOffset, startVc, endOffset, endVc));
 
                 nextLine = vl.LastDocumentLine.NextLine;
@@ -181,7 +184,7 @@ namespace AvaloniaEdit.Editing
 
         private TextViewPosition GetStart()
         {
-            var segment = (_startLine < _endLine ? _segments.First() : _segments.Last());
+            SelectionSegment segment = (_startLine < _endLine ? _segments.First() : _segments.Last());
             if (_startXPos < _endXPos)
             {
                 return new TextViewPosition(_document.GetLocation(segment.StartOffset), segment.StartVisualColumn);
@@ -191,7 +194,7 @@ namespace AvaloniaEdit.Editing
 
         private TextViewPosition GetEnd()
         {
-            var segment = (_startLine < _endLine ? _segments.Last() : _segments.First());
+            SelectionSegment segment = (_startLine < _endLine ? _segments.Last() : _segments.First());
             if (_startXPos < _endXPos)
             {
                 return new TextViewPosition(_document.GetLocation(segment.EndOffset), segment.EndVisualColumn);
@@ -203,8 +206,8 @@ namespace AvaloniaEdit.Editing
         /// <inheritdoc/>
         public override string GetText()
         {
-            var b = new StringBuilder();
-            foreach (var s in Segments)
+            StringBuilder b = new StringBuilder();
+            foreach (SelectionSegment s in Segments)
             {
                 if (b.Length > 0)
                     b.AppendLine();
@@ -246,7 +249,7 @@ namespace AvaloniaEdit.Editing
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {
-            var r = obj as RectangleSelection;
+            RectangleSelection r = obj as RectangleSelection;
             // ReSharper disable CompareOfFloatsByEqualityOperator
             return r != null && r.TextArea == TextArea
                 && r._topLeftOffset == _topLeftOffset && r._bottomRightOffset == _bottomRightOffset
@@ -269,15 +272,15 @@ namespace AvaloniaEdit.Editing
 
         private int GetVisualColumnFromXPos(int line, double xPos)
         {
-            var vl = TextArea.TextView.GetOrConstructVisualLine(TextArea.Document.GetLineByNumber(line));
+            VisualLine vl = TextArea.TextView.GetOrConstructVisualLine(TextArea.Document.GetLineByNumber(line));
             return vl.GetVisualColumn(new Point(xPos, 0), true);
         }
 
         /// <inheritdoc/>
         public override Selection UpdateOnDocumentChange(DocumentChangeEventArgs e)
         {
-            var newStartLocation = TextArea.Document.GetLocation(e.GetNewOffset(_topLeftOffset, AnchorMovementType.AfterInsertion));
-            var newEndLocation = TextArea.Document.GetLocation(e.GetNewOffset(_bottomRightOffset, AnchorMovementType.BeforeInsertion));
+            TextLocation newStartLocation = TextArea.Document.GetLocation(e.GetNewOffset(_topLeftOffset, AnchorMovementType.AfterInsertion));
+            TextLocation newEndLocation = TextArea.Document.GetLocation(e.GetNewOffset(_bottomRightOffset, AnchorMovementType.BeforeInsertion));
 
             return new RectangleSelection(TextArea,
                                           new TextViewPosition(newStartLocation, GetVisualColumnFromXPos(newStartLocation.Line, _startXPos)),
@@ -292,13 +295,13 @@ namespace AvaloniaEdit.Editing
             using (TextArea.Document.RunUpdate())
             {
                 int insertionLength;
-                var firstInsertionLength = 0;
-                var editOffset = Math.Min(_topLeftOffset, _bottomRightOffset);
+                int firstInsertionLength = 0;
+                int editOffset = Math.Min(_topLeftOffset, _bottomRightOffset);
                 TextViewPosition pos;
                 if (NewLineFinder.NextNewLine(newText, 0) == SimpleSegment.Invalid)
                 {
                     // insert same text into every line
-                    foreach (var lineSegment in Segments.Reverse())
+                    foreach (SelectionSegment lineSegment in Segments.Reverse())
                     {
                         ReplaceSingleLineText(TextArea, lineSegment, newText, out insertionLength);
                         firstInsertionLength = insertionLength;
@@ -310,8 +313,8 @@ namespace AvaloniaEdit.Editing
                 }
                 else
                 {
-                    var lines = newText.Split(NewLineFinder.NewlineStrings, _segments.Count, StringSplitOptions.None);
-                    for (var i = lines.Length - 1; i >= 0; i--)
+                    string[] lines = newText.Split(NewLineFinder.NewlineStrings, _segments.Count, StringSplitOptions.None);
+                    for (int i = lines.Length - 1; i >= 0; i--)
                     {
                         ReplaceSingleLineText(TextArea, _segments[i], lines[i], out insertionLength);
                         firstInsertionLength = insertionLength;
@@ -335,8 +338,8 @@ namespace AvaloniaEdit.Editing
             }
             else
             {
-                var segmentsToDelete = textArea.GetDeletableSegments(lineSegment);
-                for (var i = segmentsToDelete.Length - 1; i >= 0; i--)
+                ISegment[] segmentsToDelete = textArea.GetDeletableSegments(lineSegment);
+                for (int i = segmentsToDelete.Length - 1; i >= 0; i--)
                 {
                     if (i == segmentsToDelete.Length - 1)
                     {
@@ -364,18 +367,18 @@ namespace AvaloniaEdit.Editing
                 throw new ArgumentNullException(nameof(textArea));
             if (text == null)
                 throw new ArgumentNullException(nameof(text));
-            var newLineCount = text.AsEnumerable().Count(c => c == '\n'); // TODO might not work in all cases, but single \r line endings are really rare today.
-            var endLocation = new TextLocation(startPosition.Line + newLineCount, startPosition.Column);
+            int newLineCount = text.AsEnumerable().Count(c => c == '\n'); // TODO might not work in all cases, but single \r line endings are really rare today.
+            TextLocation endLocation = new TextLocation(startPosition.Line + newLineCount, startPosition.Column);
             if (endLocation.Line <= textArea.Document.LineCount)
             {
-                var endOffset = textArea.Document.GetOffset(endLocation);
+                int endOffset = textArea.Document.GetOffset(endLocation);
                 if (textArea.Selection.EnableVirtualSpace || textArea.Document.GetLocation(endOffset) == endLocation)
                 {
-                    var rsel = new RectangleSelection(textArea, startPosition, endLocation.Line, GetXPos(textArea, startPosition));
+                    RectangleSelection rsel = new RectangleSelection(textArea, startPosition, endLocation.Line, GetXPos(textArea, startPosition));
                     rsel.ReplaceSelectionWithText(text);
                     if (selectInsertedText && textArea.Selection is RectangleSelection)
                     {
-                        var sel = (RectangleSelection)textArea.Selection;
+                        RectangleSelection sel = (RectangleSelection)textArea.Selection;
                         textArea.Selection = new RectangleSelection(textArea, startPosition, sel._endLine, sel._endXPos);
                     }
                     return true;
@@ -391,7 +394,7 @@ namespace AvaloniaEdit.Editing
 
         public override Avalonia.Input.DataObject CreateDataObject(TextArea textArea)
         {
-            var data = base.CreateDataObject(textArea);
+            DataObject data = base.CreateDataObject(textArea);
 
             if (EditingCommandHandler.ConfirmDataFormat(textArea, data, RectangularSelectionDataType))
             {

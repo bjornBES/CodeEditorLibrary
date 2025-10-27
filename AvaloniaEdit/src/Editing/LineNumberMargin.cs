@@ -25,6 +25,7 @@ using AvaloniaEdit.Utils;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 
 namespace AvaloniaEdit.Editing
 {
@@ -84,7 +85,7 @@ namespace AvaloniaEdit.Editing
 			Typeface = this.CreateTypeface();
 			EmSize = GetValue(TextBlock.FontSizeProperty);
 
-			var text = TextFormatterFactory.CreateFormattedText(
+            FormattedText text = TextFormatterFactory.CreateFormattedText(
 				this,
 				new string('9', MaxLineNumberLength),
 				Typeface,
@@ -96,19 +97,19 @@ namespace AvaloniaEdit.Editing
         
 		public override void Render(DrawingContext drawingContext)
 		{
-			var textView = TextView;
-			var renderSize = Bounds.Size;
+            TextView textView = TextView;
+            Size renderSize = Bounds.Size;
             
 			if (textView is {VisualLinesValid: true}) {
-				var foreground = GetValue(TextBlock.ForegroundProperty);
-				foreach (var line in textView.VisualLines) {
-					var lineNumber = line.FirstDocumentLine.LineNumber;
-					var text = TextFormatterFactory.CreateFormattedText(
+                IBrush foreground = GetValue(TextBlock.ForegroundProperty);
+				foreach (VisualLine line in textView.VisualLines) {
+                    int lineNumber = line.FirstDocumentLine.LineNumber;
+                    FormattedText text = TextFormatterFactory.CreateFormattedText(
 						this,
 						lineNumber.ToString(CultureInfo.CurrentCulture),
 						Typeface, EmSize, foreground
 					);
-					var y = line.GetTextLineVisualYPosition(line.TextLines[0], VisualYPosition.TextTop);
+                    double y = line.GetTextLineVisualYPosition(line.TextLines[0], VisualYPosition.TextTop);
 					drawingContext.DrawText(text, new Point(renderSize.Width - text.Width, y - textView.VerticalOffset));
 				}
 			}
@@ -162,8 +163,8 @@ namespace AvaloniaEdit.Editing
 
         private void OnDocumentLineCountChanged()
         {
-            var documentLineCount = Document?.LineCount ?? 1;
-            var newLength = documentLineCount.ToString(CultureInfo.CurrentCulture).Length;
+            int documentLineCount = Document?.LineCount ?? 1;
+            int newLength = documentLineCount.ToString(CultureInfo.CurrentCulture).Length;
             newLength = Math.Max(newLength, MinWidthInDigits);
 
             if (newLength != MaxLineNumberLength)
@@ -182,7 +183,7 @@ namespace AvaloniaEdit.Editing
                 e.Handled = true;
                 TextArea.Focus();
 
-                var currentSeg = GetTextLineSegment(e);
+                SimpleSegment currentSeg = GetTextLineSegment(e);
                 if (currentSeg == SimpleSegment.Invalid)
                     return;
                 TextArea.Caret.Offset = currentSeg.Offset + currentSeg.Length;
@@ -208,17 +209,17 @@ namespace AvaloniaEdit.Editing
 
         private SimpleSegment GetTextLineSegment(PointerEventArgs e)
         {
-            var pos = e.GetPosition(TextView);
+            Point pos = e.GetPosition(TextView);
             pos = new Point(0, pos.Y.CoerceValue(0, TextView.Bounds.Height) + TextView.VerticalOffset);
-            var vl = TextView.GetVisualLineFromVisualTop(pos.Y);
+            VisualLine vl = TextView.GetVisualLineFromVisualTop(pos.Y);
             if (vl == null)
                 return SimpleSegment.Invalid;
-            var tl = vl.GetTextLineByVisualYPosition(pos.Y);
-            var visualStartColumn = vl.GetTextLineVisualStartColumn(tl);
-            var visualEndColumn = visualStartColumn + tl.Length;
-            var relStart = vl.FirstDocumentLine.Offset;
-            var startOffset = vl.GetRelativeOffset(visualStartColumn) + relStart;
-            var endOffset = vl.GetRelativeOffset(visualEndColumn) + relStart;
+            TextLine tl = vl.GetTextLineByVisualYPosition(pos.Y);
+            int visualStartColumn = vl.GetTextLineVisualStartColumn(tl);
+            int visualEndColumn = visualStartColumn + tl.Length;
+            int relStart = vl.FirstDocumentLine.Offset;
+            int startOffset = vl.GetRelativeOffset(visualStartColumn) + relStart;
+            int endOffset = vl.GetRelativeOffset(visualEndColumn) + relStart;
             if (endOffset == vl.LastDocumentLine.Offset + vl.LastDocumentLine.Length)
                 endOffset += vl.LastDocumentLine.DelimiterLength;
             return new SimpleSegment(startOffset, endOffset - startOffset);
@@ -243,7 +244,7 @@ namespace AvaloniaEdit.Editing
             if (_selecting && TextArea != null && TextView != null)
             {
                 e.Handled = true;
-                var currentSeg = GetTextLineSegment(e);
+                SimpleSegment currentSeg = GetTextLineSegment(e);
                 if (currentSeg == SimpleSegment.Invalid)
                     return;
                 ExtendSelection(currentSeg);

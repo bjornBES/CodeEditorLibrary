@@ -36,7 +36,7 @@ namespace AvaloniaEdit.Document
         {
             InsertionOffset = insertionOffset;
             _document = document ?? throw new ArgumentNullException(nameof(document));
-            var line = document.GetLineByOffset(insertionOffset);
+            IDocumentLine line = document.GetLineByOffset(insertionOffset);
             if (line.DelimiterLength == 0)
                 line = line.PreviousLine;
             if (line != null)

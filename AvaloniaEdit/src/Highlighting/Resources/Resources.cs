@@ -28,7 +28,7 @@ namespace AvaloniaEdit.Highlighting
 
 	    public static Stream OpenStream(string name)
 		{
-			var s = typeof(Resources).GetTypeInfo().Assembly.GetManifestResourceStream(Prefix + name);
+            Stream s = typeof(Resources).GetTypeInfo().Assembly.GetManifestResourceStream(Prefix + name);
 			if (s == null)
 				throw new FileNotFoundException("The resource file '" + name + "' was not found.");
 			return s;

@@ -80,7 +80,7 @@ namespace AvaloniaEdit.TextMate
             {
                 _textMateRegistry.SetTheme(theme);
 
-                var registryTheme = _textMateRegistry.GetTheme();
+                Theme registryTheme = _textMateRegistry.GetTheme();
                 GetOrCreateTransformer().SetTheme(registryTheme);
 
                 _tmModel?.InvalidateLine(0);
@@ -123,7 +123,7 @@ namespace AvaloniaEdit.TextMate
 
             TextMateColoringTransformer GetOrCreateTransformer()
             {
-                var transformer = _editor.TextArea.TextView.LineTransformers.OfType<TextMateColoringTransformer>().FirstOrDefault();
+                TextMateColoringTransformer transformer = _editor.TextArea.TextView.LineTransformers.OfType<TextMateColoringTransformer>().FirstOrDefault();
 
                 if (transformer is null)
                 {

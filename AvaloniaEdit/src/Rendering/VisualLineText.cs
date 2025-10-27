@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Utilities;
 using AvaloniaEdit.Document;
+using AvaloniaEdit.Utils;
 using LogicalDirection = AvaloniaEdit.Document.LogicalDirection;
 
 namespace AvaloniaEdit.Rendering
@@ -59,16 +60,16 @@ namespace AvaloniaEdit.Rendering
 		{
 			if (context == null)
 				throw new ArgumentNullException(nameof(context));
-			
-			var relativeOffset = startVisualColumn - VisualColumn;
 
-			var offset = context.VisualLine.FirstDocumentLine.Offset + RelativeTextOffset + relativeOffset;
+            int relativeOffset = startVisualColumn - VisualColumn;
 
-			var text = context.GetText(
+            int offset = context.VisualLine.FirstDocumentLine.Offset + RelativeTextOffset + relativeOffset;
+
+            StringSegment text = context.GetText(
 				offset,
 				DocumentLength - relativeOffset);
 
-			var textSlice = text.Text.AsMemory().Slice(text.Offset, text.Count);
+            ReadOnlyMemory<char> textSlice = text.Text.AsMemory().Slice(text.Offset, text.Count);
 
             return new TextCharacters(textSlice, TextRunProperties);
         }
@@ -76,7 +77,7 @@ namespace AvaloniaEdit.Rendering
 		/// <inheritdoc/>
 		public override bool IsWhitespace(int visualColumn)
 		{
-			var offset = visualColumn - VisualColumn + ParentVisualLine.FirstDocumentLine.Offset + RelativeTextOffset;
+            int offset = visualColumn - VisualColumn + ParentVisualLine.FirstDocumentLine.Offset + RelativeTextOffset;
 			return char.IsWhiteSpace(ParentVisualLine.Document.GetCharAt(offset));
 		}
 
@@ -86,9 +87,9 @@ namespace AvaloniaEdit.Rendering
 			if (context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			var relativeOffset = visualColumnLimit - VisualColumn;
-			
-			var text = context.GetText(context.VisualLine.FirstDocumentLine.Offset + RelativeTextOffset, relativeOffset);
+            int relativeOffset = visualColumnLimit - VisualColumn;
+
+            StringSegment text = context.GetText(context.VisualLine.FirstDocumentLine.Offset + RelativeTextOffset, relativeOffset);
 			
 			return text.Text.AsMemory().Slice(text.Offset, text.Count);
 		}
@@ -105,8 +106,8 @@ namespace AvaloniaEdit.Rendering
 				throw new ArgumentNullException(nameof(elements));
 			if (elements[elementIndex] != this)
 				throw new ArgumentException("Invalid elementIndex - couldn't find this element at the index");
-			var relativeSplitPos = splitVisualColumn - VisualColumn;
-			var splitPart = CreateInstance(DocumentLength - relativeSplitPos);
+            int relativeSplitPos = splitVisualColumn - VisualColumn;
+            VisualLineText splitPart = CreateInstance(DocumentLength - relativeSplitPos);
 			SplitHelper(this, splitPart, splitVisualColumn, relativeSplitPos + RelativeTextOffset);
 			elements.Insert(elementIndex + 1, splitPart);
 		}
@@ -126,8 +127,8 @@ namespace AvaloniaEdit.Rendering
 		/// <inheritdoc/>
 		public override int GetNextCaretPosition(int visualColumn, LogicalDirection direction, CaretPositioningMode mode)
 		{
-			var textOffset = ParentVisualLine.StartOffset + RelativeTextOffset;
-			var pos = TextUtilities.GetNextCaretPosition(ParentVisualLine.Document, textOffset + visualColumn - VisualColumn, direction, mode);
+            int textOffset = ParentVisualLine.StartOffset + RelativeTextOffset;
+            int pos = TextUtilities.GetNextCaretPosition(ParentVisualLine.Document, textOffset + visualColumn - VisualColumn, direction, mode);
 			if (pos < textOffset || pos > textOffset + DocumentLength)
 				return -1;
 		    return VisualColumn + pos - textOffset;

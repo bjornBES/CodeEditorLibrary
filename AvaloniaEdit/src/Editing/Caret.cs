@@ -189,8 +189,8 @@ namespace AvaloniaEdit.Editing
                     caretMovementType = AnchorMovementType.BeforeInsertion;
                 else
                     caretMovementType = AnchorMovementType.Default;
-                var newCaretOffset = e.GetNewOffset(_storedCaretOffset, caretMovementType);
-                var document = _textArea.Document;
+                int newCaretOffset = e.GetNewOffset(_storedCaretOffset, caretMovementType);
+                TextDocument document = _textArea.Document;
                 if (document != null)
                 {
                     // keep visual column
@@ -208,7 +208,7 @@ namespace AvaloniaEdit.Editing
         {
             get
             {
-                var document = _textArea.Document;
+                TextDocument document = _textArea.Document;
                 if (document == null)
                 {
                     return 0;
@@ -217,7 +217,7 @@ namespace AvaloniaEdit.Editing
             }
             set
             {
-                var document = _textArea.Document;
+                TextDocument document = _textArea.Document;
                 if (document != null)
                 {
                     Position = new TextViewPosition(document.GetLocation(value));
@@ -240,7 +240,7 @@ namespace AvaloniaEdit.Editing
                 _position.Column = 1;
             if (_position.VisualColumn < -1)
                 _position.VisualColumn = -1;
-            var document = _textArea.Document;
+            TextDocument document = _textArea.Document;
             if (document != null)
             {
                 if (_position.Line > document.LineCount)
@@ -251,7 +251,7 @@ namespace AvaloniaEdit.Editing
                 }
                 else
                 {
-                    var line = document.GetLineByNumber(_position.Line);
+                    DocumentLine line = document.GetLineByNumber(_position.Line);
                     if (_position.Column > line.Length + 1)
                     {
                         _position.Column = line.Length + 1;
@@ -297,11 +297,11 @@ namespace AvaloniaEdit.Editing
         {
             if (!_visualColumnValid)
             {
-                var document = _textArea.Document;
+                TextDocument document = _textArea.Document;
                 if (document != null)
                 {
-                   // Debug.WriteLine("Explicit validation of caret column");
-                    var documentLine = document.GetLineByNumber(_position.Line);
+                    // Debug.WriteLine("Explicit validation of caret column");
+                    DocumentLine documentLine = document.GetLineByNumber(_position.Line);
                     RevalidateVisualColumn(_textView.GetOrConstructVisualLine(documentLine));
                 }
             }
@@ -324,17 +324,17 @@ namespace AvaloniaEdit.Editing
             // mark column as validated
             _visualColumnValid = true;
 
-            var caretOffset = _textView.Document.GetOffset(_position.Location);
-            var firstDocumentLineOffset = visualLine.FirstDocumentLine.Offset;
+            int caretOffset = _textView.Document.GetOffset(_position.Location);
+            int firstDocumentLineOffset = visualLine.FirstDocumentLine.Offset;
             _position.VisualColumn = visualLine.ValidateVisualColumn(_position, _textArea.Selection.EnableVirtualSpace);
 
             // search possible caret positions
-            var newVisualColumnForwards = visualLine.GetNextCaretPosition(_position.VisualColumn - 1, LogicalDirection.Forward, CaretPositioningMode.Normal, _textArea.Selection.EnableVirtualSpace);
+            int newVisualColumnForwards = visualLine.GetNextCaretPosition(_position.VisualColumn - 1, LogicalDirection.Forward, CaretPositioningMode.Normal, _textArea.Selection.EnableVirtualSpace);
             // If position.VisualColumn was valid, we're done with validation.
             if (newVisualColumnForwards != _position.VisualColumn)
             {
                 // also search backwards so that we can pick the better match
-                var newVisualColumnBackwards = visualLine.GetNextCaretPosition(_position.VisualColumn + 1, LogicalDirection.Backward, CaretPositioningMode.Normal, _textArea.Selection.EnableVirtualSpace);
+                int newVisualColumnBackwards = visualLine.GetNextCaretPosition(_position.VisualColumn + 1, LogicalDirection.Backward, CaretPositioningMode.Normal, _textArea.Selection.EnableVirtualSpace);
 
                 if (newVisualColumnForwards < 0 && newVisualColumnBackwards < 0)
                     throw ThrowUtil.NoValidCaretPosition();
@@ -391,10 +391,10 @@ namespace AvaloniaEdit.Editing
                 RevalidateVisualColumn(visualLine);
             }
 
-            var textLine = visualLine.GetTextLine(_position.VisualColumn, _position.IsAtEndOfLine);
-            var xPos = visualLine.GetTextLineVisualXPosition(textLine, _position.VisualColumn);
-            var lineTop = visualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.TextTop);
-            var lineBottom = visualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.TextBottom);
+            Avalonia.Media.TextFormatting.TextLine textLine = visualLine.GetTextLine(_position.VisualColumn, _position.IsAtEndOfLine);
+            double xPos = visualLine.GetTextLineVisualXPosition(textLine, _position.VisualColumn);
+            double lineTop = visualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.TextTop);
+            double lineBottom = visualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.TextBottom);
 
             return new Rect(xPos,
                             lineTop,
@@ -411,15 +411,15 @@ namespace AvaloniaEdit.Editing
 			int currentPos = _position.VisualColumn;
 			// The text being overwritten in overstrike mode is everything up to the next normal caret stop
 			int nextPos = visualLine.GetNextCaretPosition(currentPos, LogicalDirection.Forward, CaretPositioningMode.Normal, true);
-			var textLine = visualLine.GetTextLine(currentPos);
+            Avalonia.Media.TextFormatting.TextLine textLine = visualLine.GetTextLine(currentPos);
 
 			Rect r;
 			if (currentPos < visualLine.VisualLength) {
-				// If the caret is within the text, use GetTextBounds() for the text being overwritten.
-				// This is necessary to ensure the rectangle is calculated correctly in bidirectional text.
-				var textBounds = textLine.GetTextBounds(currentPos, nextPos - currentPos)[0];
+                // If the caret is within the text, use GetTextBounds() for the text being overwritten.
+                // This is necessary to ensure the rectangle is calculated correctly in bidirectional text.
+                Avalonia.Media.TextFormatting.TextBounds textBounds = textLine.GetTextBounds(currentPos, nextPos - currentPos)[0];
 				r = textBounds.Rectangle;
-				var y = r.Y + visualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.LineTop);
+                double y = r.Y + visualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.LineTop);
 				r = r.WithY(y);
 			} else {
 				// If the caret is at the end of the line (or in virtual space),
@@ -443,7 +443,7 @@ namespace AvaloniaEdit.Editing
         {
             if (_textView?.Document != null)
             {
-                var visualLine = _textView.GetOrConstructVisualLine(_textView.Document.GetLineByNumber(_position.Line));
+                VisualLine visualLine = _textView.GetOrConstructVisualLine(_textView.Document.GetLineByNumber(_position.Line));
                 return _textArea.OverstrikeMode ? CalcCaretOverstrikeRectangle(visualLine) : CalcCaretRectangle(visualLine);
             }
             return default;
@@ -464,7 +464,7 @@ namespace AvaloniaEdit.Editing
 
         public void BringCaretToView(double border)
         {
-            var caretRectangle = CalculateCaretRectangle();
+            Rect caretRectangle = CalculateCaretRectangle();
             if (caretRectangle != default)
             {
                 caretRectangle = caretRectangle.Inflate(border);
@@ -499,10 +499,10 @@ namespace AvaloniaEdit.Editing
 
             if (_caretAdorner != null && _textView != null)
             {
-                var visualLine = _textView.GetVisualLine(_position.Line);
+                VisualLine visualLine = _textView.GetVisualLine(_position.Line);
                 if (visualLine != null)
                 {
-                    var caretRect = _textArea.OverstrikeMode ? CalcCaretOverstrikeRectangle(visualLine) : CalcCaretRectangle(visualLine);
+                    Rect caretRect = _textArea.OverstrikeMode ? CalcCaretOverstrikeRectangle(visualLine) : CalcCaretRectangle(visualLine);
                     // TODO: win32 caret
                     // Create Win32 caret so that Windows knows where our managed caret is. This is necessary for
                     // features like 'Follow text editing' in the Windows Magnifier.

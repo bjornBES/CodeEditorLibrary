@@ -40,8 +40,8 @@ namespace AvaloniaEdit.Highlighting
         /// <inheritdoc/>
         protected override void ColorizeLine(DocumentLine line)
         {
-            var sections = _richTextModel.GetHighlightedSections(line.Offset, line.Length);
-            foreach (var section in sections)
+            IEnumerable<HighlightedSection> sections = _richTextModel.GetHighlightedSections(line.Offset, line.Length);
+            foreach (HighlightedSection section in sections)
             {
                 if (HighlightingColorizer.IsEmptyColor(section.Color))
                     continue;

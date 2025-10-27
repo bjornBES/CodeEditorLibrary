@@ -37,7 +37,7 @@ namespace AvaloniaEdit.Highlighting
         {
             if (offset < 0)
                 throw new ArgumentOutOfRangeException(nameof(offset));
-            var index = _stateChangeOffsets.BinarySearch(offset);
+            int index = _stateChangeOffsets.BinarySearch(offset);
             if (index < 0)
             {
                 // If no color change exists directly at offset,
@@ -53,7 +53,7 @@ namespace AvaloniaEdit.Highlighting
         {
             if (offset < 0)
                 throw new ArgumentOutOfRangeException(nameof(offset));
-            var index = _stateChangeOffsets.BinarySearch(offset);
+            int index = _stateChangeOffsets.BinarySearch(offset);
             if (index < 0)
             {
                 // If no color change exists directly at offset,
@@ -124,12 +124,12 @@ namespace AvaloniaEdit.Highlighting
 
         private void UpdateOffsets(Func<int, AnchorMovementType, int> updateOffset)
         {
-            var readPos = 1;
-            var writePos = 1;
+            int readPos = 1;
+            int writePos = 1;
             while (readPos < _stateChangeOffsets.Count)
             {
                 Debug.Assert(writePos <= readPos);
-                var newOffset = updateOffset(_stateChangeOffsets[readPos], AnchorMovementType.Default);
+                int newOffset = updateOffset(_stateChangeOffsets[readPos], AnchorMovementType.Default);
                 if (newOffset == _stateChangeOffsets[writePos - 1])
                 {
                     // offset moved to same position as previous offset
@@ -164,7 +164,7 @@ namespace AvaloniaEdit.Highlighting
                 _stateChanges.RemoveAt(_stateChanges.Count - 1);
             }
             // Append the new segments
-            for (var i = 0; i < newOffsets.Length; i++)
+            for (int i = 0; i < newOffsets.Length; i++)
             {
                 _stateChangeOffsets.Add(offset + newOffsets[i]);
                 _stateChanges.Add(newColors[i]);
@@ -192,9 +192,9 @@ namespace AvaloniaEdit.Highlighting
                 // empty by default.
                 return;
             }
-            var startIndex = GetIndexForOffset(offset);
-            var endIndex = GetIndexForOffset(offset + length);
-            for (var i = startIndex; i < endIndex; i++)
+            int startIndex = GetIndexForOffset(offset);
+            int endIndex = GetIndexForOffset(offset + length);
+            for (int i = startIndex; i < endIndex; i++)
             {
                 _stateChanges[i].MergeWith(color);
             }
@@ -208,8 +208,8 @@ namespace AvaloniaEdit.Highlighting
         {
             if (length <= 0)
                 return;
-            var startIndex = GetIndexForOffset(offset);
-            var endIndex = GetIndexForOffset(offset + length);
+            int startIndex = GetIndexForOffset(offset);
+            int endIndex = GetIndexForOffset(offset + length);
             _stateChanges[startIndex] = color != null ? color.Clone() : new HighlightingColor();
             _stateChanges.RemoveRange(startIndex + 1, endIndex - (startIndex + 1));
             _stateChangeOffsets.RemoveRange(startIndex + 1, endIndex - (startIndex + 1));
@@ -220,9 +220,9 @@ namespace AvaloniaEdit.Highlighting
         /// </summary>
         public void SetForeground(int offset, int length, HighlightingBrush brush)
         {
-            var startIndex = GetIndexForOffset(offset);
-            var endIndex = GetIndexForOffset(offset + length);
-            for (var i = startIndex; i < endIndex; i++)
+            int startIndex = GetIndexForOffset(offset);
+            int endIndex = GetIndexForOffset(offset + length);
+            for (int i = startIndex; i < endIndex; i++)
             {
                 _stateChanges[i].Foreground = brush;
             }
@@ -233,9 +233,9 @@ namespace AvaloniaEdit.Highlighting
         /// </summary>
         public void SetBackground(int offset, int length, HighlightingBrush brush)
         {
-            var startIndex = GetIndexForOffset(offset);
-            var endIndex = GetIndexForOffset(offset + length);
-            for (var i = startIndex; i < endIndex; i++)
+            int startIndex = GetIndexForOffset(offset);
+            int endIndex = GetIndexForOffset(offset + length);
+            for (int i = startIndex; i < endIndex; i++)
             {
                 _stateChanges[i].Background = brush;
             }
@@ -246,9 +246,9 @@ namespace AvaloniaEdit.Highlighting
         /// </summary>
         public void SetFontWeight(int offset, int length, FontWeight weight)
         {
-            var startIndex = GetIndexForOffset(offset);
-            var endIndex = GetIndexForOffset(offset + length);
-            for (var i = startIndex; i < endIndex; i++)
+            int startIndex = GetIndexForOffset(offset);
+            int endIndex = GetIndexForOffset(offset + length);
+            for (int i = startIndex; i < endIndex; i++)
             {
                 _stateChanges[i].FontWeight = weight;
             }
@@ -259,9 +259,9 @@ namespace AvaloniaEdit.Highlighting
         /// </summary>
         public void SetFontStyle(int offset, int length, FontStyle style)
         {
-            var startIndex = GetIndexForOffset(offset);
-            var endIndex = GetIndexForOffset(offset + length);
-            for (var i = startIndex; i < endIndex; i++)
+            int startIndex = GetIndexForOffset(offset);
+            int endIndex = GetIndexForOffset(offset + length);
+            for (int i = startIndex; i < endIndex; i++)
             {
                 _stateChanges[i].FontStyle = style;
             }
@@ -273,12 +273,12 @@ namespace AvaloniaEdit.Highlighting
         /// </summary>
         public IEnumerable<HighlightedSection> GetHighlightedSections(int offset, int length)
         {
-            var index = GetIndexForOffsetUseExistingSegment(offset);
-            var pos = offset;
-            var endOffset = offset + length;
+            int index = GetIndexForOffsetUseExistingSegment(offset);
+            int pos = offset;
+            int endOffset = offset + length;
             while (pos < endOffset)
             {
-                var endPos = Math.Min(endOffset, GetEnd(index));
+                int endPos = Math.Min(endOffset, GetEnd(index));
                 yield return new HighlightedSection
                 {
                     Offset = pos,

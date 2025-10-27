@@ -85,11 +85,11 @@ namespace AvaloniaEdit.TextMate
 
             _brushes.Clear();
 
-            var map = _theme.GetColorMap();
+            ICollection<string> map = _theme.GetColorMap();
 
-            foreach (var color in map)
+            foreach (string color in map)
             {
-                var id = _theme.GetColorId(color);
+                int id = _theme.GetColorId(color);
 
                 _brushes[id] = new ImmutableSolidColorBrush(Color.Parse(NormalizeColor(color)));
             }
@@ -114,12 +114,12 @@ namespace AvaloniaEdit.TextMate
 
                 int lineNumber = line.LineNumber;
 
-                var tokens = _model.GetLineTokens(lineNumber - 1);
+                List<TMToken> tokens = _model.GetLineTokens(lineNumber - 1);
 
                 if (tokens == null)
                     return;
 
-                var transformsInLine = ArrayPool<ForegroundTextTransformation>.Shared.Rent(tokens.Count);
+                ForegroundTextTransformation[] transformsInLine = ArrayPool<ForegroundTextTransformation>.Shared.Rent(tokens.Count);
 
                 try
                 {
@@ -148,11 +148,11 @@ namespace AvaloniaEdit.TextMate
         {
             for (int i = 0; i < tokens.Count; i++)
             {
-                var token = tokens[i];
-                var nextToken = (i + 1) < tokens.Count ? tokens[i + 1] : null;
+                TMToken token = tokens[i];
+                TMToken nextToken = (i + 1) < tokens.Count ? tokens[i + 1] : null;
 
-                var startIndex = token.StartIndex;
-                var endIndex = nextToken?.StartIndex ?? _model.GetLines().GetLineLength(lineNumber - 1);
+                int startIndex = token.StartIndex;
+                int endIndex = nextToken?.StartIndex ?? _model.GetLines().GetLineLength(lineNumber - 1);
 
                 if (startIndex >= endIndex || token.Scopes == null || token.Scopes.Count == 0)
                 {
@@ -160,13 +160,13 @@ namespace AvaloniaEdit.TextMate
                     continue;
                 }
 
-                var lineOffset = _document.GetLineByNumber(lineNumber).Offset;
+                int lineOffset = _document.GetLineByNumber(lineNumber).Offset;
 
                 int foreground = 0;
                 int background = 0;
                 FontStyle fontStyle = 0;
 
-                foreach (var themeRule in _theme.Match(token.Scopes))
+                foreach (ThemeTrieElementRule themeRule in _theme.Match(token.Scopes))
                 {
                     if (foreground == 0 && themeRule.foreground > 0)
                         foreground = themeRule.foreground;
@@ -203,7 +203,7 @@ namespace AvaloniaEdit.TextMate
             int firstChangedLineIndex = int.MaxValue;
             int lastChangedLineIndex = -1;
 
-            foreach (var range in e.Ranges)
+            foreach (TextMateSharp.Model.Range range in e.Ranges)
             {
                 firstChangedLineIndex = Math.Min(range.FromLineNumber - 1, firstChangedLineIndex);
                 lastChangedLineIndex = Math.Max(range.ToLineNumber - 1, lastChangedLineIndex);

@@ -67,7 +67,7 @@ namespace AvaloniaEdit.Rendering
 		public override TextRun CreateTextRun(int startVisualColumn, ITextRunConstructionContext context)
 		{
 			if (TextLine == null) {
-				var formatter = TextFormatterFactory.Create(context.TextView);
+                TextFormatter formatter = TextFormatterFactory.Create(context.TextView);
 				TextLine = PrepareText(formatter, Text, TextRunProperties);
 				Text = null;
 			}
@@ -130,13 +130,13 @@ namespace AvaloniaEdit.Rendering
 		{
 			get
 			{
-				var formattedText = Element.FormattedText;
+                FormattedText formattedText = Element.FormattedText;
 				
 				if (formattedText != null) {
 					return new Size(formattedText.WidthIncludingTrailingWhitespace, formattedText.Height);
 				}
 
-				var text = Element.TextLine;
+                TextLine text = Element.TextLine;
 				return new Size(text.WidthIncludingTrailingWhitespace, text.Height);
 			}
 		}

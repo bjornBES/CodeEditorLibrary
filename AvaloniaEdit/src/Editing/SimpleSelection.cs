@@ -58,8 +58,8 @@ namespace AvaloniaEdit.Editing
                 throw new ArgumentNullException(nameof(newText));
             using (TextArea.Document.RunUpdate())
             {
-                var segmentsToDelete = TextArea.GetDeletableSegments(SurroundingSegment);
-                for (var i = segmentsToDelete.Length - 1; i >= 0; i--)
+                ISegment[] segmentsToDelete = TextArea.GetDeletableSegments(SurroundingSegment);
+                for (int i = segmentsToDelete.Length - 1; i >= 0; i--)
                 {
                     if (i == segmentsToDelete.Length - 1)
                     {
@@ -133,7 +133,7 @@ namespace AvaloniaEdit.Editing
 
         public override Selection StartSelectionOrSetEndpoint(TextViewPosition startPosition, TextViewPosition endPosition)
         {
-            var document = TextArea.Document;
+            TextDocument document = TextArea.Document;
             if (document == null)
                 throw ThrowUtil.NoDocumentAssigned();
             return Create(TextArea, _start, endPosition);
@@ -151,7 +151,7 @@ namespace AvaloniaEdit.Editing
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {
-            var other = obj as SimpleSelection;
+            SimpleSelection other = obj as SimpleSelection;
             if (other == null) return false;
             // ReSharper disable ImpureMethodCallOnReadonlyValueField
             return _start.Equals(other._start) && _end.Equals(other._end)

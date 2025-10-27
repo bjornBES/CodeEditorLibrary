@@ -36,13 +36,13 @@ namespace AvaloniaEdit.Editing
             if (_textArea.SelectionForeground == null)
                 return;
 
-            var lineStartOffset = context.VisualLine.FirstDocumentLine.Offset;
-            var lineEndOffset = context.VisualLine.LastDocumentLine.Offset + context.VisualLine.LastDocumentLine.TotalLength;
+            int lineStartOffset = context.VisualLine.FirstDocumentLine.Offset;
+            int lineEndOffset = context.VisualLine.LastDocumentLine.Offset + context.VisualLine.LastDocumentLine.TotalLength;
 
-            foreach (var segment in _textArea.Selection.Segments)
+            foreach (SelectionSegment segment in _textArea.Selection.Segments)
             {
-                var segmentStart = segment.StartOffset;
-                var segmentEnd = segment.EndOffset;
+                int segmentStart = segment.StartOffset;
+                int segmentEnd = segment.EndOffset;
                 if (segmentEnd <= lineStartOffset)
                     continue;
                 if (segmentStart >= lineEndOffset)

@@ -31,7 +31,7 @@ namespace AvaloniaEdit.TextMate
         {
             lock (_lock)
             {
-                var tmpList = _lineRanges.ToList();
+                List<LineRange> tmpList = _lineRanges.ToList();
                 tmpList.RemoveRange(startLine, endLine - startLine + 1);
                 _lineRanges = tmpList.ToArray();
                 _lineCount = _lineRanges.Length;
@@ -42,7 +42,7 @@ namespace AvaloniaEdit.TextMate
         {
             lock (_lock)
             {
-                var lineRange = _lineRanges[lineIndex];
+                LineRange lineRange = _lineRanges[lineIndex];
                 return _textSource.GetText(lineRange.Offset, lineRange.Length);
             }
         }
@@ -51,7 +51,7 @@ namespace AvaloniaEdit.TextMate
         {
             lock (_lock)
             {
-                var lineRange = _lineRanges[lineIndex];
+                LineRange lineRange = _lineRanges[lineIndex];
                 return _textSource.GetText(lineRange.Offset, lineRange.TotalLength);
             }
         }
@@ -60,7 +60,7 @@ namespace AvaloniaEdit.TextMate
         {
             lock (_lock)
             {
-                var lineRange = _lineRanges[lineIndex];
+                LineRange lineRange = _lineRanges[lineIndex];
                 return _textSource.GetText(lineRange.Offset + lineRange.Length, lineRange.TotalLength - lineRange.Length);
             }
         }
@@ -114,7 +114,7 @@ namespace AvaloniaEdit.TextMate
 
         private void RecalculateOffsets(DocumentChangeEventArgs e)
         {
-            var changedLine = _document.GetLineByOffset(e.Offset);
+            DocumentLine changedLine = _document.GetLineByOffset(e.Offset);
             int lineIndex = changedLine.LineNumber - 1;
 
             _lineRanges[lineIndex].Offset = changedLine.Offset;
@@ -133,7 +133,7 @@ namespace AvaloniaEdit.TextMate
 
             int currentLineIndex = (e != null) ?
                 _document.GetLineByOffset(e.Offset).LineNumber - 1 : 0;
-            var currentLine = _document.GetLineByNumber(currentLineIndex + 1);
+            DocumentLine currentLine = _document.GetLineByNumber(currentLineIndex + 1);
 
             while (currentLine != null)
             {

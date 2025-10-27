@@ -34,7 +34,7 @@ namespace AvaloniaEdit.Search
         {
             if (searchPattern == null)
                 throw new ArgumentNullException(nameof(searchPattern));
-            var options = RegexOptions.Multiline;
+            RegexOptions options = RegexOptions.Multiline;
             if (ignoreCase)
                 options |= RegexOptions.IgnoreCase;
 
@@ -50,7 +50,7 @@ namespace AvaloniaEdit.Search
 
             try
             {
-                var pattern = new Regex(searchPattern, options);
+                Regex pattern = new Regex(searchPattern, options);
                 return new RegexSearchStrategy(pattern, matchWholeWords);
             }
             catch (ArgumentException ex)
@@ -64,9 +64,9 @@ namespace AvaloniaEdit.Search
             if (string.IsNullOrEmpty(searchPattern))
                 return "";
 
-            var builder = new StringBuilder();
+            StringBuilder builder = new StringBuilder();
 
-            foreach (var ch in searchPattern)
+            foreach (char ch in searchPattern)
             {
                 switch (ch)
                 {

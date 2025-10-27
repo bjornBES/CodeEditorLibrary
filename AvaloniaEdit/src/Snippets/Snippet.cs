@@ -35,8 +35,8 @@ namespace AvaloniaEdit.Snippets
             if (textArea == null)
                 throw new ArgumentNullException(nameof(textArea));
 
-            var selection = textArea.Selection.SurroundingSegment;
-            var insertionPosition = textArea.Caret.Offset;
+            ISegment selection = textArea.Selection.SurroundingSegment;
+            int insertionPosition = textArea.Caret.Offset;
 
             if (selection != null) // if something is selected
                                    // use selection start instead of caret position,
@@ -44,7 +44,7 @@ namespace AvaloniaEdit.Snippets
                                    // Removal of the selected text causes the caret position to be invalid.
                 insertionPosition = selection.Offset + TextUtilities.GetWhitespaceAfter(textArea.Document, selection.Offset).Length;
 
-            var context = new InsertionContext(textArea, insertionPosition);
+            InsertionContext context = new InsertionContext(textArea, insertionPosition);
 
             using (context.Document.RunUpdate())
             {

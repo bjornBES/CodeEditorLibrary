@@ -170,7 +170,7 @@ namespace AvaloniaEdit.Rendering
 				else
 					segmentEndVc = vl.ValidateVisualColumn(end, extendToFullWidthAtLineEnd);
 
-				foreach (var rect in ProcessTextLines(textView, vl, segmentStartVc, segmentEndVc))
+				foreach (Rect rect in ProcessTextLines(textView, vl, segmentStartVc, segmentEndVc))
 					yield return rect;
 			}
 		}
@@ -226,7 +226,7 @@ namespace AvaloniaEdit.Rendering
 					lastRect = new Rect(pos, y, textView.EmptyLineSelectionWidth, line.Height);
 				} else {
 					if (segmentStartVcInLine <= visualEndCol) {
-						foreach (var b in line.GetTextBounds(segmentStartVcInLine, segmentEndVcInLine - segmentStartVcInLine)) {
+						foreach (TextBounds b in line.GetTextBounds(segmentStartVcInLine, segmentEndVcInLine - segmentStartVcInLine)) {
 							double left = b.Rectangle.Left - scrollOffset.X;
 							double right = b.Rectangle.Right - scrollOffset.X;
 							if (lastRect != default)
@@ -338,7 +338,7 @@ namespace AvaloniaEdit.Rendering
 
 		private ArcSegment MakeArc(double x, double y, SweepDirection dir)
 		{
-			var arc = new ArcSegment
+            ArcSegment arc = new ArcSegment
 			{
 				Point = new Point(x, y),
 				Size = new Size(CornerRadius, CornerRadius),

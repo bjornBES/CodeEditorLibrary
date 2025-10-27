@@ -34,10 +34,10 @@ namespace AvaloniaEdit.Highlighting.Xshd
         {
             Name = xshd.Name;
             // Create HighlightingRuleSet instances
-            var rnev = new RegisterNamedElementsVisitor(this);
+            RegisterNamedElementsVisitor rnev = new RegisterNamedElementsVisitor(this);
             xshd.AcceptElements(rnev);
             // Assign MainRuleSet so that references can be resolved
-            foreach (var element in xshd.Elements)
+            foreach (XshdElement element in xshd.Elements)
             {
                 if (element is XshdRuleSet xrs && xrs.Name == null)
                 {
@@ -51,7 +51,7 @@ namespace AvaloniaEdit.Highlighting.Xshd
             // Translate elements within the rulesets (resolving references and processing imports)
             xshd.AcceptElements(new TranslateElementVisitor(this, rnev.RuleSets, resolver));
 
-            foreach (var p in xshd.Elements.OfType<XshdProperty>())
+            foreach (XshdProperty p in xshd.Elements.OfType<XshdProperty>())
                 _propDict.Add(p.Name, p.Value);
         }
 
@@ -70,7 +70,7 @@ namespace AvaloniaEdit.Highlighting.Xshd
 
             public object VisitRuleSet(XshdRuleSet ruleSet)
             {
-                var hrs = new HighlightingRuleSet();
+                HighlightingRuleSet hrs = new HighlightingRuleSet();
                 RuleSets.Add(ruleSet, hrs);
                 if (ruleSet.Name != null)
                 {
@@ -144,7 +144,7 @@ namespace AvaloniaEdit.Highlighting.Xshd
                 _ruleSetDict = ruleSetDict;
                 _resolver = resolver;
                 _reverseRuleSetDict = new Dictionary<HighlightingRuleSet, XshdRuleSet>();
-                foreach (var pair in ruleSetDict)
+                foreach (KeyValuePair<XshdRuleSet, HighlightingRuleSet> pair in ruleSetDict)
                 {
                     _reverseRuleSetDict.Add(pair.Value, pair.Key);
                 }
@@ -152,21 +152,21 @@ namespace AvaloniaEdit.Highlighting.Xshd
 
             public object VisitRuleSet(XshdRuleSet ruleSet)
             {
-                var rs = _ruleSetDict[ruleSet];
+                HighlightingRuleSet rs = _ruleSetDict[ruleSet];
                 if (_processedRuleSets.Contains(ruleSet))
                     return rs;
                 if (!_processingStartedRuleSets.Add(ruleSet))
                     throw Error(ruleSet, "RuleSet cannot be processed because it contains cyclic <Import>");
 
-                var oldIgnoreCase = _ignoreCase;
+                bool oldIgnoreCase = _ignoreCase;
                 if (ruleSet.IgnoreCase != null)
                     _ignoreCase = ruleSet.IgnoreCase.Value;
 
                 rs.Name = ruleSet.Name;
 
-                foreach (var element in ruleSet.Elements)
+                foreach (XshdElement element in ruleSet.Elements)
                 {
-                    var o = element.AcceptVisitor(this);
+                    object o = element.AcceptVisitor(this);
                     if (o is HighlightingRuleSet elementRuleSet)
                     {
                         Merge(rs, elementRuleSet);
@@ -219,12 +219,12 @@ namespace AvaloniaEdit.Highlighting.Xshd
             {
                 if (keywords.Words.Count == 0)
                     return Error(keywords, "Keyword group must not be empty.");
-                foreach (var keyword in keywords.Words)
+                foreach (string keyword in keywords.Words)
                 {
                     if (string.IsNullOrEmpty(keyword))
                         throw Error(keywords, "Cannot use empty string as keyword");
                 }
-                var keyWordRegex = new StringBuilder();
+                StringBuilder keyWordRegex = new StringBuilder();
                 // We can use "\b" only where the keyword starts/ends with a letter or digit, otherwise we don't
                 // highlight correctly. (example: ILAsm-Mode.xshd with ".maxstack" keyword)
                 if (keywords.Words.All(IsSimpleWord))
@@ -235,8 +235,8 @@ namespace AvaloniaEdit.Highlighting.Xshd
                     // must ensure that the keywords are sorted correctly.
                     // "\b(?>in|int)\b" does not match "int" because the atomic group captures "in".
                     // To solve this, we are sorting the keywords by descending length.
-                    var i = 0;
-                    foreach (var keyword in keywords.Words.OrderByDescending(w => w.Length))
+                    int i = 0;
+                    foreach (string keyword in keywords.Words.OrderByDescending(w => w.Length))
                     {
                         if (i++ > 0)
                             keyWordRegex.Append('|');
@@ -247,8 +247,8 @@ namespace AvaloniaEdit.Highlighting.Xshd
                 else
                 {
                     keyWordRegex.Append('(');
-                    var i = 0;
-                    foreach (var keyword in keywords.Words)
+                    int i = 0;
+                    foreach (string keyword in keywords.Words)
                     {
                         if (i++ > 0)
                             keyWordRegex.Append('|');
@@ -276,7 +276,7 @@ namespace AvaloniaEdit.Highlighting.Xshd
             {
                 if (regex == null)
                     throw Error(position, "Regex missing");
-                var options = RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture;
+                RegexOptions options = RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture;
                 if (regexType == XshdRegexType.IgnorePatternWhitespace)
                     options |= RegexOptions.IgnorePatternWhitespace;
                 if (_ignoreCase)
@@ -299,8 +299,8 @@ namespace AvaloniaEdit.Highlighting.Xshd
                 }
                 if (colorReference.ReferencedElement != null)
                 {
-                    var definition = GetDefinition(position, colorReference.ReferencedDefinition);
-                    var color = definition.GetNamedColor(colorReference.ReferencedElement);
+                    IHighlightingDefinition definition = GetDefinition(position, colorReference.ReferencedDefinition);
+                    HighlightingColor color = definition.GetNamedColor(colorReference.ReferencedElement);
                     if (color == null)
                         throw Error(position, "Could not find color named '" + colorReference.ReferencedElement + "'.");
                     return color;
@@ -314,7 +314,7 @@ namespace AvaloniaEdit.Highlighting.Xshd
                     return _def;
                 if (_resolver == null)
                     throw Error(position, "Resolving references to other syntax definitions is not possible because the IHighlightingDefinitionReferenceResolver is null.");
-                var d = _resolver.GetDefinition(definitionName);
+                IHighlightingDefinition d = _resolver.GetDefinition(definitionName);
                 if (d == null)
                     throw Error(position, "Could not find definition with name '" + definitionName + "'.");
                 return d;
@@ -328,8 +328,8 @@ namespace AvaloniaEdit.Highlighting.Xshd
                 }
                 if (ruleSetReference.ReferencedElement != null)
                 {
-                    var definition = GetDefinition(position, ruleSetReference.ReferencedDefinition);
-                    var ruleSet = definition.GetNamedRuleSet(ruleSetReference.ReferencedElement);
+                    IHighlightingDefinition definition = GetDefinition(position, ruleSetReference.ReferencedDefinition);
+                    HighlightingRuleSet ruleSet = definition.GetNamedRuleSet(ruleSetReference.ReferencedElement);
                     if (ruleSet == null)
                         throw Error(position, "Could not find rule set named '" + ruleSetReference.ReferencedElement + "'.");
                     return ruleSet;
@@ -339,7 +339,7 @@ namespace AvaloniaEdit.Highlighting.Xshd
 
             public object VisitSpan(XshdSpan span)
             {
-                var endRegex = span.EndRegex;
+                string endRegex = span.EndRegex;
                 if (string.IsNullOrEmpty(span.BeginRegex) && string.IsNullOrEmpty(span.EndRegex))
                     throw Error(span, "Span has no start/end regex.");
                 if (!span.Multiline)
@@ -351,7 +351,7 @@ namespace AvaloniaEdit.Highlighting.Xshd
                     else
                         endRegex = "($|" + endRegex + ")";
                 }
-                var wholeSpanColor = GetColor(span, span.SpanColorReference);
+                HighlightingColor wholeSpanColor = GetColor(span, span.SpanColorReference);
                 return new HighlightingSpan
                 {
                     StartExpression = CreateRegex(span, span.BeginRegex, span.BeginRegexType),
@@ -367,8 +367,8 @@ namespace AvaloniaEdit.Highlighting.Xshd
 
             public object VisitImport(XshdImport import)
             {
-                var hrs = GetRuleSet(import, import.RuleSetReference);
-                if (_reverseRuleSetDict.TryGetValue(hrs, out var inputRuleSet))
+                HighlightingRuleSet hrs = GetRuleSet(import, import.RuleSetReference);
+                if (_reverseRuleSetDict.TryGetValue(hrs, out XshdRuleSet inputRuleSet))
                 {
                     // ensure the ruleset is processed before importing its members
                     if (VisitRuleSet(inputRuleSet) != hrs)
@@ -406,12 +406,12 @@ namespace AvaloniaEdit.Highlighting.Xshd
         {
             if (string.IsNullOrEmpty(name))
                 return MainRuleSet;
-            return _ruleSetDict.TryGetValue(name, out var r) ? r : null;
+            return _ruleSetDict.TryGetValue(name, out HighlightingRuleSet r) ? r : null;
         }
 
         public HighlightingColor GetNamedColor(string name)
         {
-            return _colorDict.TryGetValue(name, out var c) ? c : null;
+            return _colorDict.TryGetValue(name, out HighlightingColor c) ? c : null;
         }
 
         public IEnumerable<HighlightingColor> NamedHighlightingColors => _colorDict.Values;

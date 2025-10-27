@@ -24,6 +24,7 @@ using Avalonia;
 using Avalonia.Input;
 using Avalonia.Threading;
 using AvaloniaEdit.Document;
+using AvaloniaEdit.Rendering;
 using AvaloniaEdit.Utils;
 using lib.debug;
 
@@ -136,7 +137,7 @@ namespace AvaloniaEdit.Editing
 
         private void TextArea_OptionChanged(object sender, PropertyChangedEventArgs e)
         {
-            var newEnableTextDragDrop = TextArea.Options.EnableTextDragDrop;
+            bool newEnableTextDragDrop = TextArea.Options.EnableTextDragDrop;
             if (newEnableTextDragDrop != _enableTextDragDrop)
             {
                 _enableTextDragDrop = newEnableTextDragDrop;
@@ -335,7 +336,7 @@ namespace AvaloniaEdit.Editing
             DataObject dataObject = TextArea.Selection.CreateDataObject(TextArea);
 
             DragDropEffects allowedEffects = DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link;
-            var deleteOnMove = TextArea.Selection.Segments.Select(s => new AnchorSegment(TextArea.Document, s)).ToList();
+            List<AnchorSegment> deleteOnMove = TextArea.Selection.Segments.Select(s => new AnchorSegment(TextArea.Document, s)).ToList();
             foreach (ISegment s in deleteOnMove)
             {
                 ISegment[] result = TextArea.GetDeletableSegments(s);
@@ -345,7 +346,7 @@ namespace AvaloniaEdit.Editing
                 }
             }
 
-            var copyingEventArgs = new DataObjectCopyingEventArgs(dataObject, true);
+            DataObjectCopyingEventArgs copyingEventArgs = new DataObjectCopyingEventArgs(dataObject, true);
             TextArea.RaiseEvent(copyingEventArgs);
             if (copyingEventArgs.CommandCancelled)
                 return;
@@ -356,7 +357,7 @@ namespace AvaloniaEdit.Editing
             DragDropEffects resultEffect;
             using (TextArea.AllowCaretOutsideSelection())
             {
-                var oldCaretPosition = TextArea.Caret.Position;
+                TextViewPosition oldCaretPosition = TextArea.Caret.Position;
                 try
                 {
                     DebugWriter.WriteLine("AvaloniaEdit", "DoDragDrop with allowedEffects=" + allowedEffects);
@@ -434,10 +435,10 @@ namespace AvaloniaEdit.Editing
 
         private void TextArea_MouseLeftButtonDown(object sender, PointerPressedEventArgs e)
         {
-            var mousePosition = e.GetPosition(TextArea.TextView);
+            Point mousePosition = e.GetPosition(TextArea.TextView);
             _lastMousePosition = mousePosition;
 
-            var pointer = e.GetCurrentPoint(TextArea);
+            PointerPoint pointer = e.GetCurrentPoint(TextArea);
             if (pointer.Properties.IsLeftButtonPressed == false)
             {
                 if (TextArea.RightClickMovesCaret == true && e.Handled == false)
@@ -452,11 +453,11 @@ namespace AvaloniaEdit.Editing
                 _mode = SelectionMode.None;
                 if (!e.Handled)
                 {
-                    var modifiers = e.KeyModifiers;
-                    var shift = modifiers.HasFlag(KeyModifiers.Shift);
+                    KeyModifiers modifiers = e.KeyModifiers;
+                    bool shift = modifiers.HasFlag(KeyModifiers.Shift);
                     if (_enableTextDragDrop && e.ClickCount == 1 && !shift)
                     {
-                        var offset = GetOffsetFromMousePosition(mousePosition, out _, out _);
+                        int offset = GetOffsetFromMousePosition(mousePosition, out _, out _);
                         if (TextArea.Selection.Contains(offset))
                         {
                             if (TextArea.CapturePointer(e.Pointer))
@@ -469,7 +470,7 @@ namespace AvaloniaEdit.Editing
                         }
                     }
 
-                    var oldPosition = TextArea.Caret.Position;
+                    TextViewPosition oldPosition = TextArea.Caret.Position;
                     SetCaretOffsetToMousePosition(mousePosition);
 
                     if (e.Pointer.Type is PointerType.Pen or PointerType.Touch)
@@ -566,26 +567,26 @@ namespace AvaloniaEdit.Editing
 
         private SimpleSegment GetWordAtMousePosition(Point pos)
         {
-            var textView = TextArea.TextView;
+            TextView textView = TextArea.TextView;
             if (textView == null) return SimpleSegment.Invalid;
             if (pos.Y < 0)
                 pos = pos.WithY(0);
             if (pos.Y > textView.Bounds.Height)
                 pos = pos.WithY(textView.Bounds.Height);
             pos += textView.ScrollOffset;
-            var line = textView.GetVisualLineFromVisualTop(pos.Y);
+            VisualLine line = textView.GetVisualLineFromVisualTop(pos.Y);
             if (line != null && line.TextLines != null)
             {
-                var visualColumn = line.GetVisualColumn(pos, TextArea.Selection.EnableVirtualSpace);
-                var wordStartVc = line.GetNextCaretPosition(visualColumn + 1, LogicalDirection.Backward, CaretPositioningMode.WordStartOrSymbol, TextArea.Selection.EnableVirtualSpace);
+                int visualColumn = line.GetVisualColumn(pos, TextArea.Selection.EnableVirtualSpace);
+                int wordStartVc = line.GetNextCaretPosition(visualColumn + 1, LogicalDirection.Backward, CaretPositioningMode.WordStartOrSymbol, TextArea.Selection.EnableVirtualSpace);
                 if (wordStartVc == -1)
                     wordStartVc = 0;
-                var wordEndVc = line.GetNextCaretPosition(wordStartVc, LogicalDirection.Forward, CaretPositioningMode.WordBorderOrSymbol, TextArea.Selection.EnableVirtualSpace);
+                int wordEndVc = line.GetNextCaretPosition(wordStartVc, LogicalDirection.Forward, CaretPositioningMode.WordBorderOrSymbol, TextArea.Selection.EnableVirtualSpace);
                 if (wordEndVc == -1)
                     wordEndVc = line.VisualLength;
-                var relOffset = line.FirstDocumentLine.Offset;
-                var wordStartOffset = line.GetRelativeOffset(wordStartVc) + relOffset;
-                var wordEndOffset = line.GetRelativeOffset(wordEndVc) + relOffset;
+                int relOffset = line.FirstDocumentLine.Offset;
+                int wordStartOffset = line.GetRelativeOffset(wordStartVc) + relOffset;
+                int wordEndOffset = line.GetRelativeOffset(wordEndVc) + relOffset;
                 return new SimpleSegment(wordStartOffset, wordEndOffset - wordStartOffset);
             }
             else
@@ -596,14 +597,14 @@ namespace AvaloniaEdit.Editing
 
         private SimpleSegment GetLineAtMousePosition(Point pos)
         {
-            var textView = TextArea.TextView;
+            TextView textView = TextArea.TextView;
             if (textView == null) return SimpleSegment.Invalid;
             if (pos.Y < 0)
                 pos = pos.WithY(0);
             if (pos.Y > textView.Bounds.Height)
                 pos = pos.WithY(textView.Bounds.Height);
             pos += textView.ScrollOffset;
-            var line = textView.GetVisualLineFromVisualTop(pos.Y);
+            VisualLine line = textView.GetVisualLineFromVisualTop(pos.Y);
             return line != null && line.TextLines != null
                 ? new SimpleSegment(line.StartOffset, line.LastDocumentLine.EndOffset - line.StartOffset)
                 : SimpleSegment.Invalid;
@@ -612,8 +613,8 @@ namespace AvaloniaEdit.Editing
         private int GetOffsetFromMousePosition(Point positionRelativeToTextView, out int visualColumn, out bool isAtEndOfLine)
         {
             visualColumn = 0;
-            var textView = TextArea.TextView;
-            var pos = positionRelativeToTextView;
+            TextView textView = TextArea.TextView;
+            Point pos = positionRelativeToTextView;
             if (pos.Y < 0)
                 pos = pos.WithY(0);
             if (pos.Y > textView.Bounds.Height)
@@ -621,7 +622,7 @@ namespace AvaloniaEdit.Editing
             pos += textView.ScrollOffset;
             if (pos.Y >= textView.DocumentHeight)
                 pos = pos.WithY(textView.DocumentHeight - ExtensionMethods.Epsilon);
-            var line = textView.GetVisualLineFromVisualTop(pos.Y);
+            VisualLine line = textView.GetVisualLineFromVisualTop(pos.Y);
             if (line != null && line.TextLines != null)
             {
                 visualColumn = line.GetVisualColumn(pos, TextArea.Selection.EnableVirtualSpace, out isAtEndOfLine);
@@ -634,8 +635,8 @@ namespace AvaloniaEdit.Editing
         private int GetOffsetFromMousePositionFirstTextLineOnly(Point positionRelativeToTextView, out int visualColumn)
         {
             visualColumn = 0;
-            var textView = TextArea.TextView;
-            var pos = positionRelativeToTextView;
+            TextView textView = TextArea.TextView;
+            Point pos = positionRelativeToTextView;
             if (pos.Y < 0)
                 pos = pos.WithY(0);
             if (pos.Y > textView.Bounds.Height)
@@ -643,7 +644,7 @@ namespace AvaloniaEdit.Editing
             pos += textView.ScrollOffset;
             if (pos.Y >= textView.DocumentHeight)
                 pos = pos.WithY(textView.DocumentHeight - ExtensionMethods.Epsilon);
-            var line = textView.GetVisualLineFromVisualTop(pos.Y);
+            VisualLine line = textView.GetVisualLineFromVisualTop(pos.Y);
             if (line != null && line.TextLines != null)
             {
                 visualColumn = line.GetVisualColumn(line.TextLines.First(), pos.X, TextArea.Selection.EnableVirtualSpace);
@@ -663,7 +664,7 @@ namespace AvaloniaEdit.Editing
             if (e.Handled)
                 return;
 
-            var mousePosition = e.GetPosition(TextArea.TextView);
+            Point mousePosition = e.GetPosition(TextArea.TextView);
             _lastMousePosition = mousePosition;
 
             if (_mode == SelectionMode.Normal || _mode == SelectionMode.WholeWord || _mode == SelectionMode.WholeLine || _mode == SelectionMode.Rectangular)
@@ -737,7 +738,7 @@ namespace AvaloniaEdit.Editing
 
         private void ExtendSelectionToMouse(Point pointerPosition)
         {
-            var oldPosition = TextArea.Caret.Position;
+            TextViewPosition oldPosition = TextArea.Caret.Position;
             if (_mode == SelectionMode.Normal || _mode == SelectionMode.Rectangular)
             {
                 SetCaretOffsetToMousePosition(pointerPosition);
@@ -750,7 +751,7 @@ namespace AvaloniaEdit.Editing
             }
             else if (_mode == SelectionMode.WholeWord || _mode == SelectionMode.WholeLine)
             {
-                var newWord = (_mode == SelectionMode.WholeLine) ? GetLineAtMousePosition(pointerPosition) : GetWordAtMousePosition(pointerPosition);
+                SimpleSegment newWord = (_mode == SelectionMode.WholeLine) ? GetLineAtMousePosition(pointerPosition) : GetWordAtMousePosition(pointerPosition);
                 if (newWord != SimpleSegment.Invalid && _startWord != null)
                 {
                     TextArea.Selection = Selection.Create(TextArea,
@@ -772,7 +773,7 @@ namespace AvaloniaEdit.Editing
                 return;
 
             e.Handled = true;
-            var mousePosition = e.GetPosition(TextArea.TextView);
+            Point mousePosition = e.GetPosition(TextArea.TextView);
             _lastMousePosition = mousePosition;
 
             switch (_mode)

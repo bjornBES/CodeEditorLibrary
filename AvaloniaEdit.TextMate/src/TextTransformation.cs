@@ -29,8 +29,8 @@ namespace AvaloniaEdit.TextMate
                     return;
                 }
 
-                var formattedOffset = 0;
-                var endOffset = line.EndOffset;
+                int formattedOffset = 0;
+                int endOffset = line.EndOffset;
 
                 if (StartOffset > line.Offset)
                 {

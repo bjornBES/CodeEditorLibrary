@@ -32,11 +32,11 @@ namespace AvaloniaEdit.Indentation
         {
             if (document == null) throw new ArgumentNullException(nameof(document));
             if (line == null) throw new ArgumentNullException(nameof(line));
-            var previousLine = line.PreviousLine;
+            DocumentLine previousLine = line.PreviousLine;
             if (previousLine != null)
             {
-                var indentationSegment = TextUtilities.GetWhitespaceAfter(document, previousLine.Offset);
-                var indentation = document.GetText(indentationSegment);
+                ISegment indentationSegment = TextUtilities.GetWhitespaceAfter(document, previousLine.Offset);
+                string indentation = document.GetText(indentationSegment);
                 // copy indentation to line
                 indentationSegment = TextUtilities.GetWhitespaceAfter(document, line.Offset);
                 document.Replace(indentationSegment.Offset, indentationSegment.Length, indentation,

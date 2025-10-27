@@ -40,7 +40,7 @@ namespace AvaloniaEdit.Editing
         /// </summary>
         public static TextAreaInputHandler Create(TextArea textArea)
         {
-            var handler = new TextAreaInputHandler(textArea);
+            TextAreaInputHandler handler = new TextAreaInputHandler(textArea);
             handler.CommandBindings.AddRange(CommandBindings);
             handler.KeyBindings.AddRange(KeyBindings);
             return handler;
@@ -116,7 +116,7 @@ namespace AvaloniaEdit.Editing
         private static void TransformSelectedLines(Action<TextArea, DocumentLine> transformLine, object target,
             RoutedEventArgs args, DefaultSegmentType defaultSegmentType)
         {
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea?.Document != null)
             {
                 using (textArea.Document.RunUpdate())
@@ -140,7 +140,7 @@ namespace AvaloniaEdit.Editing
                     }
                     else
                     {
-                        var segment = textArea.Selection.SurroundingSegment;
+                        ISegment segment = textArea.Selection.SurroundingSegment;
                         start = textArea.Document.GetLineByOffset(segment.Offset);
                         end = textArea.Document.GetLineByOffset(segment.EndOffset);
                         // don't include the last line if no characters on it are selected
@@ -168,7 +168,7 @@ namespace AvaloniaEdit.Editing
         private static void TransformSelectedSegments(Action<TextArea, ISegment> transformSegment, object target,
             ExecutedRoutedEventArgs args, DefaultSegmentType defaultSegmentType)
         {
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea?.Document != null)
             {
                 using (textArea.Document.RunUpdate())
@@ -195,9 +195,9 @@ namespace AvaloniaEdit.Editing
                     }
                     if (segments != null)
                     {
-                        foreach (var segment in segments.Reverse())
+                        foreach (ISegment segment in segments.Reverse())
                         {
-                            foreach (var writableSegment in textArea.GetDeletableSegments(segment).Reverse())
+                            foreach (ISegment writableSegment in textArea.GetDeletableSegments(segment).Reverse())
                             {
                                 transformSegment(textArea, writableSegment);
                             }
@@ -215,7 +215,7 @@ namespace AvaloniaEdit.Editing
 
         private static void OnEnter(object target, ExecutedRoutedEventArgs args)
         {
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea != null && textArea.IsFocused)
             {
                 textArea.PerformTextInput("\n");
@@ -229,23 +229,23 @@ namespace AvaloniaEdit.Editing
 
         public static void OnTab(object target, RoutedEventArgs args)
         {
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea?.Document != null)
             {
                 using (textArea.Document.RunUpdate())
                 {
                     if (textArea.Selection.IsMultiline)
                     {
-                        var segment = textArea.Selection.SurroundingSegment;
-                        var start = textArea.Document.GetLineByOffset(segment.Offset);
-                        var end = textArea.Document.GetLineByOffset(segment.EndOffset);
+                        ISegment segment = textArea.Selection.SurroundingSegment;
+                        DocumentLine start = textArea.Document.GetLineByOffset(segment.Offset);
+                        DocumentLine end = textArea.Document.GetLineByOffset(segment.EndOffset);
                         // don't include the last line if no characters on it are selected
                         if (start != end && end.Offset == segment.EndOffset)
                             end = end.PreviousLine;
-                        var current = start;
+                        DocumentLine current = start;
                         while (true)
                         {
-                            var offset = current.Offset;
+                            int offset = current.Offset;
                             if (textArea.ReadOnlySectionProvider.CanInsert(offset))
                                 textArea.Document.Replace(offset, 0, textArea.Options.IndentationString,
                                     OffsetChangeMappingType.KeepAnchorBeforeInsertion);
@@ -256,7 +256,7 @@ namespace AvaloniaEdit.Editing
                     }
                     else
                     {
-                        var indentationString = textArea.Options.GetIndentationString(textArea.Caret.Column);
+                        string indentationString = textArea.Options.GetIndentationString(textArea.Caret.Column);
                         textArea.ReplaceSelectionWithText(indentationString);
                     }
                 }
@@ -270,8 +270,8 @@ namespace AvaloniaEdit.Editing
             TransformSelectedLines(
                 delegate (TextArea textArea, DocumentLine line)
                 {
-                    var offset = line.Offset;
-                    var s = TextUtilities.GetSingleIndentationSegment(textArea.Document, offset,
+                    int offset = line.Offset;
+                    ISegment s = TextUtilities.GetSingleIndentationSegment(textArea.Document, offset,
                         textArea.Options.IndentationSize);
                     if (s.Length > 0)
                     {
@@ -292,18 +292,18 @@ namespace AvaloniaEdit.Editing
         {
             return (target, args) =>
             {
-                var textArea = GetTextArea(target);
+                TextArea textArea = GetTextArea(target);
                 if (textArea?.Document != null)
                 {
                     if (textArea.Selection.IsEmpty)
                     {
-                        var startPos = textArea.Caret.Position;
-                        var enableVirtualSpace = textArea.Options.EnableVirtualSpace;
+                        TextViewPosition startPos = textArea.Caret.Position;
+                        bool enableVirtualSpace = textArea.Options.EnableVirtualSpace;
                         // When pressing delete; don't move the caret further into virtual space - instead delete the newline
                         if (caretMovement == CaretMovementType.CharRight)
                             enableVirtualSpace = false;
-                        var desiredXPos = textArea.Caret.DesiredXPos;
-                        var endPos = CaretNavigationCommandHandler.GetNewCaretPosition(
+                        double desiredXPos = textArea.Caret.DesiredXPos;
+                        TextViewPosition endPos = CaretNavigationCommandHandler.GetNewCaretPosition(
                             textArea.TextView, startPos, caretMovement, enableVirtualSpace, ref desiredXPos);
                         // GetNewCaretPosition may return (0,0) as new position,
                         // thus we need to validate endPos before using it in the selection.
@@ -329,7 +329,7 @@ namespace AvaloniaEdit.Editing
 
         private static void CanDelete(object target, CanExecuteRoutedEventArgs args)
         {
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea is { Document: not null })
             {
                 args.CanExecute = true;
@@ -344,7 +344,7 @@ namespace AvaloniaEdit.Editing
         private static void CanCut(object target, CanExecuteRoutedEventArgs args)
         {
             // HasSomethingSelected for copy and cut commands
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea is { Document: not null })
             {
                 args.CanExecute = (textArea.Options.CutCopyWholeLine || !textArea.Selection.IsEmpty) && !textArea.IsReadOnly;
@@ -355,7 +355,7 @@ namespace AvaloniaEdit.Editing
         private static void CanCopy(object target, CanExecuteRoutedEventArgs args)
         {
             // HasSomethingSelected for copy and cut commands
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea is { Document: not null })
             {
                 args.CanExecute = textArea.Options.CutCopyWholeLine || !textArea.Selection.IsEmpty;
@@ -365,12 +365,12 @@ namespace AvaloniaEdit.Editing
 
         private static void OnCopy(object target, ExecutedRoutedEventArgs args)
         {
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea?.Document != null)
             {
                 if (textArea.Selection.IsEmpty && textArea.Options.CutCopyWholeLine)
                 {
-                    var currentLine = textArea.Document.GetLineByNumber(textArea.Caret.Line);
+                    DocumentLine currentLine = textArea.Document.GetLineByNumber(textArea.Caret.Line);
                     CopyWholeLine(textArea, currentLine);
                 }
                 else
@@ -383,18 +383,18 @@ namespace AvaloniaEdit.Editing
 
         private static void OnCut(object target, ExecutedRoutedEventArgs args)
         {
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea?.Document != null)
             {
                 if (textArea.Selection.IsEmpty && textArea.Options.CutCopyWholeLine)
                 {
-                    var currentLine = textArea.Document.GetLineByNumber(textArea.Caret.Line);
+                    DocumentLine currentLine = textArea.Document.GetLineByNumber(textArea.Caret.Line);
                     if (CopyWholeLine(textArea, currentLine))
                     {
-                        var segmentsToDelete =
+                        ISegment[] segmentsToDelete =
                             textArea.GetDeletableSegments(
                                 new SimpleSegment(currentLine.Offset, currentLine.TotalLength));
-                        for (var i = segmentsToDelete.Length - 1; i >= 0; i--)
+                        for (int i = segmentsToDelete.Length - 1; i >= 0; i--)
                         {
                             textArea.Document.Remove(segmentsToDelete[i]);
                         }
@@ -412,7 +412,7 @@ namespace AvaloniaEdit.Editing
 
         private static bool CopySelectedText(TextArea textArea)
         {
-            var text = textArea.Selection.GetText();
+            string text = textArea.Selection.GetText();
             text = TextUtilities.NormalizeNewLines(text, Environment.NewLine);
 
             SetClipboardText(text, textArea);
@@ -445,7 +445,7 @@ namespace AvaloniaEdit.Editing
         private static bool CopyWholeLine(TextArea textArea, DocumentLine line)
         {
             ISegment wholeLine = new SimpleSegment(line.Offset, line.TotalLength);
-            var text = textArea.Document.GetText(wholeLine);
+            string text = textArea.Document.GetText(wholeLine);
             // Ignore empty line copy
             if(string.IsNullOrEmpty(text)) return false;
             // Ensure we use the appropriate newline sequence for the OS
@@ -486,7 +486,7 @@ namespace AvaloniaEdit.Editing
 
         private static void CanPaste(object target, CanExecuteRoutedEventArgs args)
         {
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea is { Document: not null })
             {
                 args.CanExecute = textArea.ReadOnlySectionProvider.CanInsert(textArea.Caret.Offset);
@@ -496,7 +496,7 @@ namespace AvaloniaEdit.Editing
 
         private static async void OnPaste(object target, ExecutedRoutedEventArgs args)
         {
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea?.Document != null)
             {
                 textArea.Document.BeginUpdate();
@@ -563,7 +563,7 @@ namespace AvaloniaEdit.Editing
                 //else
                 //    return null; // no text data format
                 // convert text back to correct newlines for this document
-                var newLine = TextUtilities.GetNewLineFromDocument(textArea.Document, textArea.Caret.Line);
+                string newLine = TextUtilities.GetNewLineFromDocument(textArea.Document, textArea.Caret.Line);
                 text = TextUtilities.NormalizeNewLines(text, newLine);
                 text = textArea.Options.ConvertTabsToSpaces
                     ? text.Replace("\t", new String(' ', textArea.Options.IndentationSize))
@@ -583,7 +583,7 @@ namespace AvaloniaEdit.Editing
 
         private static void OnToggleOverstrike(object target, ExecutedRoutedEventArgs args)
         {
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea != null && textArea.Options.AllowToggleOverstrikeMode)
                 textArea.OverstrikeMode = !textArea.OverstrikeMode;
         }
@@ -594,7 +594,7 @@ namespace AvaloniaEdit.Editing
 
         private static void OnDeleteLine(object target, ExecutedRoutedEventArgs args)
         {
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea?.Document != null)
             {
                 int firstLineIndex, lastLineIndex;
@@ -611,8 +611,8 @@ namespace AvaloniaEdit.Editing
                     lastLineIndex = Math.Max(textArea.Selection.StartPosition.Line,
                         textArea.Selection.EndPosition.Line);
                 }
-                var startLine = textArea.Document.GetLineByNumber(firstLineIndex);
-                var endLine = textArea.Document.GetLineByNumber(lastLineIndex);
+                DocumentLine startLine = textArea.Document.GetLineByNumber(firstLineIndex);
+                DocumentLine endLine = textArea.Document.GetLineByNumber(lastLineIndex);
                 textArea.Selection = Selection.Create(textArea, startLine.Offset,
                     endLine.Offset + endLine.TotalLength);
                 textArea.RemoveSelectedText();
@@ -658,10 +658,10 @@ namespace AvaloniaEdit.Editing
 
         private static void ConvertTabsToSpaces(TextArea textArea, ISegment segment)
         {
-            var document = textArea.Document;
-            var endOffset = segment.EndOffset;
-            var indentationString = new string(' ', textArea.Options.IndentationSize);
-            for (var offset = segment.Offset; offset < endOffset; offset++)
+            TextDocument document = textArea.Document;
+            int endOffset = segment.EndOffset;
+            string indentationString = new string(' ', textArea.Options.IndentationSize);
+            for (int offset = segment.Offset; offset < endOffset; offset++)
             {
                 if (document.GetCharAt(offset) == '\t')
                 {
@@ -687,11 +687,11 @@ namespace AvaloniaEdit.Editing
 
         private static void ConvertSpacesToTabs(TextArea textArea, ISegment segment)
         {
-            var document = textArea.Document;
-            var endOffset = segment.EndOffset;
-            var indentationSize = textArea.Options.IndentationSize;
-            var spacesCount = 0;
-            for (var offset = segment.Offset; offset < endOffset; offset++)
+            TextDocument document = textArea.Document;
+            int endOffset = segment.EndOffset;
+            int indentationSize = textArea.Options.IndentationSize;
+            int spacesCount = 0;
+            for (int offset = segment.Offset; offset < endOffset; offset++)
             {
                 if (document.GetCharAt(offset) == ' ')
                 {
@@ -721,8 +721,8 @@ namespace AvaloniaEdit.Editing
             TransformSelectedSegments(
                 delegate (TextArea textArea, ISegment segment)
                 {
-                    var oldText = textArea.Document.GetText(segment);
-                    var newText = transformText(oldText);
+                    string oldText = textArea.Document.GetText(segment);
+                    string newText = transformText(oldText);
                     textArea.Document.Replace(segment.Offset, segment.Length, newText,
                         OffsetChangeMappingType.CharacterReplace);
                 }, target, args, DefaultSegmentType.WholeDocument);
@@ -753,10 +753,10 @@ namespace AvaloniaEdit.Editing
         {
             // TODO: culture
             //var culture = CultureInfo.CurrentCulture;
-            var buffer = text.ToCharArray();
-            for (var i = 0; i < buffer.Length; ++i)
+            char[] buffer = text.ToCharArray();
+            for (int i = 0; i < buffer.Length; ++i)
             {
-                var c = buffer[i];
+                char c = buffer[i];
                 buffer[i] = char.IsUpper(c) ? char.ToLower(c) : char.ToUpper(c);
             }
             return new string(buffer);
@@ -766,7 +766,7 @@ namespace AvaloniaEdit.Editing
 
         private static void OnIndentSelection(object target, ExecutedRoutedEventArgs args)
         {
-            var textArea = GetTextArea(target);
+            TextArea textArea = GetTextArea(target);
             if (textArea?.Document != null && textArea.IndentationStrategy != null)
             {
                 using (textArea.Document.RunUpdate())

@@ -169,7 +169,7 @@ namespace AvaloniaEdit.Snippets
         {
             if (owner == null)
                 throw new ArgumentNullException(nameof(owner));
-            return _elementMap.TryGetValue(owner, out var element) ? element : null;
+            return _elementMap.TryGetValue(owner, out IActiveElement element) ? element : null;
         }
 
         /// <summary>
@@ -270,15 +270,15 @@ namespace AvaloniaEdit.Snippets
         /// </summary>
         public void Link(ISegment mainElement, ISegment[] boundElements)
         {
-            var main = new SnippetReplaceableTextElement { Text = Document.GetText(mainElement) };
+            SnippetReplaceableTextElement main = new SnippetReplaceableTextElement { Text = Document.GetText(mainElement) };
             RegisterActiveElement(main, new ReplaceableActiveElement(this, mainElement.Offset, mainElement.EndOffset));
-            foreach (var boundElement in boundElements)
+            foreach (ISegment boundElement in boundElements)
             {
-                var bound = new SnippetBoundElement { TargetElement = main };
-                var start = Document.CreateAnchor(boundElement.Offset);
+                SnippetBoundElement bound = new SnippetBoundElement { TargetElement = main };
+                TextAnchor start = Document.CreateAnchor(boundElement.Offset);
                 start.MovementType = AnchorMovementType.BeforeInsertion;
                 start.SurviveDeletion = true;
-                var end = Document.CreateAnchor(boundElement.EndOffset);
+                TextAnchor end = Document.CreateAnchor(boundElement.EndOffset);
                 end.MovementType = AnchorMovementType.BeforeInsertion;
                 end.SurviveDeletion = true;
 

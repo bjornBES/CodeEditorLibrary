@@ -55,7 +55,7 @@ namespace AvaloniaEdit.Snippets
 
         internal static void SetCaret(InsertionContext context)
         {
-            var pos = context.Document.CreateAnchor(context.InsertionPosition);
+            TextAnchor pos = context.Document.CreateAnchor(context.InsertionPosition);
             pos.MovementType = AnchorMovementType.BeforeInsertion;
             pos.SurviveDeletion = true;
             context.Deactivated += (sender, e) =>

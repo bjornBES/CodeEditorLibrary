@@ -72,7 +72,7 @@ namespace AvaloniaEdit.Highlighting.Xshd
 
         internal static XmlReader GetValidatingReader(XmlReader input, bool ignoreWhitespace)
         {
-            var settings = new XmlReaderSettings
+            XmlReaderSettings settings = new XmlReaderSettings
             {
                 CloseInput = true,
                 IgnoreComments = true,

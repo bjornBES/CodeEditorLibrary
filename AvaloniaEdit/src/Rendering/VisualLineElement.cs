@@ -142,17 +142,17 @@ namespace AvaloniaEdit.Rendering
 				throw new ArgumentNullException(nameof(firstPart));
 			if (secondPart == null)
 				throw new ArgumentNullException(nameof(secondPart));
-			var relativeSplitVisualColumn = splitVisualColumn - VisualColumn;
-			var relativeSplitRelativeTextOffset = splitRelativeTextOffset - RelativeTextOffset;
+            int relativeSplitVisualColumn = splitVisualColumn - VisualColumn;
+            int relativeSplitRelativeTextOffset = splitRelativeTextOffset - RelativeTextOffset;
 			
 			if (relativeSplitVisualColumn <= 0 || relativeSplitVisualColumn >= VisualLength)
 				throw new ArgumentOutOfRangeException(nameof(splitVisualColumn), splitVisualColumn, "Value must be between " + (VisualColumn + 1) + " and " + (VisualColumn + VisualLength - 1));
 			if (relativeSplitRelativeTextOffset < 0 || relativeSplitRelativeTextOffset > DocumentLength)
 				throw new ArgumentOutOfRangeException(nameof(splitRelativeTextOffset), splitRelativeTextOffset, "Value must be between " + (RelativeTextOffset) + " and " + (RelativeTextOffset + DocumentLength));
-			var oldVisualLength = VisualLength;
-			var oldDocumentLength = DocumentLength;
-			var oldVisualColumn = VisualColumn;
-			var oldRelativeTextOffset = RelativeTextOffset;
+            int oldVisualLength = VisualLength;
+            int oldDocumentLength = DocumentLength;
+            int oldVisualColumn = VisualColumn;
+            int oldRelativeTextOffset = RelativeTextOffset;
 			firstPart.VisualColumn = oldVisualColumn;
 			secondPart.VisualColumn = oldVisualColumn + relativeSplitVisualColumn;
 			firstPart.RelativeTextOffset = oldRelativeTextOffset;
@@ -204,8 +204,8 @@ namespace AvaloniaEdit.Rendering
 		/// </remarks>
 		public virtual int GetNextCaretPosition(int visualColumn, LogicalDirection direction, CaretPositioningMode mode)
 		{
-			var stop1 = VisualColumn;
-			var stop2 = VisualColumn + VisualLength;
+            int stop1 = VisualColumn;
+            int stop2 = VisualColumn + VisualLength;
 			if (direction == LogicalDirection.Backward)
 			{
 			    if (visualColumn > stop2 && mode != CaretPositioningMode.WordStart && mode != CaretPositioningMode.WordStartOrSymbol)
